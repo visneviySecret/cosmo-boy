@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
+import { Meteorite } from "../entities/Meteorite";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -11,47 +12,56 @@ const GameContainer = styled.div`
   background-color: #000;
 `;
 
-const Game = () => {
+const Game = React.memo(() => {
   const gameRef = useRef<Phaser.Game | null>(null);
 
   useEffect(() => {
-    if (gameRef.current) return;
+    if (gameRef.current) {
+      gameRef.current.destroy(true);
+      gameRef.current = null;
+    }
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      parent: "game-container",
+      parent: "game-root",
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: window.innerWidth,
         height: window.innerHeight,
       },
+      physics: {
+        default: "arcade",
+        arcade: {
+          gravity: { x: 0, y: 0 },
+          debug: false,
+        },
+      },
       scene: {
         create: create,
+        update: update,
       },
     };
 
     gameRef.current = new Phaser.Game(config);
 
+    let meteorite: Meteorite;
+
     function create(this: Phaser.Scene) {
-      // Добавляем текст в центр экрана
-      const text = this.add
-        .text(
-          this.cameras.main.centerX,
-          this.cameras.main.centerY,
-          "Hello Phaser!",
-          {
-            color: "#ffffff",
-            fontSize: "32px",
-          }
-        )
-        .setOrigin(0.5);
+      // Создаем метеорит в центре экрана по горизонтали, но ниже линии горизонта
+      meteorite = new Meteorite(this, {
+        x: this.cameras.main.centerX,
+        y: this.cameras.main.centerY + 600, // Размещаем ниже центра
+      });
 
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
-        text.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
       });
+    }
+
+    function update(this: Phaser.Scene) {
+      // Здесь будет обновление состояния игры
     }
 
     return () => {
@@ -62,7 +72,7 @@ const Game = () => {
     };
   }, []);
 
-  return <GameContainer id="game-container" />;
-};
+  return <GameContainer id="game-root" />;
+});
 
 export default Game;
