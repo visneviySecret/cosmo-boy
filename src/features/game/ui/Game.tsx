@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
 import { Meteorite } from "../entities/Meteorite";
+import { Player } from "../entities/Player";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -46,12 +47,19 @@ const Game = React.memo(() => {
     gameRef.current = new Phaser.Game(config);
 
     let meteorite: Meteorite;
+    let player: Player;
 
     function create(this: Phaser.Scene) {
-      // Создаем метеорит в центре экрана по горизонтали, но ниже линии горизонта
+      // Создаем метеорит
       meteorite = new Meteorite(this, {
         x: this.cameras.main.centerX,
-        y: this.cameras.main.centerY + 600, // Размещаем ниже центра
+        y: this.cameras.main.centerY + 600,
+      });
+
+      // Создаем игрока
+      player = new Player(this, {
+        x: this.cameras.main.centerX,
+        y: this.cameras.main.centerY + 400,
       });
 
       // Добавляем обработчик изменения размера окна
@@ -61,7 +69,9 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      // Здесь будет обновление состояния игры
+      if (player && meteorite) {
+        player.update(meteorite);
+      }
     }
 
     return () => {

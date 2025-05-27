@@ -9,11 +9,14 @@ export interface MeteoriteConfig {
 export class Meteorite extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 200;
   private size: number;
+  private mass: number;
+  private readonly MASS_MULTIPLIER = 2; // Множитель для расчета массы от размера
 
   constructor(scene: Phaser.Scene, config: MeteoriteConfig) {
     super(scene, config.x, config.y, "meteorite");
 
     this.size = config.size || this.DEFAULT_SIZE;
+    this.mass = this.size * this.MASS_MULTIPLIER;
 
     // Добавляем спрайт в сцену и включаем физику
     scene.add.existing(this);
@@ -42,6 +45,11 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
 
     // Устанавливаем текстуру для спрайта
     this.setTexture("meteorite");
+  }
+
+  // Получить массу метеорита
+  getMass(): number {
+    return this.mass;
   }
 
   update() {
