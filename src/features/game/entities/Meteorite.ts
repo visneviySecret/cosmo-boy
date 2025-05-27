@@ -10,7 +10,7 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 200;
   private size: number;
   private mass: number;
-  private readonly MASS_MULTIPLIER = 2; // Множитель для расчета массы от размера
+  private readonly MASS_MULTIPLIER = 1; // Множитель для расчета массы от размера
 
   constructor(scene: Phaser.Scene, config: MeteoriteConfig) {
     super(scene, config.x, config.y, "meteorite");

@@ -85,21 +85,14 @@ const Game = React.memo(() => {
       // Сохраняем скорости перед столкновением
       const playerVelocityX = player.body?.velocity.x || 0;
       const playerVelocityY = player.body?.velocity.y || 0;
-      const meteoriteVelocityX = meteorite.body?.velocity.x || 0;
-      const meteoriteVelocityY = meteorite.body?.velocity.y || 0;
 
-      // Вычисляем общую массу
-      const totalMass = player.getMass() + meteorite.getMass();
+      // Вычисляем импульс игрока (p = mv)
+      const playerMomentumX = playerVelocityX * player.getMass();
+      const playerMomentumY = playerVelocityY * player.getMass();
 
-      // Вычисляем новую скорость с учетом импульсов обоих тел
-      const newVelocityX =
-        (playerVelocityX * player.getMass() +
-          meteoriteVelocityX * meteorite.getMass()) /
-        totalMass;
-      const newVelocityY =
-        (playerVelocityY * player.getMass() +
-          meteoriteVelocityY * meteorite.getMass()) /
-        totalMass;
+      // Вычисляем новую скорость метеорита (v = p/m)
+      const newVelocityX = playerMomentumX / meteorite.getMass();
+      const newVelocityY = playerMomentumY / meteorite.getMass();
 
       // Устанавливаем одинаковую скорость для метеорита и игрока
       meteorite.setVelocity(newVelocityX, newVelocityY);

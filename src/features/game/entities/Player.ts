@@ -10,8 +10,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 100;
   private size: number;
   private mass: number;
-  private readonly MASS_MULTIPLIER = 0.5; // Множитель для расчета массы от размера
-  private readonly GRAVITY_CONSTANT = 5; // Константа гравитации
+  private readonly MASS_MULTIPLIER = 1; // Уменьшаем множитель массы для меньшего влияния на столкновения
+  private readonly GRAVITY_CONSTANT = 6.6743 * 10; // Уменьшаем константу гравитации для более плавного притяжения
+  private readonly MIN_DISTANCE = 50; // Минимальное расстояние для расчета силы
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -63,13 +64,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const dy = meteorite.y - this.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Избегаем деления на ноль
-    if (distance < 1) return;
+    // Используем минимальное расстояние для более равномерного притяжения
+    const effectiveDistance = Math.max(distance, this.MIN_DISTANCE);
 
     // Расчет силы притяжения по закону всемирного тяготения
     const force =
       (this.GRAVITY_CONSTANT * this.mass * meteorite.getMass()) /
-      (distance * distance);
+      (effectiveDistance * effectiveDistance);
 
     // Нормализуем вектор направления
     const normalizedDx = dx / distance;
