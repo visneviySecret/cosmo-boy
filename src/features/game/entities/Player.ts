@@ -13,6 +13,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly MASS_MULTIPLIER = 1; // Уменьшаем множитель массы для меньшего влияния на столкновения
   private readonly GRAVITY_CONSTANT = 6.6743 * 10; // Уменьшаем константу гравитации для более плавного притяжения
   private readonly MIN_DISTANCE = 50; // Минимальное расстояние для расчета силы
+  private readonly JUMP_FORCE = 1000; // Сила прыжка
+  private isOnMeteorite: boolean = false;
+  private isJumping: boolean = false;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -34,6 +37,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Настраиваем размеры коллайдера
     this.setSize(this.size, this.size);
     this.setOffset(0, 0);
+
+    // Добавляем обработчик нажатия клавиши пробел
+    scene.input.keyboard?.on("keydown-SPACE", () => {
+      this.jump();
+    });
   }
 
   private createTemporaryGraphics() {
@@ -82,6 +90,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.velocity.x + normalizedDx * force,
         this.body.velocity.y + normalizedDy * force
       );
+    }
+  }
+
+  // Метод для прыжка
+  private jump(): void {
+    if (this.isOnMeteorite && !this.isJumping && this.body) {
+      this.isJumping = true;
+      // Применяем силу прыжка вверх
+      this.setVelocityY(-this.JUMP_FORCE);
+    }
+  }
+
+  // Установка флага нахождения на метеорите
+  setIsOnMeteorite(value: boolean): void {
+    this.isOnMeteorite = value;
+    if (value) {
+      this.isJumping = false; // Сбрасываем флаг прыжка при приземлении на метеорит
     }
   }
 

@@ -97,6 +97,9 @@ const Game = React.memo(() => {
       // Устанавливаем одинаковую скорость для метеорита и игрока
       meteorite.setVelocity(newVelocityX, newVelocityY);
       player.setVelocity(newVelocityX, newVelocityY);
+
+      // Устанавливаем флаг нахождения на метеорите
+      player.setIsOnMeteorite(true);
     }
 
     function update(this: Phaser.Scene) {
