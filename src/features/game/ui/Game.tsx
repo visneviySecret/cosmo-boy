@@ -2,12 +2,7 @@ import { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
 
-const GameContainer = styled.div`
-  margin-top: 20px;
-  border: 2px solid #61dafb;
-  border-radius: 8px;
-  overflow: hidden;
-`;
+const GameContainer = styled.div``;
 
 const Game = () => {
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -55,7 +50,7 @@ const Game = () => {
     };
   }, []);
 
-  return <GameContainer />;
+  return <GameContainer id="game-container" />;
 };
 
 export default Game;

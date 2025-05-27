@@ -5,12 +5,7 @@ import "./App.css";
 const AppContainer = styled.div`
   width: 100vw;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  align-items: center;
   background-color: #282c34;
-  color: white;
 `;
 
 function App() {
