@@ -59,13 +59,51 @@ const Game = React.memo(() => {
       // Создаем игрока
       player = new Player(this, {
         x: this.cameras.main.centerX,
-        y: this.cameras.main.centerY + 400,
+        y: this.cameras.main.centerY + 200,
       });
+
+      // Добавляем коллизию между игроком и метеоритом
+      this.physics.add.collider(
+        player,
+        meteorite,
+        (obj1: unknown, obj2: unknown) => {
+          const playerObj = obj1 as Player;
+          const meteoriteObj = obj2 as Meteorite;
+          handleCollision(playerObj, meteoriteObj);
+        },
+        undefined,
+        this
+      );
 
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
       });
+    }
+
+    function handleCollision(player: Player, meteorite: Meteorite) {
+      // Сохраняем скорости перед столкновением
+      const playerVelocityX = player.body?.velocity.x || 0;
+      const playerVelocityY = player.body?.velocity.y || 0;
+      const meteoriteVelocityX = meteorite.body?.velocity.x || 0;
+      const meteoriteVelocityY = meteorite.body?.velocity.y || 0;
+
+      // Вычисляем общую массу
+      const totalMass = player.getMass() + meteorite.getMass();
+
+      // Вычисляем новую скорость с учетом импульсов обоих тел
+      const newVelocityX =
+        (playerVelocityX * player.getMass() +
+          meteoriteVelocityX * meteorite.getMass()) /
+        totalMass;
+      const newVelocityY =
+        (playerVelocityY * player.getMass() +
+          meteoriteVelocityY * meteorite.getMass()) /
+        totalMass;
+
+      // Устанавливаем одинаковую скорость для метеорита и игрока
+      meteorite.setVelocity(newVelocityX, newVelocityY);
+      player.setVelocity(newVelocityX, newVelocityY);
     }
 
     function update(this: Phaser.Scene) {

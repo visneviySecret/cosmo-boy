@@ -27,7 +27,7 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
 
     // Настраиваем физические свойства
     this.setCollideWorldBounds(true);
-    this.setBounce(0.2);
+    this.setBounce(0);
     this.setGravityY(0);
 
     // Настраиваем размеры коллайдера
@@ -50,6 +50,11 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
   // Получить массу метеорита
   getMass(): number {
     return this.mass;
+  }
+
+  // Получить размер метеорита
+  getSize(): number {
+    return this.size;
   }
 
   update() {

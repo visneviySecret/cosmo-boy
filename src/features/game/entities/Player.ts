@@ -11,7 +11,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private size: number;
   private mass: number;
   private readonly MASS_MULTIPLIER = 0.5; // Множитель для расчета массы от размера
-  private readonly GRAVITY_CONSTANT = 0.2; // Константа гравитации
+  private readonly GRAVITY_CONSTANT = 5; // Константа гравитации
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -28,7 +28,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Настраиваем физические свойства
     this.setCollideWorldBounds(true);
-    this.setBounce(0.2);
+    this.setBounce(0);
 
     // Настраиваем размеры коллайдера
     this.setSize(this.size, this.size);
@@ -76,10 +76,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const normalizedDy = dy / distance;
 
     // Применяем силу
-    this.setVelocity(
-      this.body.velocity.x + normalizedDx * force,
-      this.body.velocity.y + normalizedDy * force
-    );
+    if (this.body) {
+      this.setVelocity(
+        this.body.velocity.x + normalizedDx * force,
+        this.body.velocity.y + normalizedDy * force
+      );
+    }
   }
 
   // Обновление состояния игрока
