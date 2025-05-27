@@ -23,8 +23,14 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Check build output
+        run: |
+          ls -la dist/
+          cat dist/index.html
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
+          clean: true
