@@ -72,7 +72,7 @@ const Game = React.memo(() => {
       // Создаем игрока
       player = new Player(this, {
         x: this.cameras.main.centerX - 300,
-        y: this.cameras.main.centerY + 400,
+        y: this.cameras.main.centerY + 100,
       });
 
       // Создаем линию наводки
