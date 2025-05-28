@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { calculateGravityForce } from "../utils/gravity";
 
 export interface MeteoriteConfig {
   size?: number;
@@ -10,7 +11,8 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 200;
   private size: number;
   private mass: number;
-  private readonly MASS_MULTIPLIER = 1; // Множитель для расчета массы от размера
+  private readonly MASS_MULTIPLIER = 5;
+  private readonly MIN_DISTANCE = 50;
 
   constructor(scene: Phaser.Scene, config: MeteoriteConfig) {
     super(scene, config.x, config.y, "meteorite");
@@ -45,6 +47,29 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
 
     // Устанавливаем текстуру для спрайта
     this.setTexture("meteorite");
+  }
+
+  // Расчет гравитационной силы для объекта
+  calculateGravityForce(target: Phaser.Physics.Arcade.Sprite): void {
+    if (!target.body?.mass) return;
+
+    const gravityForce = calculateGravityForce(
+      this.x,
+      this.y,
+      this.mass,
+      target.x,
+      target.y,
+      target.body.mass,
+      this.MIN_DISTANCE
+    );
+
+    // Применяем силу
+    if (target.body) {
+      target.setVelocity(
+        target.body.velocity.x + gravityForce.normalizedDx * gravityForce.force,
+        target.body.velocity.y + gravityForce.normalizedDy * gravityForce.force
+      );
+    }
   }
 
   // Получить массу метеорита
