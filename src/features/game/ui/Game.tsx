@@ -77,6 +77,7 @@ const Game = React.memo(() => {
 
       // Создаем линию наводки
       aimLine = new AimLine(this);
+      (this as any).aimLine = aimLine; // Сохраняем ссылку на AimLine в сцене
 
       // Добавляем коллизии между игроком и всеми астероидами
       asteroids.forEach((asteroid) => {

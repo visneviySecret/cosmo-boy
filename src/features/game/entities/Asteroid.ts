@@ -44,8 +44,22 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
 
     // Добавляем обработчики событий наведения
     this.setInteractive();
-    this.on('pointerover', this.showOutline);
-    this.on('pointerout', this.hideOutline);
+    this.on('pointerover', () => {
+      this.showOutline();
+      // Получаем ссылку на AimLine из сцены
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetAsteroid(this);
+      }
+    });
+    this.on('pointerout', () => {
+      this.hideOutline();
+      // Получаем ссылку на AimLine из сцены
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetAsteroid(null);
+      }
+    });
   }
 
   private createTemporaryGraphics() {

@@ -15,10 +15,15 @@ export class AimLine {
   private readonly ANIMATION_SPEED = 0.001; // Скорость анимации
   private currentLength: number;
   private animationTime: number = 0;
+  private targetAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.graphics = scene.add.graphics();
     this.currentLength = this.BASE_LENGTH;
+  }
+
+  setTargetAsteroid(asteroid: Phaser.Physics.Arcade.Sprite | null) {
+    this.targetAsteroid = asteroid;
   }
 
   addPowerup(): void {
@@ -32,28 +37,34 @@ export class AimLine {
     this.currentLength = this.BASE_LENGTH;
   }
 
-
   update(player: Player): void {
     const pointer = player.scene.input.activePointer;
 
-    const distance = Phaser.Math.Distance.Between(
-      player.x,
-      player.y,
-      pointer.worldX,
-      pointer.worldY
-    );
+    // Определяем конечную точку дуги
+    let endX: number;
+    let endY: number;
 
-    const endX =
-      distance > this.currentLength
-        ? player.x +
-        (pointer.worldX - player.x) * (this.currentLength / distance)
+    if (this.targetAsteroid) {
+      // Если есть целевой астероид, используем его центр как конечную точку
+      endX = this.targetAsteroid.x;
+      endY = this.targetAsteroid.y;
+    } else {
+      // Иначе используем позицию курсора
+      const distance = Phaser.Math.Distance.Between(
+        player.x,
+        player.y,
+        pointer.worldX,
+        pointer.worldY
+      );
+
+      endX = distance > this.currentLength
+        ? player.x + (pointer.worldX - player.x) * (this.currentLength / distance)
         : pointer.worldX;
 
-    const endY =
-      distance > this.currentLength
-        ? player.y +
-        (pointer.worldY - player.y) * (this.currentLength / distance)
+      endY = distance > this.currentLength
+        ? player.y + (pointer.worldY - player.y) * (this.currentLength / distance)
         : pointer.worldY;
+    }
 
     this.graphics.clear();
 
@@ -63,13 +74,10 @@ export class AimLine {
       this.animationTime = 0;
     }
 
-
     // Рисуем фиксированное количество точек по дуге
     for (let i = 0; i < this.DOT_COUNT; i++) {
-      // Добавляем смещение по времени к позиции точки
       const t = (i / (this.DOT_COUNT - 1) + this.animationTime) % 1;
 
-      // Вычисляем позицию точки на полукруге
       const x = player.x + (endX - player.x) * t;
       const y = player.y + (endY - player.y) * t - this.CURVE_HEIGHT * Math.sin(t * Math.PI);
 
@@ -79,7 +87,13 @@ export class AimLine {
 
     // Рисуем зеленую метку
     this.graphics.fillStyle(this.MARKER_COLOR, 1);
-    this.graphics.fillCircle(endX, endY, this.MARKER_RADIUS);
+    if (this.targetAsteroid) {
+      // Если есть целевой астероид, рисуем метку в его центре
+      this.graphics.fillCircle(this.targetAsteroid.x, this.targetAsteroid.y, this.MARKER_RADIUS);
+    } else {
+      // Иначе рисуем метку в конце линии
+      this.graphics.fillCircle(endX, endY, this.MARKER_RADIUS);
+    }
   }
 
   destroy(): void {
