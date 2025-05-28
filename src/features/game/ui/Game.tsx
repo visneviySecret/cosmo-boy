@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import styled from "styled-components";
 import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
+import { AimLine } from "../entities/AimLine";
 import { handleCollision } from "../utils/collisionHandler";
 
 const GameContainer = styled.div`
@@ -49,6 +50,7 @@ const Game = React.memo(() => {
 
     let asteroid: Asteroid;
     let player: Player;
+    let aimLine: AimLine;
 
     function create(this: Phaser.Scene) {
       // Создаем метеорит
@@ -63,6 +65,9 @@ const Game = React.memo(() => {
         y: this.cameras.main.centerY + 200,
       });
 
+      // Создаем линию наводки
+      aimLine = new AimLine(this);
+
       // Добавляем коллизию между игроком и метеоритом
       this.physics.add.collider(
         player,
@@ -71,6 +76,7 @@ const Game = React.memo(() => {
           const playerObj = obj1 as Player;
           const asteroidObj = obj2 as Asteroid;
           handleCollision(playerObj, asteroidObj);
+          aimLine.reset(); // Сбрасываем длину линии при столкновении
         },
         undefined,
         this
@@ -83,13 +89,15 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && asteroid) {
+      if (player && asteroid && aimLine) {
         asteroid.calculateGravityForce(player);
+        aimLine.update(player);
       }
     }
 
     return () => {
       if (gameRef.current) {
+        aimLine?.destroy();
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
