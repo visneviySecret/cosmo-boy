@@ -10,8 +10,8 @@ export class AimLine {
   private readonly MARKER_RADIUS = 15; // Радиус метки
   private readonly DOT_COLOR = 0xffffff;
   private readonly DOT_RADIUS = 5;
-  private readonly CURVE_HEIGHT = 400; // Высота дуги
-  private readonly DOT_COUNT = 30; // Фиксированное количество точек
+  private readonly CURVE_HEIGHT = 200; // Уменьшаем высоту дуги для более пологой формы
+  private readonly DOT_COUNT = 50; // Увеличиваем количество точек для более плавной линии
   private readonly ANIMATION_SPEED = 0.001; // Скорость анимации
   private currentLength: number;
   private animationTime: number = 0;
@@ -50,13 +50,13 @@ export class AimLine {
     const endX =
       distance > this.currentLength
         ? player.x +
-          (pointer.worldX - player.x) * (this.currentLength / distance)
+        (pointer.worldX - player.x) * (this.currentLength / distance)
         : pointer.worldX;
 
     const endY =
       distance > this.currentLength
         ? player.y +
-          (pointer.worldY - player.y) * (this.currentLength / distance)
+        (pointer.worldY - player.y) * (this.currentLength / distance)
         : pointer.worldY;
 
     this.graphics.clear();
@@ -77,11 +77,10 @@ export class AimLine {
     for (let i = 0; i < this.DOT_COUNT; i++) {
       // Добавляем смещение по времени к позиции точки
       const t = (i / (this.DOT_COUNT - 1) + this.animationTime) % 1;
+
+      // Вычисляем позицию точки на полукруге
       const x = player.x + (endX - player.x) * t;
-      const y =
-        player.y +
-        (endY - player.y) * t -
-        Math.sin(t * Math.PI) * currentCurveHeight;
+      const y = player.y + (endY - player.y) * t - this.CURVE_HEIGHT * Math.sin(t * Math.PI);
 
       this.graphics.fillStyle(this.DOT_COLOR, 1);
       this.graphics.fillCircle(x, y, this.DOT_RADIUS);
