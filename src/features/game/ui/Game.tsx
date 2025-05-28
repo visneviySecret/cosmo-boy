@@ -48,39 +48,51 @@ const Game = React.memo(() => {
 
     gameRef.current = new Phaser.Game(config);
 
-    let asteroid: Asteroid;
+    let asteroids: Asteroid[] = [];
     let player: Player;
     let aimLine: AimLine;
 
     function create(this: Phaser.Scene) {
-      // Создаем метеорит
-      asteroid = new Asteroid(this, {
-        x: this.cameras.main.centerX,
-        y: this.cameras.main.centerY + 600,
-      });
+      // Создаем астероиды
+      const asteroidPositions = [
+        {
+          x: this.cameras.main.centerX - 300,
+          y: this.cameras.main.centerY + 600,
+        },
+        {
+          x: this.cameras.main.centerX + 300,
+          y: this.cameras.main.centerY + 600,
+        },
+      ];
+
+      asteroids = asteroidPositions.map(
+        (pos) => new Asteroid(this, { x: pos.x, y: pos.y })
+      );
 
       // Создаем игрока
       player = new Player(this, {
-        x: this.cameras.main.centerX,
-        y: this.cameras.main.centerY + 200,
+        x: this.cameras.main.centerX - 300,
+        y: this.cameras.main.centerY + 400,
       });
 
       // Создаем линию наводки
       aimLine = new AimLine(this);
 
-      // Добавляем коллизию между игроком и метеоритом
-      this.physics.add.collider(
-        player,
-        asteroid,
-        (obj1: unknown, obj2: unknown) => {
-          const playerObj = obj1 as Player;
-          const asteroidObj = obj2 as Asteroid;
-          handleCollision(playerObj, asteroidObj);
-          aimLine.reset(); // Сбрасываем длину линии при столкновении
-        },
-        undefined,
-        this
-      );
+      // Добавляем коллизии между игроком и всеми астероидами
+      asteroids.forEach((asteroid) => {
+        this.physics.add.collider(
+          player,
+          asteroid,
+          (obj1: unknown, obj2: unknown) => {
+            const playerObj = obj1 as Player;
+            const asteroidObj = obj2 as Asteroid;
+            handleCollision(playerObj, asteroidObj);
+            aimLine.reset();
+          },
+          undefined,
+          this
+        );
+      });
 
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
@@ -89,8 +101,31 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && asteroid && aimLine) {
-        asteroid.calculateGravityForce(player);
+      if (player && asteroids.length > 0 && aimLine) {
+        // Находим ближайший астероид
+        let nearestAsteroid = asteroids[0];
+        let minDistance = Phaser.Math.Distance.Between(
+          player.x,
+          player.y,
+          nearestAsteroid.x,
+          nearestAsteroid.y
+        );
+
+        for (let i = 1; i < asteroids.length; i++) {
+          const distance = Phaser.Math.Distance.Between(
+            player.x,
+            player.y,
+            asteroids[i].x,
+            asteroids[i].y
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestAsteroid = asteroids[i];
+          }
+        }
+
+        // Применяем гравитацию только от ближайшего астероида
+        nearestAsteroid.calculateGravityForce(player);
         aimLine.update(player);
       }
     }
