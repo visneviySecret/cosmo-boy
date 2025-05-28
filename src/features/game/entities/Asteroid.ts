@@ -1,21 +1,21 @@
 import Phaser from "phaser";
 import { calculateGravityForce } from "../utils/gravity";
 
-export interface MeteoriteConfig {
+export interface AsteroidConfig {
   size?: number;
   x: number;
   y: number;
 }
 
-export class Meteorite extends Phaser.Physics.Arcade.Sprite {
+export class Asteroid extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 200;
   private size: number;
   private mass: number;
   private readonly MASS_MULTIPLIER = 5;
   private readonly MIN_DISTANCE = 50;
 
-  constructor(scene: Phaser.Scene, config: MeteoriteConfig) {
-    super(scene, config.x, config.y, "meteorite");
+  constructor(scene: Phaser.Scene, config: AsteroidConfig) {
+    super(scene, config.x, config.y, "asteroid");
 
     this.size = config.size || this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
@@ -24,7 +24,7 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    // Создаем временную графику для метеорита
+    // Создаем временную графику для астероида
     this.createTemporaryGraphics();
 
     // Настраиваем физические свойства
@@ -38,15 +38,15 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
   }
 
   private createTemporaryGraphics() {
-    // Создаем временную текстуру для метеорита
+    // Создаем временную текстуру для астероида
     const graphics = this.scene.add.graphics();
     graphics.fillStyle(0xcccccc, 1); // Светло-серый цвет
     graphics.fillCircle(this.size / 2, this.size / 2, this.size / 2);
-    graphics.generateTexture("meteorite", this.size, this.size);
+    graphics.generateTexture("asteroid", this.size, this.size);
     graphics.destroy();
 
     // Устанавливаем текстуру для спрайта
-    this.setTexture("meteorite");
+    this.setTexture("asteroid");
   }
 
   // Расчет гравитационной силы для объекта
@@ -72,18 +72,18 @@ export class Meteorite extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // Получить массу метеорита
+  // Получить массу астероида
   getMass(): number {
     return this.mass;
   }
 
-  // Получить размер метеорита
+  // Получить размер астероида
   getSize(): number {
     return this.size;
   }
 
   update() {
-    // Здесь будет логика обновления состояния метеорита
+    // Здесь будет логика обновления состояния астероида
   }
 
   destroy() {

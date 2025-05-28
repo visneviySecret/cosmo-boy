@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
-import { Meteorite } from "../entities/Meteorite";
+import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
 import { handleCollision } from "../utils/collisionHandler";
 
@@ -47,12 +47,12 @@ const Game = React.memo(() => {
 
     gameRef.current = new Phaser.Game(config);
 
-    let meteorite: Meteorite;
+    let asteroid: Asteroid;
     let player: Player;
 
     function create(this: Phaser.Scene) {
       // Создаем метеорит
-      meteorite = new Meteorite(this, {
+      asteroid = new Asteroid(this, {
         x: this.cameras.main.centerX,
         y: this.cameras.main.centerY + 600,
       });
@@ -66,11 +66,11 @@ const Game = React.memo(() => {
       // Добавляем коллизию между игроком и метеоритом
       this.physics.add.collider(
         player,
-        meteorite,
+        asteroid,
         (obj1: unknown, obj2: unknown) => {
           const playerObj = obj1 as Player;
-          const meteoriteObj = obj2 as Meteorite;
-          handleCollision(playerObj, meteoriteObj);
+          const asteroidObj = obj2 as Asteroid;
+          handleCollision(playerObj, asteroidObj);
         },
         undefined,
         this
@@ -83,8 +83,8 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && meteorite) {
-        meteorite.calculateGravityForce(player);
+      if (player && asteroid) {
+        asteroid.calculateGravityForce(player);
       }
     }
 
