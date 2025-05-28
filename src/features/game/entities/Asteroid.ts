@@ -13,6 +13,9 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
   private mass: number;
   private readonly MASS_MULTIPLIER = 5;
   private readonly MIN_DISTANCE = 50;
+  private graphics: Phaser.GameObjects.Graphics | null = null;
+  private outlineRotation: number = 0;
+  private readonly ROTATION_SPEED: number = 0.02;
 
   constructor(scene: Phaser.Scene, config: AsteroidConfig) {
     super(scene, config.x, config.y, "asteroid");
@@ -23,6 +26,9 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     // Добавляем спрайт в сцену и включаем физику
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    // Добавляем в список обновляемых объектов
+    scene.events.on('update', this.update, this);
 
     // Создаем временную графику для астероида
     this.createTemporaryGraphics();
@@ -35,6 +41,11 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     // Настраиваем размеры коллайдера
     this.setSize(this.size, this.size);
     this.setOffset(0, 0);
+
+    // Добавляем обработчики событий наведения
+    this.setInteractive();
+    this.on('pointerover', this.showOutline);
+    this.on('pointerout', this.hideOutline);
   }
 
   private createTemporaryGraphics() {
@@ -47,6 +58,38 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
 
     // Устанавливаем текстуру для спрайта
     this.setTexture("asteroid");
+  }
+
+  private showOutline() {
+    if (!this.graphics) {
+      this.graphics = this.scene.add.graphics();
+    }
+    this.graphics.clear();
+    this.graphics.lineStyle(4, 0x00ff00, 1);
+    const outlineRadius = (this.size / 2) + 10;
+
+    // Рисуем 4 полоски с равными промежутками
+    const segments = 4;
+    const segmentLength = (Math.PI * 2) / segments;
+    const gapLength = segmentLength * 0.2;
+
+    for (let i = 0; i < segments; i++) {
+      const startAngle = i * segmentLength + gapLength / 2 + this.outlineRotation;
+      const endAngle = (i + 1) * segmentLength - gapLength / 2 + this.outlineRotation;
+
+      this.graphics.beginPath();
+      this.graphics.arc(this.x, this.y, outlineRadius, startAngle, endAngle);
+      this.graphics.strokePath();
+    }
+  }
+
+  private hideOutline() {
+    if (this.graphics) {
+      this.graphics.clear();
+      this.graphics.destroy();
+      this.graphics = null;
+    }
+    this.outlineRotation = 0; // Сбрасываем угол вращения
   }
 
   // Расчет гравитационной силы для объекта
@@ -83,10 +126,18 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
-    // Здесь будет логика обновления состояния астероида
+    // Обновляем вращение обводки
+    if (this.graphics) {
+      this.outlineRotation += this.ROTATION_SPEED;
+      this.showOutline();
+    }
   }
 
   destroy() {
+    if (this.graphics) {
+      this.graphics.destroy();
+    }
+    this.scene.events.off('update', this.update, this);
     super.destroy();
   }
 }
