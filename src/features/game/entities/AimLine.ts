@@ -32,10 +32,6 @@ export class AimLine {
     this.currentLength = this.BASE_LENGTH;
   }
 
-  private smoothStep(x: number): number {
-    // Функция плавного перехода
-    return x * x * (3 - 2 * x);
-  }
 
   update(player: Player): void {
     const pointer = player.scene.input.activePointer;
@@ -67,11 +63,6 @@ export class AimLine {
       this.animationTime = 0;
     }
 
-    // Вычисляем высоту дуги с плавным переходом
-    const dx = Math.abs(pointer.worldX - player.x);
-    const rawHeightFactor = Math.min(1, dx / this.CURVE_HEIGHT);
-    const heightFactor = this.smoothStep(rawHeightFactor);
-    const currentCurveHeight = this.CURVE_HEIGHT * heightFactor;
 
     // Рисуем фиксированное количество точек по дуге
     for (let i = 0; i < this.DOT_COUNT; i++) {
