@@ -45,9 +45,9 @@ export class AimLine {
     let endY: number;
 
     if (this.targetAsteroid) {
-      // Если есть целевой астероид, используем его центр как конечную точку
+      // Если есть целевой астероид, используем его верхушку как конечную точку
       endX = this.targetAsteroid.x;
-      endY = this.targetAsteroid.y;
+      endY = this.targetAsteroid.y - (this.targetAsteroid as any).getSize() / 2;
     } else {
       // Иначе используем позицию курсора
       const distance = Phaser.Math.Distance.Between(
@@ -57,13 +57,17 @@ export class AimLine {
         pointer.worldY
       );
 
-      endX = distance > this.currentLength
-        ? player.x + (pointer.worldX - player.x) * (this.currentLength / distance)
-        : pointer.worldX;
+      endX =
+        distance > this.currentLength
+          ? player.x +
+            (pointer.worldX - player.x) * (this.currentLength / distance)
+          : pointer.worldX;
 
-      endY = distance > this.currentLength
-        ? player.y + (pointer.worldY - player.y) * (this.currentLength / distance)
-        : pointer.worldY;
+      endY =
+        distance > this.currentLength
+          ? player.y +
+            (pointer.worldY - player.y) * (this.currentLength / distance)
+          : pointer.worldY;
     }
 
     this.graphics.clear();
@@ -79,7 +83,10 @@ export class AimLine {
       const t = (i / (this.DOT_COUNT - 1) + this.animationTime) % 1;
 
       const x = player.x + (endX - player.x) * t;
-      const y = player.y + (endY - player.y) * t - this.CURVE_HEIGHT * Math.sin(t * Math.PI);
+      const y =
+        player.y +
+        (endY - player.y) * t -
+        this.CURVE_HEIGHT * Math.sin(t * Math.PI);
 
       this.graphics.fillStyle(this.DOT_COLOR, 1);
       this.graphics.fillCircle(x, y, this.DOT_RADIUS);
@@ -88,8 +95,12 @@ export class AimLine {
     // Рисуем зеленую метку
     this.graphics.fillStyle(this.MARKER_COLOR, 1);
     if (this.targetAsteroid) {
-      // Если есть целевой астероид, рисуем метку в его центре
-      this.graphics.fillCircle(this.targetAsteroid.x, this.targetAsteroid.y, this.MARKER_RADIUS);
+      // Если есть целевой астероид, рисуем метку на его верхушке
+      this.graphics.fillCircle(
+        this.targetAsteroid.x,
+        this.targetAsteroid.y - (this.targetAsteroid as any).getSize() / 2,
+        this.MARKER_RADIUS
+      );
     } else {
       // Иначе рисуем метку в конце линии
       this.graphics.fillCircle(endX, endY, this.MARKER_RADIUS);
