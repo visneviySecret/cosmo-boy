@@ -26,6 +26,10 @@ export class AimLine {
     this.targetAsteroid = asteroid;
   }
 
+  getTargetAsteroid(): Phaser.Physics.Arcade.Sprite | null {
+    return this.targetAsteroid;
+  }
+
   addPowerup(): void {
     this.currentLength = Math.min(
       this.currentLength + this.POWERUP_LENGTH_INCREASE,

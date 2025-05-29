@@ -11,8 +11,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private mass: number;
   private readonly MASS_MULTIPLIER = 1;
   private readonly JUMP_FORCE = 700;
+  private readonly CURVE_HEIGHT = 200; // Высота дуги, как в AimLine
   private isOnMeteorite: boolean = false;
   private isJumping: boolean = false;
+  private jumpStartX: number = 0;
+  private jumpStartY: number = 0;
+  private jumpTargetX: number = 0;
+  private jumpTargetY: number = 0;
+  private jumpProgress: number = 0;
+  private readonly JUMP_SPEED = 0.02; // Скорость движения по дуге
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -34,6 +41,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.input.keyboard?.on("keydown-SPACE", () => {
       this.jump();
     });
+
+    // Добавляем обработчик клика левой кнопкой мыши
+    scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.jumpToAsteroid();
+      }
+    });
+
+    // Добавляем обработчик обновления для движения по дуге
+    scene.events.on("update", this.update, this);
   }
 
   private createTemporaryGraphics() {
@@ -54,10 +71,70 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  private jumpToAsteroid(): void {
+    if (this.isOnMeteorite && !this.isJumping && this.body) {
+      const aimLine = (this.scene as any).aimLine;
+      if (!aimLine) return;
+
+      const targetAsteroid = aimLine.getTargetAsteroid();
+      if (!targetAsteroid) return;
+
+      this.isJumping = true;
+      this.isOnMeteorite = false;
+
+      // Сохраняем начальную и конечную точки прыжка
+      this.jumpStartX = this.x;
+      this.jumpStartY = this.y;
+      this.jumpTargetX = targetAsteroid.x;
+      // Приземляемся точно на верхушку астероида
+      this.jumpTargetY = targetAsteroid.y - targetAsteroid.height / 2;
+      this.jumpProgress = 0;
+
+      // Отключаем физику на время прыжка
+      this.body.enable = false;
+    }
+  }
+
+  update(): void {
+    if (this.isJumping && !this.isOnMeteorite) {
+      // Обновляем прогресс прыжка
+      this.jumpProgress += this.JUMP_SPEED;
+
+      // Включаем физику незадолго до столкновения
+      if (this.jumpProgress >= 0.8 && this.body && !this.body.enable) {
+        this.body.enable = true;
+      }
+
+      if (this.jumpProgress >= 1) {
+        // Завершаем прыжок
+        this.isJumping = false;
+        if (this.body) {
+          this.body.enable = true;
+        }
+        return;
+      }
+
+      // Вычисляем позицию по дуге
+      const x =
+        this.jumpStartX +
+        (this.jumpTargetX - this.jumpStartX) * this.jumpProgress;
+      const y =
+        this.jumpStartY +
+        (this.jumpTargetY - this.jumpStartY) * this.jumpProgress -
+        this.CURVE_HEIGHT * Math.sin(this.jumpProgress * Math.PI);
+
+      // Устанавливаем новую позицию
+      this.setPosition(x, y);
+    }
+  }
+
   setIsOnMeteorite(value: boolean): void {
     this.isOnMeteorite = value;
     if (value) {
       this.isJumping = false; // Сбрасываем флаг прыжка при приземлении на метеорит
+      if (this.body && this.body.enable) {
+        this.body.enable = true; // Включаем физику обратно
+      }
     }
   }
 
@@ -70,6 +147,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   destroy() {
+    this.scene.events.off("update", this.update, this);
     super.destroy();
   }
 }
