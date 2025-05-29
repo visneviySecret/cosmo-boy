@@ -69,11 +69,14 @@ const Game = React.memo(() => {
         (pos) => new Asteroid(this, { x: pos.x, y: pos.y })
       );
 
-      // Создаем игрока
+      // Создаем игрока на первом астероиде
+      const PLAYER_SIZE = 100; // Размер игрока
       player = new Player(this, {
-        x: this.cameras.main.centerX - 300,
-        y: this.cameras.main.centerY + 100,
+        x: asteroidPositions[0].x,
+        y:
+          asteroidPositions[0].y - asteroids[0].getSize() / 2 - PLAYER_SIZE / 2, // Размещаем игрока на поверхности астероида
       });
+      player.setIsOnMeteorite(true); // Устанавливаем флаг, что игрок находится на астероиде
 
       // Создаем линию наводки
       aimLine = new AimLine(this);
@@ -103,30 +106,6 @@ const Game = React.memo(() => {
 
     function update(this: Phaser.Scene) {
       if (player && asteroids.length > 0 && aimLine) {
-        // Находим ближайший астероид
-        let nearestAsteroid = asteroids[0];
-        let minDistance = Phaser.Math.Distance.Between(
-          player.x,
-          player.y,
-          nearestAsteroid.x,
-          nearestAsteroid.y
-        );
-
-        for (let i = 1; i < asteroids.length; i++) {
-          const distance = Phaser.Math.Distance.Between(
-            player.x,
-            player.y,
-            asteroids[i].x,
-            asteroids[i].y
-          );
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestAsteroid = asteroids[i];
-          }
-        }
-
-        // Применяем гравитацию только от ближайшего астероида
-        nearestAsteroid.calculateGravityForce(player);
         aimLine.update(player);
       }
     }
