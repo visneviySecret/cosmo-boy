@@ -5,6 +5,7 @@ import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
 import { handleCollision } from "../utils/collisionHandler";
+import { generateAsteroids } from "../utils/asteroidGenerator";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -53,36 +54,23 @@ const Game = React.memo(() => {
     let aimLine: AimLine;
 
     function create(this: Phaser.Scene) {
-      // Создаем астероиды
-      const asteroidPositions = [
-        {
-          x: this.cameras.main.centerX - 300,
-          y: this.cameras.main.centerY + 600,
-        },
-        {
-          x: this.cameras.main.centerX + 300,
-          y: this.cameras.main.centerY + 600,
-        },
-      ];
-
-      asteroids = asteroidPositions.map(
-        (pos) => new Asteroid(this, { x: pos.x, y: pos.y })
-      );
-
-      // Создаем игрока на первом астероиде
-      const PLAYER_SIZE = 100; // Размер игрока
-      player = new Player(this, {
-        x: asteroidPositions[0].x,
-        y:
-          asteroidPositions[0].y - asteroids[0].getSize() / 2 - PLAYER_SIZE / 2, // Размещаем игрока на поверхности астероида
-      });
-      player.setIsOnMeteorite(true); // Устанавливаем флаг, что игрок находится на астероиде
-
       // Создаем линию наводки
       aimLine = new AimLine(this);
       (this as any).aimLine = aimLine; // Сохраняем ссылку на AimLine в сцене
 
-      // Добавляем коллизии между игроком и всеми астероидами
+      // Генерируем астероиды
+      asteroids = generateAsteroids(this);
+
+      // Создаем игрока на левом астероиде
+      const PLAYER_SIZE = 100; // Размер игрока
+      const leftAsteroid = asteroids[0];
+      player = new Player(this, {
+        x: leftAsteroid.x,
+        y: leftAsteroid.y - leftAsteroid.getSize() / 2 - PLAYER_SIZE / 2,
+      });
+      player.setIsOnMeteorite(true);
+
+      // Настраиваем коллизии между игроком и астероидами
       asteroids.forEach((asteroid) => {
         this.physics.add.collider(
           player,
