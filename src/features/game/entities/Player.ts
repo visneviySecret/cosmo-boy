@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { ArcCalculator } from "../utils/ArcCalculator";
+import { RotationManager } from "../utils/RotationManager";
 
 export interface PlayerConfig {
   x: number;
@@ -22,6 +23,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpProgress: number = 0;
   private readonly JUMP_SPEED = 0.02; // Скорость движения по дуге
   private arcCalculator: ArcCalculator;
+  private rotationManager: RotationManager;
+  private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -29,6 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.size = this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
+    this.rotationManager = new RotationManager();
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -58,8 +62,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private createTemporaryGraphics() {
     const graphics = this.scene.add.graphics();
-    graphics.fillStyle(0x00ff00, 1); // Зеленый цвет для отличия от метеорита
-    graphics.fillRect(0, 0, this.size, this.size);
+
+    // Первый прямоугольник (верхний)
+    graphics.fillStyle(0x00ff00, 1);
+    graphics.fillRect(0, 0, this.size, this.size / 2);
+
+    // Второй прямоугольник (нижний)
+    graphics.fillStyle(0x00cc00, 1); // Немного темнее зеленый для контраста
+    graphics.fillRect(0, this.size / 2, this.size, this.size / 2);
+
     graphics.generateTexture("player", this.size, this.size);
     graphics.destroy();
 
@@ -84,12 +95,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       this.isJumping = true;
       this.isOnMeteorite = false;
+      this.currentAsteroid = targetAsteroid;
 
       // Сохраняем начальную и конечную точки прыжка
       this.jumpStartX = this.x;
       this.jumpStartY = this.y;
       this.jumpTargetX = targetAsteroid.x;
-      // Приземляемся точно на верхушку астероида
       this.jumpTargetY = targetAsteroid.y - targetAsteroid.height / 2;
       this.jumpProgress = 0;
 
@@ -114,6 +125,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.body) {
           this.body.enable = true;
         }
+        if (this.currentAsteroid) {
+          this.rotationManager.setFinalRotation(this, this.currentAsteroid);
+        }
         return;
       }
 
@@ -127,16 +141,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       // Устанавливаем новую позицию
       this.setPosition(point.x, point.y);
+
+      if (this.currentAsteroid) {
+        this.rotationManager.updateRotation(
+          this,
+          this.currentAsteroid,
+          this.jumpProgress
+        );
+      }
     }
   }
 
   setIsOnMeteorite(value: boolean): void {
     this.isOnMeteorite = value;
     if (value) {
-      this.isJumping = false; // Сбрасываем флаг прыжка при приземлении на метеорит
+      this.isJumping = false;
       if (this.body && this.body.enable) {
-        this.body.enable = true; // Включаем физику обратно
+        this.body.enable = true;
       }
+      // Сбрасываем поворот при отрыве от астероида
+      this.currentAsteroid = null;
     }
   }
 
