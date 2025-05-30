@@ -4,7 +4,9 @@ import { AimLine } from "../entities/AimLine";
 
 export function generateAsteroids(
   scene: Phaser.Scene,
-  aimLine: AimLine
+  aimLine: AimLine,
+  startX: number = 0,
+  startY: number = 0
 ): Asteroid[] {
   const ASTEROID_COUNT = 20;
   const asteroids: Asteroid[] = [];
@@ -14,9 +16,10 @@ export function generateAsteroids(
   const FIRST_X_MAX = (screenWidth * 3) / 4;
   const FIXED_Y = screenHeight * 0.75; // Фиксированная высота для всех астероидов
 
-  // Создаем первый астероид в случайной позиции по X
-  const firstX = Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
-  const firstAsteroid = new Asteroid(scene, { x: firstX, y: FIXED_Y });
+  // Создаем первый астероид в указанной позиции или случайной
+  const firstX = startX || Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
+  const firstY = startY || FIXED_Y;
+  const firstAsteroid = new Asteroid(scene, { x: firstX, y: firstY });
   asteroids.push(firstAsteroid);
 
   // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
@@ -32,6 +35,7 @@ export function generateAsteroids(
 
     // Максимальное расстояние не должно превышать максимальную длину прыжка
     const maxDistance = aimLine.getCurrentLength(); // Максимальная длина прыжка
+
     // Генерируем новую позицию на основе предыдущего астероида
     const minDistance = Math.max(prevAsteroidSize + newAsteroidSize) / 2;
 

@@ -107,18 +107,21 @@ const Game = React.memo(() => {
       if (player && asteroids.length > 0 && aimLine) {
         aimLine.update(player);
 
-        const rightmostAsteroid = asteroids.reduce((prev, current) =>
-          current.x > prev.x ? current : prev
-        );
+        const rightmostAsteroid = asteroids[asteroids.length - 1];
 
-        // Если правый астероид виден, генерируем новые астероиды
+        // Если самый правый астероид появился на экране, генерируем новые астероиды
         if (rightmostAsteroid.isVisible()) {
-          const newAsteroids = generateAsteroids(this, aimLine);
+          const newAsteroids = generateAsteroids(
+            this,
+            aimLine,
+            rightmostAsteroid.x + aimLine.getCurrentLength(),
+            rightmostAsteroid.y
+          );
           newAsteroids.forEach((newAsteroid) => {
-            // Смещаем новые астероиды вправо от самого правого
-            newAsteroid.x += rightmostAsteroid.x + aimLine.getCurrentLength();
             asteroids.push(newAsteroid);
 
+            // TODO: код коллизии повторяется в функции create
+            // TODO: перенести создание коллизии с игроком в создание асттероида
             // Добавляем коллизию с игроком
             this.physics.add.collider(
               player,
@@ -135,6 +138,7 @@ const Game = React.memo(() => {
           });
         }
 
+        // TODO: скрывать невидимые астероиды слева от игрока вместо удаления
         // Удаляем невидимые астероиды слева от игрока
         asteroids = asteroids.filter((asteroid) => {
           if (
