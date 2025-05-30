@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Player } from "./Player";
+import { ArcCalculator } from "../utils/ArcCalculator";
 
 export class AimLine {
   private graphics: Phaser.GameObjects.Graphics;
@@ -16,10 +17,12 @@ export class AimLine {
   private currentLength: number;
   private animationTime: number = 0;
   private targetAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
+  private arcCalculator: ArcCalculator;
 
   constructor(scene: Phaser.Scene) {
     this.graphics = scene.add.graphics();
     this.currentLength = this.BASE_LENGTH;
+    this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
   }
 
   setTargetAsteroid(asteroid: Phaser.Physics.Arcade.Sprite | null) {
@@ -82,19 +85,31 @@ export class AimLine {
       this.animationTime = 0;
     }
 
-    // Рисуем фиксированное количество точек по дуге
-    for (let i = 0; i < this.DOT_COUNT; i++) {
-      const t = (i / (this.DOT_COUNT - 1) + this.animationTime) % 1;
+    const points = this.arcCalculator.calculateArcPoints(
+      player.x,
+      player.y,
+      endX,
+      endY,
+      this.DOT_COUNT
+    );
 
-      const x = player.x + (endX - player.x) * t;
-      const y =
-        player.y +
-        (endY - player.y) * t -
-        this.CURVE_HEIGHT * Math.sin(t * Math.PI);
+    points.forEach((point, index) => {
+      const t = (index / (this.DOT_COUNT - 1) + this.animationTime) % 1;
+      const animatedPoint = this.arcCalculator.calculateArcPoint(
+        player.x,
+        player.y,
+        endX,
+        endY,
+        t
+      );
 
       this.graphics.fillStyle(this.DOT_COLOR, 1);
-      this.graphics.fillCircle(x, y, this.DOT_RADIUS);
-    }
+      this.graphics.fillCircle(
+        animatedPoint.x,
+        animatedPoint.y,
+        this.DOT_RADIUS
+      );
+    });
 
     // Рисуем зеленую метку
     this.graphics.fillStyle(this.MARKER_COLOR, 1);

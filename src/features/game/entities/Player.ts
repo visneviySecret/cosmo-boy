@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { ArcCalculator } from "../utils/ArcCalculator";
 
 export interface PlayerConfig {
   x: number;
@@ -20,12 +21,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpTargetY: number = 0;
   private jumpProgress: number = 0;
   private readonly JUMP_SPEED = 0.02; // Скорость движения по дуге
+  private arcCalculator: ArcCalculator;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
 
     this.size = this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
+    this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -114,17 +117,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return;
       }
 
-      // Вычисляем позицию по дуге
-      const x =
-        this.jumpStartX +
-        (this.jumpTargetX - this.jumpStartX) * this.jumpProgress;
-      const y =
-        this.jumpStartY +
-        (this.jumpTargetY - this.jumpStartY) * this.jumpProgress -
-        this.CURVE_HEIGHT * Math.sin(this.jumpProgress * Math.PI);
+      const point = this.arcCalculator.calculateArcPoint(
+        this.jumpStartX,
+        this.jumpStartY,
+        this.jumpTargetX,
+        this.jumpTargetY,
+        this.jumpProgress
+      );
 
       // Устанавливаем новую позицию
-      this.setPosition(x, y);
+      this.setPosition(point.x, point.y);
     }
   }
 
