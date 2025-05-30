@@ -35,7 +35,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.createTemporaryGraphics();
 
-    this.setCollideWorldBounds(true);
+    this.setCollideWorldBounds(false);
     this.setBounce(0);
 
     this.setSize(this.size, this.size);
@@ -151,5 +151,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   destroy() {
     this.scene.events.off("update", this.update, this);
     super.destroy();
+  }
+
+  // Проверяет, находится ли игрок в пределах видимости камеры
+  isVisible(): boolean {
+    const camera = this.scene.cameras.main;
+    const margin = this.size * 2;
+    return (
+      this.x + margin >= camera.scrollX &&
+      this.x - margin <= camera.scrollX + camera.width &&
+      this.y + margin >= camera.scrollY &&
+      this.y - margin <= camera.scrollY + camera.height
+    );
   }
 }

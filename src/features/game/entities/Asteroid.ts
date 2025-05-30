@@ -32,7 +32,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     this.createTemporaryGraphics();
 
     // Настраиваем физические свойства
-    this.setCollideWorldBounds(true);
+    this.setCollideWorldBounds(false);
     this.setBounce(0);
     this.setGravityY(0);
 
@@ -130,5 +130,17 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     }
     this.scene.events.off("update", this.update, this);
     super.destroy();
+  }
+
+  // Проверяет, находится ли астероид в пределах видимости камеры
+  isVisible(): boolean {
+    const camera = this.scene.cameras.main;
+    const margin = this.size * 2; // Добавляем запас для плавного появления/исчезновения
+    return (
+      this.x + margin >= camera.scrollX &&
+      this.x - margin <= camera.scrollX + camera.width &&
+      this.y + margin >= camera.scrollY &&
+      this.y - margin <= camera.scrollY + camera.height
+    );
   }
 }
