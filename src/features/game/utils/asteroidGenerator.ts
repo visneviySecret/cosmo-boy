@@ -22,14 +22,17 @@ export function generateAsteroids(
   // Создаем первый астероид в указанной позиции или случайной
   const firstX = startX || Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
   const firstY = startY || FIXED_Y;
-  const firstAsteroid = new Asteroid(scene, { x: firstX, y: firstY });
+  const firstAsteroid = new Asteroid(scene, {
+    x: firstX,
+    y: firstY,
+    size: randomizeSize(player),
+  });
   createCollision(scene, player, firstAsteroid, aimLine);
   asteroids.push(firstAsteroid);
 
   // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
   for (let i = 1; i < ASTEROID_COUNT; i++) {
     const prevAsteroid = asteroids[i - 1];
-
     const maxDistance = aimLine.getCurrentLength();
     const minDistance =
       Math.max(prevAsteroid.getSize() + prevAsteroid.getSize()) / 2;
@@ -38,10 +41,19 @@ export function generateAsteroids(
     const yOffset = Phaser.Math.Between(-minDistance, minDistance);
     const y = FIXED_Y + yOffset;
 
-    const asteroid = new Asteroid(scene, { x, y });
+    const asteroid = new Asteroid(scene, {
+      x,
+      y,
+      size: randomizeSize(player),
+    });
     createCollision(scene, player, asteroid, aimLine);
     asteroids.push(asteroid);
   }
 
   return asteroids;
+}
+function randomizeSize(player: Player): number {
+  const minSize = player.getSize();
+  const maxSize = player.getSize() * 4;
+  return Phaser.Math.Between(minSize, maxSize);
 }
