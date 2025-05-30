@@ -59,7 +59,7 @@ const Game = React.memo(() => {
       (this as any).aimLine = aimLine; // Сохраняем ссылку на AimLine в сцене
 
       // Генерируем астероиды
-      asteroids = generateAsteroids(this);
+      asteroids = generateAsteroids(this, aimLine);
 
       // Создаем игрока на левом астероиде
       const PLAYER_SIZE = 100; // Размер игрока

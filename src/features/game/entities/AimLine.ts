@@ -68,6 +68,10 @@ export class AimLine {
     return this.targetAsteroid;
   }
 
+  getCurrentLength(): number {
+    return this.currentLength;
+  }
+
   addPowerup(): void {
     this.currentLength = Math.min(
       this.currentLength + this.POWERUP_LENGTH_INCREASE,
@@ -128,7 +132,7 @@ export class AimLine {
       this.DOT_COUNT
     );
 
-    points.forEach((point, index) => {
+    points.forEach((_, index) => {
       const t = (index / (this.DOT_COUNT - 1) + this.animationTime) % 1;
       const animatedPoint = this.arcCalculator.calculateArcPoint(
         player.x,
