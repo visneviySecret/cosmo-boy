@@ -9,8 +9,9 @@ export function generateAsteroids(
   const ASTEROID_COUNT = 5;
   const asteroids: Asteroid[] = [];
   const screenHeight = scene.cameras.main.height;
-  const FIRST_X_MIN = 1000;
-  const FIRST_X_MAX = 2000;
+  const screenWidth = scene.cameras.main.width;
+  const FIRST_X_MIN = screenWidth / 4;
+  const FIRST_X_MAX = (screenWidth * 3) / 4;
 
   // Создаем первый астероид в случайной позиции
   const firstX = Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
