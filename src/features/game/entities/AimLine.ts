@@ -18,15 +18,50 @@ export class AimLine {
   private animationTime: number = 0;
   private targetAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
   private arcCalculator: ArcCalculator;
+  private scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene) {
+    this.scene = scene;
     this.graphics = scene.add.graphics();
     this.currentLength = this.BASE_LENGTH;
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
   }
 
   setTargetAsteroid(asteroid: Phaser.Physics.Arcade.Sprite | null) {
-    this.targetAsteroid = asteroid;
+    if (asteroid) {
+      // Получаем игрока из сцены
+      const player = this.scene.children.list.find(
+        (child) => child instanceof Player
+      ) as Player;
+
+      if (player) {
+        // Получаем размеры астероида и игрока
+        const asteroidSize = (asteroid as any).getSize();
+        const playerSize = player.getSize();
+
+        // Вычисляем расстояние между центрами объектов
+        const distance = Phaser.Math.Distance.Between(
+          player.x,
+          player.y,
+          asteroid.x,
+          asteroid.y
+        );
+
+        // Вычитаем половины размеров объектов, чтобы получить расстояние между их поверхностями
+        const surfaceDistance = distance - (asteroidSize + playerSize) / 2;
+
+        // Проверяем, что расстояние не отрицательное (объекты не пересекаются)
+        const finalDistance = Math.max(0, surfaceDistance);
+
+        if (finalDistance <= this.currentLength) {
+          this.targetAsteroid = asteroid;
+        } else {
+          this.targetAsteroid = null;
+        }
+      }
+    } else {
+      this.targetAsteroid = null;
+    }
   }
 
   getTargetAsteroid(): Phaser.Physics.Arcade.Sprite | null {
