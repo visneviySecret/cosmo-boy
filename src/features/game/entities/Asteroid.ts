@@ -10,7 +10,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
   private readonly DEFAULT_SIZE = 200;
   private size: number;
   private mass: number;
-  private readonly MASS_MULTIPLIER = 5;
+  private readonly MASS_MULTIPLIER = 1.4;
   private graphics: Phaser.GameObjects.Graphics | null = null;
   private outlineRotation: number = 0;
   private readonly ROTATION_SPEED: number = 0.02;
