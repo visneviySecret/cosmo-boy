@@ -28,32 +28,16 @@ export function generateAsteroids(
 
   // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
   for (let i = 1; i < ASTEROID_COUNT; i++) {
-    // Получаем предыдущий астероид
     const prevAsteroid = asteroids[i - 1];
-    const prevAsteroidSize = prevAsteroid.getSize();
 
-    // Создаем временный астероид для получения его размера
-    const tempAsteroid = new Asteroid(scene, { x: 0, y: 0 });
-    const newAsteroidSize = tempAsteroid.getSize();
-    tempAsteroid.destroy();
-
-    // Максимальное расстояние не должно превышать максимальную длину прыжка
-    const maxDistance = aimLine.getCurrentLength(); // Максимальная длина прыжка
-
-    // Генерируем новую позицию на основе предыдущего астероида
-    const minDistance = Math.max(prevAsteroidSize + newAsteroidSize) / 2;
-
-    // Генерируем случайное расстояние в допустимых пределах
+    const maxDistance = aimLine.getCurrentLength();
+    const minDistance =
+      Math.max(prevAsteroid.getSize() + prevAsteroid.getSize()) / 2;
     const distance = Phaser.Math.Between(minDistance, maxDistance);
-
-    // Вычисляем новую позицию по X (всегда правее предыдущего)
     const x = prevAsteroid.x + distance;
-
-    // Генерируем случайное отклонение по высоте
     const yOffset = Phaser.Math.Between(-minDistance, minDistance);
     const y = FIXED_Y + yOffset;
 
-    // Создаем новый астероид
     const asteroid = new Asteroid(scene, { x, y });
     createCollision(scene, player, asteroid, aimLine);
     asteroids.push(asteroid);
