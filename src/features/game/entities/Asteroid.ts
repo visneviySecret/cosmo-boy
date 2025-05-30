@@ -14,12 +14,14 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
   private graphics: Phaser.GameObjects.Graphics | null = null;
   private outlineRotation: number = 0;
   private readonly ROTATION_SPEED: number = 0.02;
+  private textureKey: string;
 
   constructor(scene: Phaser.Scene, config: AsteroidConfig) {
     super(scene, config.x, config.y, "asteroid");
 
     this.size = config.size || this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
+    this.textureKey = `asteroid_${this.size}_${Math.random().toString(16)}`;
 
     // Добавляем спрайт в сцену и включаем физику
     scene.add.existing(this);
@@ -65,11 +67,11 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     const graphics = this.scene.add.graphics();
     graphics.fillStyle(0xcccccc, 1); // Светло-серый цвет
     graphics.fillCircle(this.size / 2, this.size / 2, this.size / 2);
-    graphics.generateTexture("asteroid", this.size, this.size);
+    graphics.generateTexture(this.textureKey, this.size, this.size);
     graphics.destroy();
 
     // Устанавливаем текстуру для спрайта
-    this.setTexture("asteroid");
+    this.setTexture(this.textureKey);
   }
 
   private showOutline() {
