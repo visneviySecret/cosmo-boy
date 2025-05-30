@@ -8,59 +8,45 @@ export function generateAsteroids(
 ): Asteroid[] {
   const ASTEROID_COUNT = 5;
   const asteroids: Asteroid[] = [];
-  const screenWidth = scene.cameras.main.width;
   const screenHeight = scene.cameras.main.height;
+  const FIRST_X_MIN = 1000;
+  const FIRST_X_MAX = 2000;
 
   // Создаем первый астероид в случайной позиции
-  const firstX = Phaser.Math.Between(100, screenWidth - 100);
+  const firstX = Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
   const firstY = Phaser.Math.Between(100, screenHeight - 100);
   const firstAsteroid = new Asteroid(scene, { x: firstX, y: firstY });
   asteroids.push(firstAsteroid);
 
-  // Создаем остальные астероиды на расстоянии не более currentLength от существующих
+  // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
   for (let i = 1; i < ASTEROID_COUNT; i++) {
-    let validPosition = false;
-    let x = 0;
-    let y = 0;
-    let tempAsteroid: Asteroid | null = null;
+    // Получаем предыдущий астероид
+    const prevAsteroid = asteroids[i - 1];
+    const prevAsteroidSize = prevAsteroid.getSize();
 
-    while (!validPosition) {
-      x = Phaser.Math.Between(100, screenWidth - 100);
-      y = Phaser.Math.Between(100, screenHeight - 100);
+    // Создаем временный астероид для получения его размера
+    const tempAsteroid = new Asteroid(scene, { x: 0, y: 0 });
+    const newAsteroidSize = tempAsteroid.getSize();
+    tempAsteroid.destroy();
 
-      // Создаем временный астероид для проверки
-      tempAsteroid = new Asteroid(scene, { x, y });
-      const newAsteroidSize = tempAsteroid.getSize();
+    // Генерируем новую позицию на основе предыдущего астероида
+    const minDistance = Math.max(prevAsteroidSize, newAsteroidSize) / 2; // Минимальное расстояние - половина размера большего астероида
+    const maxDistance =
+      aimLine.getCurrentLength() - (prevAsteroidSize + newAsteroidSize) / 2; // Максимальное расстояние с учетом размеров астероидов
 
-      // Проверяем расстояние до всех существующих астероидов
-      validPosition = asteroids.every((asteroid) => {
-        const distance = Phaser.Math.Distance.Between(
-          x,
-          y,
-          asteroid.x,
-          asteroid.y
-        );
-        // Учитываем размеры астероидов при проверке расстояния
-        const asteroidSize = asteroid.getSize();
-        const surfaceDistance = distance - (asteroidSize + newAsteroidSize) / 2;
-        const finalDistance = Math.max(0, surfaceDistance);
+    // Генерируем случайное расстояние в допустимых пределах
+    const distance = Phaser.Math.Between(minDistance, maxDistance);
 
-        // Проверяем, что расстояние не меньше половины размера большего астероида
-        const minDistance = Math.max(asteroidSize, newAsteroidSize) / 2;
+    // Определяем направление (влево или вправо)
+    const direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
 
-        return (
-          finalDistance >= minDistance &&
-          finalDistance <= aimLine.getCurrentLength()
-        );
-      });
+    // Вычисляем новую позицию
+    const x = prevAsteroid.x + distance * direction;
+    const y = Phaser.Math.Between(100, screenHeight - 100);
 
-      if (validPosition) {
-        asteroids.push(tempAsteroid);
-      } else {
-        tempAsteroid.destroy();
-        tempAsteroid = null;
-      }
-    }
+    // Создаем новый астероид
+    const asteroid = new Asteroid(scene, { x, y });
+    asteroids.push(asteroid);
   }
 
   return asteroids;
