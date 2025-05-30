@@ -58,18 +58,21 @@ const Game = React.memo(() => {
       aimLine = new AimLine(this);
       (this as any).aimLine = aimLine;
 
-      // Генерируем астероиды
-      asteroids = generateAsteroids(this, aimLine);
-
-      // Создаем игрока на левом астероиде
-      const leftAsteroid = asteroids[0];
+      // Создаем игрока в начальной позиции
       player = new Player(this, {
-        x: leftAsteroid.x,
-        y: leftAsteroid.y - leftAsteroid.getSize() / 2,
+        x: this.cameras.main.width / 4,
+        y: this.cameras.main.height * 0.75,
       });
-      // Устанавливаем позицию игрока с учетом его размера
-      player.y -= player.getSize() / 2;
       player.setIsOnMeteorite(true);
+
+      // Генерируем астероиды
+      asteroids = generateAsteroids(this, aimLine, player);
+
+      // Размещаем игрока на первом астероиде
+      const leftAsteroid = asteroids[0];
+      player.x = leftAsteroid.x;
+      player.y =
+        leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
 
       // Настраиваем камеру для следования за игроком
       this.cameras.main.startFollow(player, true);
@@ -80,22 +83,6 @@ const Game = React.memo(() => {
         Number.MAX_SAFE_INTEGER,
         this.cameras.main.height
       );
-
-      // Настраиваем коллизии между игроком и астероидами
-      asteroids.forEach((asteroid) => {
-        this.physics.add.collider(
-          player,
-          asteroid,
-          (obj1: unknown, obj2: unknown) => {
-            const playerObj = obj1 as Player;
-            const asteroidObj = obj2 as Asteroid;
-            handleCollision(playerObj, asteroidObj);
-            aimLine.reset();
-          },
-          undefined,
-          this
-        );
-      });
 
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
@@ -114,31 +101,13 @@ const Game = React.memo(() => {
           const newAsteroids = generateAsteroids(
             this,
             aimLine,
+            player,
             rightmostAsteroid.x + aimLine.getCurrentLength(),
             rightmostAsteroid.y
           );
-          newAsteroids.forEach((newAsteroid) => {
-            asteroids.push(newAsteroid);
-
-            // TODO: код коллизии повторяется в функции create
-            // TODO: перенести создание коллизии с игроком в создание асттероида
-            // Добавляем коллизию с игроком
-            this.physics.add.collider(
-              player,
-              newAsteroid,
-              (obj1: unknown, obj2: unknown) => {
-                const playerObj = obj1 as Player;
-                const asteroidObj = obj2 as Asteroid;
-                handleCollision(playerObj, asteroidObj);
-                aimLine.reset();
-              },
-              undefined,
-              this
-            );
-          });
+          asteroids.push(...newAsteroids);
         }
 
-        // TODO: скрывать невидимые астероиды слева от игрока вместо удаления
         // Удаляем невидимые астероиды слева от игрока
         asteroids = asteroids.filter((asteroid) => {
           if (

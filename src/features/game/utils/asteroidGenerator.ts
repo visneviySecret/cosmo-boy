@@ -1,10 +1,13 @@
 import Phaser from "phaser";
 import { Asteroid } from "../entities/Asteroid";
 import { AimLine } from "../entities/AimLine";
+import { Player } from "../entities/Player";
+import { createCollision } from "./collisionHandler";
 
 export function generateAsteroids(
   scene: Phaser.Scene,
   aimLine: AimLine,
+  player: Player,
   startX: number = 0,
   startY: number = 0
 ): Asteroid[] {
@@ -20,6 +23,7 @@ export function generateAsteroids(
   const firstX = startX || Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
   const firstY = startY || FIXED_Y;
   const firstAsteroid = new Asteroid(scene, { x: firstX, y: firstY });
+  createCollision(scene, player, firstAsteroid, aimLine);
   asteroids.push(firstAsteroid);
 
   // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
@@ -51,6 +55,7 @@ export function generateAsteroids(
 
     // Создаем новый астероид
     const asteroid = new Asteroid(scene, { x, y });
+    createCollision(scene, player, asteroid, aimLine);
     asteroids.push(asteroid);
   }
 

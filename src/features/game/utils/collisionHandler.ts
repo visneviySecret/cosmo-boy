@@ -1,5 +1,7 @@
 import { Player } from "../entities/Player";
 import { Asteroid } from "../entities/Asteroid";
+import { AimLine } from "../entities/AimLine";
+import Phaser from "phaser";
 
 export function handleCollision(player: Player, asteroid: Asteroid) {
   // Сохраняем скорости перед столкновением
@@ -20,4 +22,24 @@ export function handleCollision(player: Player, asteroid: Asteroid) {
 
   // Устанавливаем флаг нахождения на метеорите
   player.setIsOnMeteorite(true);
+}
+
+export function createCollision(
+  scene: Phaser.Scene,
+  player: Player,
+  asteroid: Asteroid,
+  aimLine: AimLine
+) {
+  scene.physics.add.collider(
+    player,
+    asteroid,
+    (obj1: unknown, obj2: unknown) => {
+      const playerObj = obj1 as Player;
+      const asteroidObj = obj2 as Asteroid;
+      handleCollision(playerObj, asteroidObj);
+      aimLine.reset();
+    },
+    undefined,
+    scene
+  );
 }
