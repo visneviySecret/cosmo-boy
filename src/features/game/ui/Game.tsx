@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
-import { handleCollision } from "../utils/collisionHandler";
 import { generateAsteroids } from "../utils/asteroidGenerator";
 
 const GameContainer = styled.div`
