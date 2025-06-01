@@ -19,29 +19,22 @@ export function generateAsteroids(
   const screenWidth = scene.cameras.main.width;
   const FIRST_X_MIN = screenWidth / 4;
   const FIRST_X_MAX = (screenWidth * 3) / 4;
-  const FIXED_Y = screenHeight * 0.75; // Фиксированная высота для всех астероидов
+  const FIXED_Y = screenHeight * 0.75;
 
-  // Создаем первый астероид в указанной позиции или случайной
+  // Создаем первый астероид
   const firstX = startX || Phaser.Math.Between(FIRST_X_MIN, FIRST_X_MAX);
   const firstY = startY || FIXED_Y;
-  const firstAsteroid = new Asteroid(scene, {
-    x: firstX,
-    y: firstY,
-    size: randomizeSize(player),
-  });
-  createCollision(scene, player, firstAsteroid, aimLine);
+  const firstAsteroid = createAsteroid(
+    scene,
+    firstX,
+    firstY,
+    player,
+    aimLine,
+    foodGroup
+  );
   asteroids.push(firstAsteroid);
 
-  if (Math.random() < 0.3) {
-    const food = new Food(
-      scene,
-      firstX,
-      firstY - firstAsteroid.getSize() / 2 - 20
-    );
-    foodGroup.add(food);
-  }
-
-  // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
+  // Создаем остальные астероиды
   for (let i = 1; i < ASTEROID_COUNT; i++) {
     const prevAsteroid = asteroids[i - 1];
     const asteroidSize = randomizeSize(player);
@@ -53,18 +46,8 @@ export function generateAsteroids(
     const yOffset = Phaser.Math.Between(-minDistance, minDistance);
     const y = FIXED_Y + yOffset;
 
-    const asteroid = new Asteroid(scene, {
-      x,
-      y,
-      size: asteroidSize,
-    });
-    createCollision(scene, player, asteroid, aimLine);
+    const asteroid = createAsteroid(scene, x, y, player, aimLine, foodGroup);
     asteroids.push(asteroid);
-
-    if (Math.random() < 0.3) {
-      const food = new Food(scene, x, y - asteroid.getSize() / 2 - 20);
-      foodGroup.add(food);
-    }
   }
 
   return { asteroids, foodGroup };
@@ -74,4 +57,35 @@ function randomizeSize(player: Player): number {
   const minSize = player.getSize();
   const maxSize = player.getSize() * 4;
   return Phaser.Math.Between(minSize, maxSize);
+}
+
+function createAsteroid(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  player: Player,
+  aimLine: AimLine,
+  foodGroup: Phaser.Physics.Arcade.Group
+): Asteroid {
+  const asteroid = new Asteroid(scene, {
+    x,
+    y,
+    size: randomizeSize(player),
+  });
+  createCollision(scene, player, asteroid, aimLine);
+  tryAddFood(scene, x, y, asteroid.getSize(), foodGroup);
+  return asteroid;
+}
+
+function tryAddFood(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  asteroidSize: number,
+  foodGroup: Phaser.Physics.Arcade.Group
+): void {
+  if (Math.random() < 0.3) {
+    const food = new Food(scene, x, y - asteroidSize / 2 - 20);
+    foodGroup.add(food);
+  }
 }
