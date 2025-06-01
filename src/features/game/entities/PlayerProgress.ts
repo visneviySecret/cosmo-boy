@@ -20,14 +20,17 @@ export class PlayerProgress {
     this.experience = 0;
   }
 
-  public handleLevelUp(currentSize: number, updateSize: () => void): boolean {
+  public handleLevelUp(
+    currentSize: number,
+    playerLvlUpper: () => void
+  ): boolean {
     const maxRadius = currentSize / 2;
     const currentRadius = Math.min(maxRadius, this.experience * 10);
 
     if (currentRadius === maxRadius) {
       this.level++;
       this.resetExperience();
-      updateSize();
+      playerLvlUpper();
       if (this.aimLine) {
         this.aimLine.increaseAimLine();
       }

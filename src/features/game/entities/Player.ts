@@ -23,7 +23,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpTargetX: number = 0;
   private jumpTargetY: number = 0;
   private jumpProgress: number = 0;
-  private readonly JUMP_SPEED = 0.02; // Скорость движения по дуге
+  private readonly INITIAL_JUMP_SPEED = 0.02; // Скорость движения по дуге
+  private jumpSpeed: number = this.INITIAL_JUMP_SPEED;
+  private readonly JUMP_SPEED_DECREASE = 0.00025;
   private arcCalculator: ArcCalculator;
   private rotationManager: RotationManager;
   private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
@@ -133,7 +135,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   update(): void {
     if (this.isJumping && !this.isOnMeteorite) {
       // Обновляем прогресс прыжка
-      this.jumpProgress += this.JUMP_SPEED;
+      this.jumpProgress += this.jumpSpeed;
 
       // Включаем физику незадолго до столкновения
       if (this.jumpProgress >= 0.8 && this.body && !this.body.enable) {
@@ -212,8 +214,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
-    this.progress.handleLevelUp(this.size, this.updateSize.bind(this));
+    this.progress.handleLevelUp(this.size, this.playerLvlUpper.bind(this));
     this.updateRoundness();
+  }
+
+  private playerLvlUpper(): void {
+    this.updateSize();
+    this.decreaseJumpSpeed();
   }
 
   private updateSize(): void {
@@ -221,6 +228,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.setSize(this.size, this.size);
     this.createTemporaryGraphics();
+  }
+
+  private decreaseJumpSpeed(): void {
+    this.jumpSpeed = this.jumpSpeed - this.JUMP_SPEED_DECREASE;
   }
 
   private updateRoundness(): void {
