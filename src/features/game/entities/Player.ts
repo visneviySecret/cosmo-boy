@@ -33,7 +33,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
 
-    this.progress = new PlayerProgress();
+    const aimLine = (scene as any).aimLine;
+    this.progress = new PlayerProgress(aimLine);
     this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
@@ -211,13 +212,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
-    this.progress.checkLevelUp(this.size);
-    this.updateSize();
+    // TODO: не красиво, что методы левел ап и обновление размера вызываются в разных местах
+    if (this.progress.checkLevelUp(this.size)) {
+      this.progress.levelUp();
+      this.updateSize();
+    }
+    this.updateRoundness();
   }
 
   private updateSize(): void {
-    this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
+    this.size = this.size * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;
+    this.setSize(this.size, this.size);
+    this.createTemporaryGraphics();
+  }
+
+  private updateRoundness(): void {
     this.setSize(this.size, this.size);
     this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
     this.createTemporaryGraphics();

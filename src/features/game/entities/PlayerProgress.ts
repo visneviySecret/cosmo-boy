@@ -1,8 +1,15 @@
+import { AimLine } from "./AimLine";
+
 export class PlayerProgress {
   private level: number = 1;
   private experience: number = 0;
   private collectedItems: number = 0;
   private readonly BASE_SIZE: number = 100;
+  private aimLine: AimLine | null = null;
+
+  constructor(aimLine?: AimLine) {
+    this.aimLine = aimLine || null;
+  }
 
   public addExperience(amount: number): void {
     this.experience += amount;
@@ -16,6 +23,9 @@ export class PlayerProgress {
   public levelUp(): void {
     this.level++;
     this.resetExperience();
+    if (this.aimLine) {
+      this.aimLine.increaseAimLine();
+    }
   }
 
   public checkLevelUp(currentSize: number): boolean {
@@ -23,7 +33,6 @@ export class PlayerProgress {
     const currentRadius = Math.min(maxRadius, this.experience * 10);
 
     if (currentRadius >= maxRadius) {
-      this.levelUp();
       return true;
     }
     return false;

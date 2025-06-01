@@ -30,7 +30,6 @@ export function generateAsteroids(
     firstX,
     firstY,
     player,
-    aimLine,
     foodGroup
   );
   asteroids.push(firstAsteroid);
@@ -47,7 +46,7 @@ export function generateAsteroids(
     const yOffset = Phaser.Math.Between(-minDistance, minDistance);
     const y = FIXED_Y + yOffset;
 
-    const asteroid = createAsteroid(scene, x, y, player, aimLine, foodGroup);
+    const asteroid = createAsteroid(scene, x, y, player, foodGroup);
     asteroids.push(asteroid);
   }
 
@@ -65,7 +64,6 @@ function createAsteroid(
   x: number,
   y: number,
   player: Player,
-  aimLine: AimLine,
   foodGroup: Phaser.Physics.Arcade.Group
 ): Asteroid {
   const asteroid = new Asteroid(scene, {
@@ -73,7 +71,7 @@ function createAsteroid(
     y,
     size: randomizeSize(player),
   });
-  createCollision(scene, player, asteroid, aimLine);
+  createCollision(scene, player, asteroid);
   tryAddFood(scene, x, y, asteroid.getSize(), foodGroup);
   return asteroid;
 }

@@ -1,6 +1,5 @@
 import { Player } from "../entities/Player";
 import { Asteroid } from "../entities/Asteroid";
-import { AimLine } from "../entities/AimLine";
 import Phaser from "phaser";
 
 export function handleCollision(player: Player, asteroid: Asteroid) {
@@ -27,8 +26,7 @@ export function handleCollision(player: Player, asteroid: Asteroid) {
 export function createCollision(
   scene: Phaser.Scene,
   player: Player,
-  asteroid: Asteroid,
-  aimLine: AimLine
+  asteroid: Asteroid
 ) {
   scene.physics.add.collider(
     player,
@@ -37,7 +35,6 @@ export function createCollision(
       const playerObj = obj1 as Player;
       const asteroidObj = obj2 as Asteroid;
       handleCollision(playerObj, asteroidObj);
-      aimLine.reset();
     },
     undefined,
     scene
