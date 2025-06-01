@@ -85,7 +85,7 @@ function tryAddFood(
   foodGroup: Phaser.Physics.Arcade.Group
 ): void {
   if (Math.random() < 0.3) {
-    const food = new Food(scene, x, y - asteroidSize / 2 - 20);
+    const food = new Food(scene, x, y - asteroidSize / 2 - 40);
     foodGroup.add(food);
   }
 }
