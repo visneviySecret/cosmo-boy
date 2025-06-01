@@ -28,9 +28,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private rotationManager: RotationManager;
   private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
   private progress: PlayerProgress;
+  private textureKey: string;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
+
+    this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
 
     this.size = this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
@@ -66,19 +69,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private createTemporaryGraphics() {
     const graphics = this.scene.add.graphics();
+    const experience = this.progress.getExperience();
 
-    // Первый прямоугольник (верхний)
+    // Рассчитываем радиус скругления на основе опыта
+    const maxRadius = this.size / 2;
+    const radius = Math.min(maxRadius, experience * 5);
+    const radiusParamsTop = { tl: radius, tr: radius, bl: 0, br: 0 };
+    const radiusParamsBottom = { tl: 0, tr: 0, bl: radius, br: radius };
+
+    // Рисуем верхний скругленный прямоугольник
     graphics.fillStyle(0x00ff00, 1);
-    graphics.fillRect(0, 0, this.size, this.size / 2);
+    graphics.fillRoundedRect(0, 0, this.size, this.size / 2, radiusParamsTop);
 
-    // Второй прямоугольник (нижний)
-    graphics.fillStyle(0x00cc00, 1); // Немного темнее зеленый для контраста
-    graphics.fillRect(0, this.size / 2, this.size, this.size / 2);
+    // Рисуем нижний скругленный прямоугольник
+    graphics.fillStyle(0x00cc00, 1);
+    graphics.fillRoundedRect(
+      0,
+      this.size / 2,
+      this.size,
+      this.size / 2,
+      radiusParamsBottom
+    );
 
-    graphics.generateTexture("player", this.size, this.size);
+    graphics.generateTexture(this.textureKey, this.size, this.size);
     graphics.destroy();
 
-    this.setTexture("player");
+    this.setTexture(this.textureKey);
   }
 
   private jump(): void {
@@ -196,6 +212,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
     this.updateSize();
+    // Перерисовываем игрока при получении опыта
+    this.createTemporaryGraphics();
   }
 
   private updateSize(): void {
@@ -204,7 +222,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.size = newSize;
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.setSize(this.size, this.size);
-    this.createTemporaryGraphics(); // Пересоздаем графику с новым размером
+    this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
+    this.createTemporaryGraphics();
   }
 
   public getLevel(): number {
