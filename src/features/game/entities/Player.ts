@@ -212,11 +212,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
-    // TODO: не красиво, что методы левел ап и обновление размера вызываются в разных местах
-    if (this.progress.checkLevelUp(this.size)) {
-      this.progress.levelUp();
-      this.updateSize();
-    }
+    this.progress.handleLevelUp(this.size, this.updateSize.bind(this));
     this.updateRoundness();
   }
 
