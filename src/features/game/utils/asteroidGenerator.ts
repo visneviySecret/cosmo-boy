@@ -3,7 +3,8 @@ import { Asteroid } from "../entities/Asteroid";
 import { AimLine } from "../entities/AimLine";
 import { Player } from "../entities/Player";
 import { createCollision } from "./collisionHandler";
-import { Food } from "../entities/Food";
+import { YellowCan } from "../entities/YellowCan";
+import { PurpleTube } from "../entities/PurpleTube";
 
 export function generateAsteroids(
   scene: Phaser.Scene,
@@ -84,8 +85,16 @@ function tryAddFood(
   asteroidSize: number,
   foodGroup: Phaser.Physics.Arcade.Group
 ): void {
-  if (Math.random() < 0.3) {
-    const food = new Food(scene, x, y - asteroidSize / 2 - 40);
-    foodGroup.add(food);
+  const random = Math.random();
+  const totalChance = YellowCan.getSpawnChance() + PurpleTube.getSpawnChance();
+
+  if (random < totalChance) {
+    if (random < PurpleTube.getSpawnChance()) {
+      const purpleTube = new PurpleTube(scene, x, y - asteroidSize / 2 - 40);
+      foodGroup.add(purpleTube);
+    } else {
+      const yellowCan = new YellowCan(scene, x, y - asteroidSize / 2 - 40);
+      foodGroup.add(yellowCan);
+    }
   }
 }
