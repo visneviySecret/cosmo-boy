@@ -5,6 +5,7 @@ import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
 import { generateAsteroids } from "../utils/asteroidGenerator";
+import { createFoodCollision } from "../utils/foodCollisionHandler";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -64,8 +65,28 @@ const Game = React.memo(() => {
       });
       player.setIsOnMeteorite(true);
 
-      // Генерируем астероиды
-      asteroids = generateAsteroids(this, aimLine, player);
+      // Создаем текст для отображения счётчика
+      const scoreText = this.add.text(16, 16, "Собрано: 0", {
+        fontSize: "32px",
+        color: "#fff",
+        stroke: "#000",
+        strokeThickness: 4,
+      });
+      scoreText.setScrollFactor(0); // Фиксируем текст на экране
+
+      // Сохраняем ссылку на текст в сцене
+      (this as any).scoreText = scoreText;
+
+      // Генерируем астероиды и еду
+      const { asteroids: initialAsteroids, foodGroup } = generateAsteroids(
+        this,
+        aimLine,
+        player
+      );
+      asteroids = initialAsteroids;
+
+      // Добавляем обработчик столкновений с едой
+      createFoodCollision(this, player, foodGroup);
 
       // Размещаем игрока на первом астероиде
       const leftAsteroid = asteroids[0];
@@ -97,7 +118,7 @@ const Game = React.memo(() => {
 
         // Если самый правый астероид появился на экране, генерируем новые астероиды
         if (rightmostAsteroid.isVisible()) {
-          const newAsteroids = generateAsteroids(
+          const { asteroids: newAsteroids, foodGroup } = generateAsteroids(
             this,
             aimLine,
             player,
@@ -105,6 +126,9 @@ const Game = React.memo(() => {
             rightmostAsteroid.y
           );
           asteroids.push(...newAsteroids);
+
+          // Добавляем обработчик столкновений для новой группы еды
+          createFoodCollision(this, player, foodGroup);
         }
 
         // Удаляем невидимые астероиды слева от игрока

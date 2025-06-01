@@ -3,6 +3,7 @@ import { Asteroid } from "../entities/Asteroid";
 import { AimLine } from "../entities/AimLine";
 import { Player } from "../entities/Player";
 import { createCollision } from "./collisionHandler";
+import { Food } from "../entities/Food";
 
 export function generateAsteroids(
   scene: Phaser.Scene,
@@ -10,9 +11,10 @@ export function generateAsteroids(
   player: Player,
   startX: number = 0,
   startY: number = 0
-): Asteroid[] {
+): { asteroids: Asteroid[]; foodGroup: Phaser.Physics.Arcade.Group } {
   const ASTEROID_COUNT = 20;
   const asteroids: Asteroid[] = [];
+  const foodGroup = scene.physics.add.group();
   const screenHeight = scene.cameras.main.height;
   const screenWidth = scene.cameras.main.width;
   const FIRST_X_MIN = screenWidth / 4;
@@ -29,6 +31,15 @@ export function generateAsteroids(
   });
   createCollision(scene, player, firstAsteroid, aimLine);
   asteroids.push(firstAsteroid);
+
+  if (Math.random() < 0.3) {
+    const food = new Food(
+      scene,
+      firstX,
+      firstY - firstAsteroid.getSize() / 2 - 20
+    );
+    foodGroup.add(food);
+  }
 
   // Создаем остальные астероиды на расстоянии не более currentLength от предыдущего
   for (let i = 1; i < ASTEROID_COUNT; i++) {
@@ -49,10 +60,16 @@ export function generateAsteroids(
     });
     createCollision(scene, player, asteroid, aimLine);
     asteroids.push(asteroid);
+
+    if (Math.random() < 0.3) {
+      const food = new Food(scene, x, y - asteroid.getSize() / 2 - 20);
+      foodGroup.add(food);
+    }
   }
 
-  return asteroids;
+  return { asteroids, foodGroup };
 }
+
 function randomizeSize(player: Player): number {
   const minSize = player.getSize();
   const maxSize = player.getSize() * 4;

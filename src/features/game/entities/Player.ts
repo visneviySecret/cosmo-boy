@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import { ArcCalculator } from "../utils/ArcCalculator";
 import { RotationManager } from "../utils/RotationManager";
+import { PlayerProgress } from "./PlayerProgress";
+import { Food } from "./Food";
 
 export interface PlayerConfig {
   x: number;
@@ -25,6 +27,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private arcCalculator: ArcCalculator;
   private rotationManager: RotationManager;
   private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
+  private progress: PlayerProgress;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
@@ -33,6 +36,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
     this.rotationManager = new RotationManager();
+    this.progress = new PlayerProgress();
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -187,5 +191,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.y + margin >= camera.scrollY &&
       this.y - margin <= camera.scrollY + camera.height
     );
+  }
+
+  public collectFood(food: Food): void {
+    this.progress.addExperience(food.getValue());
+    this.updateSize();
+  }
+
+  private updateSize(): void {
+    const level = this.progress.getLevel();
+    const newSize = this.DEFAULT_SIZE * (1 + (level - 1) * 0.1); // Увеличиваем размер на 10% за уровень
+    this.size = newSize;
+    this.mass = this.size * this.MASS_MULTIPLIER;
+    this.setSize(this.size, this.size);
+    this.createTemporaryGraphics(); // Пересоздаем графику с новым размером
+  }
+
+  public getLevel(): number {
+    return this.progress.getLevel();
+  }
+
+  public getExperience(): number {
+    return this.progress.getExperience();
+  }
+
+  public getExperienceToNextLevel(): number {
+    return this.progress.getExperienceToNextLevel();
+  }
+
+  public getCollectedItems(): number {
+    return this.progress.getCollectedItems();
   }
 }
