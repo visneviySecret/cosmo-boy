@@ -1,32 +1,32 @@
 export class PlayerProgress {
   private level: number = 1;
   private experience: number = 0;
-  private experienceToNextLevel: number = 100;
   private collectedItems: number = 0;
-
-  constructor() {
-    this.calculateNextLevelRequirement();
-  }
+  private readonly BASE_SIZE: number = 100;
 
   public addExperience(amount: number): void {
     this.experience += amount;
     this.collectedItems++;
-
-    while (this.experience >= this.experienceToNextLevel) {
-      this.levelUp();
-    }
   }
 
-  private levelUp(): void {
+  private resetExperience(): void {
+    this.experience = 0;
+  }
+
+  public levelUp(): void {
     this.level++;
-    this.experience -= this.experienceToNextLevel;
-    this.calculateNextLevelRequirement();
+    this.resetExperience();
   }
 
-  private calculateNextLevelRequirement(): void {
-    this.experienceToNextLevel = Math.floor(
-      100 * Math.pow(1.5, this.level - 1)
-    );
+  public checkLevelUp(currentSize: number): boolean {
+    const maxRadius = currentSize / 2;
+    const currentRadius = Math.min(maxRadius, this.experience * 10);
+
+    if (currentRadius >= maxRadius) {
+      this.levelUp();
+      return true;
+    }
+    return false;
   }
 
   public getLevel(): number {
@@ -37,11 +37,18 @@ export class PlayerProgress {
     return this.experience;
   }
 
-  public getExperienceToNextLevel(): number {
-    return this.experienceToNextLevel;
-  }
-
   public getCollectedItems(): number {
     return this.collectedItems;
+  }
+
+  public getNextSize(): number {
+    return Math.floor(this.BASE_SIZE * (1 + this.level * 0.1));
+  }
+
+  public getSizeMultiplier(): number {
+    if (this.level === 1) {
+      return 1;
+    }
+    return 1.5 - (this.level - 1) * 0.1;
   }
 }

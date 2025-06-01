@@ -33,13 +33,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
     super(scene, config.x, config.y, "player");
 
+    this.progress = new PlayerProgress();
+    this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
+    this.mass = this.size * this.MASS_MULTIPLIER;
     this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
 
-    this.size = this.DEFAULT_SIZE;
-    this.mass = this.size * this.MASS_MULTIPLIER;
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
     this.rotationManager = new RotationManager();
-    this.progress = new PlayerProgress();
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -73,7 +73,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Рассчитываем радиус скругления на основе опыта
     const maxRadius = this.size / 2;
-    const radius = Math.min(maxRadius, experience * 5);
+    const radius = Math.min(maxRadius, experience * 10);
     const radiusParamsTop = { tl: radius, tr: radius, bl: 0, br: 0 };
     const radiusParamsBottom = { tl: 0, tr: 0, bl: radius, br: radius };
 
@@ -211,15 +211,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
+    this.progress.checkLevelUp(this.size);
     this.updateSize();
-    // Перерисовываем игрока при получении опыта
-    this.createTemporaryGraphics();
   }
 
   private updateSize(): void {
-    const level = this.progress.getLevel();
-    const newSize = this.DEFAULT_SIZE * (1 + (level - 1) * 0.1); // Увеличиваем размер на 10% за уровень
-    this.size = newSize;
+    this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.setSize(this.size, this.size);
     this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
@@ -232,10 +229,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getExperience(): number {
     return this.progress.getExperience();
-  }
-
-  public getExperienceToNextLevel(): number {
-    return this.progress.getExperienceToNextLevel();
   }
 
   public getCollectedItems(): number {
