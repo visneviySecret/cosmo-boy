@@ -18,6 +18,7 @@ const LevelEditor: React.FC = () => {
   const levelRef = useRef<Level>(new Level());
   const platformsRef = useRef<Platform[]>([]);
   const sceneRef = useRef<Phaser.Scene | null>(null);
+  const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem } = useStore();
 
   useEffect(() => {
@@ -34,6 +35,21 @@ const LevelEditor: React.FC = () => {
         preload: function () {},
         create: function () {
           sceneRef.current = this;
+
+          // Создаем спрайт для предварительного просмотра
+          previewRef.current = this.add.sprite(0, 0, "");
+          previewRef.current.setAlpha(0.5);
+          previewRef.current.setVisible(false);
+
+          // Обработчик движения мыши
+          this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+            if (previewRef.current) {
+              previewRef.current.setPosition(pointer.x, pointer.y);
+              previewRef.current.setVisible(true);
+            }
+          });
+
+          // Обработчик клика
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
             let platform;
             const cfg = { x: pointer.x, y: pointer.y };
@@ -46,7 +62,13 @@ const LevelEditor: React.FC = () => {
             levelRef.current.addPlatform({ ...cfg, type: editorItem });
           });
         },
-        update: function () {},
+        update: function (this: Phaser.Scene) {
+          // Обновляем текстуру предварительного просмотра при изменении выбранного элемента
+          if (previewRef.current && editorItem) {
+            createPreviewTexture(this, editorItem);
+            previewRef.current.setTexture("preview");
+          }
+        },
       },
       physics: { default: "arcade" },
     };
@@ -94,6 +116,22 @@ const LevelEditor: React.FC = () => {
       <EditorCanvas ref={phaserRef} />
     </EditorContainer>
   );
+};
+
+const createPreviewTexture = (
+  scene: Phaser.Scene,
+  editorItem: EditorItem
+): void => {
+  const graphics = scene.add.graphics();
+  if (editorItem === EditorItem.ASTEROID) {
+    graphics.fillStyle(0xcccccc, 1);
+    graphics.fillCircle(100, 100, 100);
+  } else {
+    graphics.fillStyle(0x00ff00, 1);
+    graphics.fillRect(0, 0, 200, 200);
+  }
+  graphics.generateTexture("preview", 200, 200);
+  graphics.destroy();
 };
 
 export default LevelEditor;
