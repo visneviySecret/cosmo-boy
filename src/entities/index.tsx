@@ -1,4 +1,4 @@
 export {
   default as PlatformTypeSelector,
   PlatformType,
-} from "./PlatformTypeSelector";
+} from "./PlatformTypeSelector/PlatformTypeSelector";
