@@ -196,7 +196,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   destroy() {
-    this.scene.events.off("update", this.update, this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.off("update", this.update, this);
+    }
     super.destroy();
   }
 

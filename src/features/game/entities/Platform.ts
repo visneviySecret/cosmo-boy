@@ -109,7 +109,9 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
     if (this.graphics) {
       this.graphics.destroy();
     }
-    this.scene.events.off("update", this.update, this);
+    if (this.scene && this.scene.events) {
+      this.scene.events.off("update", this.update, this);
+    }
     super.destroy();
   }
 }
