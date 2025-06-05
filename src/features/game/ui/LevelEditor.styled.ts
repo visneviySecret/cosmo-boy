@@ -4,6 +4,9 @@ export const EditorContainer = styled.div`
   position: relative;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 `;
 
 export const EditorPanel = styled.div`
@@ -33,4 +36,6 @@ export const EditorButton = styled.button`
 export const EditorCanvas = styled.div`
   width: 100vw;
   height: 100vh;
+  margin: 0;
+  padding: 0;
 `;

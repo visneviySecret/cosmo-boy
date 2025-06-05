@@ -21,8 +21,12 @@ const LevelEditor: React.FC = () => {
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
       parent: phaserRef.current!,
       scene: {
         preload: function () {},
@@ -39,7 +43,15 @@ const LevelEditor: React.FC = () => {
       physics: { default: "arcade" },
     };
     const game = new Phaser.Game(config);
+
+    // Добавляем обработчик resize
+    const handleResize = () => {
+      game.scale.resize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
     return () => {
+      window.removeEventListener("resize", handleResize);
       game.destroy(true);
     };
   }, []);
@@ -54,10 +66,8 @@ const LevelEditor: React.FC = () => {
     if (json && sceneRef.current) {
       const level = Level.fromJSON(json);
       levelRef.current = level;
-      // Удаляем старые платформы
       platformsRef.current.forEach((p) => p.destroy());
       platformsRef.current = [];
-      // Добавляем платформы из уровня
       level.getPlatforms().forEach((cfg: PlatformConfig) => {
         const platform = new Platform(sceneRef.current!, cfg);
         platformsRef.current.push(platform);
