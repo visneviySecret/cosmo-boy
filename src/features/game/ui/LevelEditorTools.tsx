@@ -13,29 +13,23 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   onSave,
   onLoad,
 }) => {
-  const { editorItem, setEditorItem } = useStore();
+  const { setEditorItem } = useStore();
 
   return (
     <>
       <EditorToolsWrapper>
-        <Button
-          onClick={() => setEditorItem(EditorItem.ASTEROID)}
-          variant={editorItem === EditorItem.ASTEROID ? "primary" : "secondary"}
-        >
+        <Button onClick={() => setEditorItem(EditorItem.ASTEROID)}>
           Астероид
         </Button>
-        <Button
-          onClick={() => setEditorItem(EditorItem.PLATFORM)}
-          variant={editorItem === EditorItem.PLATFORM ? "primary" : "secondary"}
-        >
+        <Button onClick={() => setEditorItem(EditorItem.PLATFORM)}>
           Платформа
         </Button>
       </EditorToolsWrapper>
       <EditorPanel>
-        <Button onClick={onSave} variant="primary">
+        <Button onClick={onSave} $variant="primary">
           Сохранить
         </Button>
-        <Button onClick={onLoad} variant="secondary">
+        <Button onClick={onLoad} $variant="secondary">
           Загрузить
         </Button>
       </EditorPanel>
