@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Game from "./Game";
 import LevelEditor from "./levelEditor";
 import styled from "styled-components";
+import { Button } from "../../../shared";
 
 const GameRootWrapper = styled.div`
   position: absolute;
@@ -13,13 +14,13 @@ const GameRootWrapper = styled.div`
 `;
 
 export const GameRoot: React.FC = () => {
-  const [mode, setMode] = useState<"game" | "editor">("game");
+  const [mode, setMode] = useState<"game" | "editor">("editor");
 
   return (
     <div>
       <GameRootWrapper>
-        <button onClick={() => setMode("game")}>Играть</button>
-        <button onClick={() => setMode("editor")}>Редактор</button>
+        <Button onClick={() => setMode("game")}>Играть</Button>
+        <Button onClick={() => setMode("editor")}>Редактор</Button>
       </GameRootWrapper>
       {mode === "game" ? <Game /> : <LevelEditor />}
     </div>

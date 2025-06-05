@@ -1,22 +1,22 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import { Level } from "../entities/Level";
 import { Platform } from "../entities/Platform";
+import { Asteroid } from "../entities/Asteroid";
 import type { PlatformConfig } from "../entities/Platform";
-import {
-  EditorContainer,
-  EditorPanel,
-  EditorButton,
-  EditorCanvas,
-} from "./LevelEditor.styled";
+import { EditorContainer, EditorCanvas } from "./LevelEditor.styled";
+import { LevelEditorTools } from "./LevelEditorTools";
 
 const LEVEL_STORAGE_KEY = "custom_level";
+
+type PlatformConfigWithType = PlatformConfig & { type?: string };
 
 const LevelEditor: React.FC = () => {
   const phaserRef = useRef<HTMLDivElement>(null);
   const levelRef = useRef<Level>(new Level());
   const platformsRef = useRef<Platform[]>([]);
   const sceneRef = useRef<Phaser.Scene | null>(null);
+  const [platformType, setPlatformType] = useState<string>("asteroid");
 
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
@@ -33,9 +33,15 @@ const LevelEditor: React.FC = () => {
         create: function () {
           sceneRef.current = this;
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-            const platform = new Platform(this, { x: pointer.x, y: pointer.y });
+            let platform;
+            const cfg = { x: pointer.x, y: pointer.y };
+            if (platformType === "asteroid") {
+              platform = new Asteroid(this, cfg);
+            } else {
+              platform = new Platform(this, cfg);
+            }
             platformsRef.current.push(platform);
-            levelRef.current.addPlatform({ x: pointer.x, y: pointer.y });
+            levelRef.current.addPlatform({ ...cfg, type: platformType });
           });
         },
         update: function () {},
@@ -54,7 +60,7 @@ const LevelEditor: React.FC = () => {
       window.removeEventListener("resize", handleResize);
       game.destroy(true);
     };
-  }, []);
+  }, [platformType]);
 
   const saveLevel = () => {
     localStorage.setItem(LEVEL_STORAGE_KEY, levelRef.current.toJSON());
@@ -68,8 +74,13 @@ const LevelEditor: React.FC = () => {
       levelRef.current = level;
       platformsRef.current.forEach((p) => p.destroy());
       platformsRef.current = [];
-      level.getPlatforms().forEach((cfg: PlatformConfig) => {
-        const platform = new Platform(sceneRef.current!, cfg);
+      (level.getPlatforms() as PlatformConfigWithType[]).forEach((cfg) => {
+        let platform;
+        if (cfg.type === "asteroid") {
+          platform = new Asteroid(sceneRef.current!, cfg);
+        } else {
+          platform = new Platform(sceneRef.current!, cfg);
+        }
         platformsRef.current.push(platform);
       });
     }
@@ -77,10 +88,12 @@ const LevelEditor: React.FC = () => {
 
   return (
     <EditorContainer>
-      <EditorPanel>
-        <EditorButton onClick={saveLevel}>Сохранить</EditorButton>
-        <EditorButton onClick={loadLevel}>Загрузить</EditorButton>
-      </EditorPanel>
+      <LevelEditorTools
+        platformType={platformType}
+        setPlatformType={setPlatformType}
+        onSave={saveLevel}
+        onLoad={loadLevel}
+      />
       <EditorCanvas ref={phaserRef} />
     </EditorContainer>
   );

@@ -4,6 +4,7 @@ export interface PlatformConfig {
   size?: number;
   x: number;
   y: number;
+  type?: string;
 }
 
 export class Platform extends Phaser.Physics.Arcade.Sprite {
