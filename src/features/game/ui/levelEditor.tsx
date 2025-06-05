@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import { Level } from "../entities/Level";
 import { Platform } from "../entities/Platform";
@@ -6,6 +6,8 @@ import { Asteroid } from "../entities/Asteroid";
 import type { PlatformConfig } from "../entities/Platform";
 import { EditorContainer, EditorCanvas } from "./LevelEditor.styled";
 import { LevelEditorTools } from "./LevelEditorTools";
+import { useStore } from "../../../shared/store";
+import { EditorItem } from "../../../shared/types/editor";
 
 const LEVEL_STORAGE_KEY = "custom_level";
 
@@ -16,7 +18,7 @@ const LevelEditor: React.FC = () => {
   const levelRef = useRef<Level>(new Level());
   const platformsRef = useRef<Platform[]>([]);
   const sceneRef = useRef<Phaser.Scene | null>(null);
-  const [platformType, setPlatformType] = useState<string>("asteroid");
+  const { editorItem } = useStore();
 
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
@@ -35,13 +37,13 @@ const LevelEditor: React.FC = () => {
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
             let platform;
             const cfg = { x: pointer.x, y: pointer.y };
-            if (platformType === "asteroid") {
+            if (editorItem === EditorItem.ASTEROID) {
               platform = new Asteroid(this, cfg);
             } else {
               platform = new Platform(this, cfg);
             }
             platformsRef.current.push(platform);
-            levelRef.current.addPlatform({ ...cfg, type: platformType });
+            levelRef.current.addPlatform({ ...cfg, type: editorItem });
           });
         },
         update: function () {},
@@ -60,7 +62,7 @@ const LevelEditor: React.FC = () => {
       window.removeEventListener("resize", handleResize);
       game.destroy(true);
     };
-  }, [platformType]);
+  }, [editorItem]);
 
   const saveLevel = () => {
     localStorage.setItem(LEVEL_STORAGE_KEY, levelRef.current.toJSON());
@@ -76,7 +78,7 @@ const LevelEditor: React.FC = () => {
       platformsRef.current = [];
       (level.getPlatforms() as PlatformConfigWithType[]).forEach((cfg) => {
         let platform;
-        if (cfg.type === "asteroid") {
+        if (cfg.type === EditorItem.ASTEROID) {
           platform = new Asteroid(sceneRef.current!, cfg);
         } else {
           platform = new Platform(sceneRef.current!, cfg);
@@ -88,12 +90,7 @@ const LevelEditor: React.FC = () => {
 
   return (
     <EditorContainer>
-      <LevelEditorTools
-        platformType={platformType}
-        setPlatformType={setPlatformType}
-        onSave={saveLevel}
-        onLoad={loadLevel}
-      />
+      <LevelEditorTools onSave={saveLevel} onLoad={loadLevel} />
       <EditorCanvas ref={phaserRef} />
     </EditorContainer>
   );

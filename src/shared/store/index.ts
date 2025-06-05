@@ -1,12 +1,14 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { createGameSlice } from "./slices/gameSlice";
-import type { GameState } from "../types/game";
+import { createEditorSlice } from "./slices/editorSlice";
+import type { StoreState } from "../types/game";
 
-export const useStore = create<GameState>()(
+export const useStore = create<StoreState>()(
   devtools(
     (...args) => ({
       ...createGameSlice(...args),
+      ...createEditorSlice(...args),
     }),
     { name: "GameStore" }
   )
