@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { createGameSlice } from "./slices/gameSlice";
 import { createEditorSlice } from "./slices/editorSlice";
-import type { StoreState } from "../types/game";
+import type { StoreState } from "../types/app";
 
 export const useStore = create<StoreState>()(
   devtools(
