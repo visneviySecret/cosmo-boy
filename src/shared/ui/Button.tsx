@@ -15,7 +15,6 @@ export const Button = ({
   children,
   variant = "default",
 }: ButtonProps) => {
-  console.log(children);
   return (
     <ButtonStyle onClick={onClick} variant={variant}>
       {children}
