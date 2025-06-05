@@ -1,5 +1,5 @@
-import { Game } from "../../../features/game";
 import styled from "styled-components";
+import { GameRoot } from "../../../features/game";
 
 const MainPageContainer = styled.div`
   width: 100%;
@@ -9,7 +9,7 @@ const MainPageContainer = styled.div`
 const MainPage = () => {
   return (
     <MainPageContainer>
-      <Game />
+      <GameRoot />
     </MainPageContainer>
   );
 };

@@ -6,6 +6,10 @@ import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
 import { generateAsteroids } from "../utils/asteroidGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
+import {
+  loadCustomLevel,
+  generateAsteroidsFromLevel,
+} from "../utils/customLevel";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -77,22 +81,32 @@ const Game = React.memo(() => {
       // Сохраняем ссылку на текст в сцене
       (this as any).scoreText = scoreText;
 
-      // Генерируем астероиды и еду
-      const { asteroids: initialAsteroids, foodGroup } = generateAsteroids(
-        this,
-        aimLine,
-        player
-      );
-      asteroids = initialAsteroids;
-
-      // Добавляем обработчик столкновений с едой
-      createFoodCollision(this, player, foodGroup);
-
-      // Размещаем игрока на первом астероиде
-      const leftAsteroid = asteroids[0];
-      player.x = leftAsteroid.x;
-      player.y =
-        leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
+      // --- Загрузка пользовательского уровня ---
+      const customLevel = loadCustomLevel();
+      if (customLevel) {
+        asteroids = generateAsteroidsFromLevel(this, customLevel);
+        // Разместить игрока на первой платформе, если есть
+        if (asteroids.length > 0) {
+          const first = asteroids[0];
+          player.x = first.x;
+          player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
+        }
+      } else {
+        // --- Генерация стандартных астероидов ---
+        const { asteroids: initialAsteroids, foodGroup } = generateAsteroids(
+          this,
+          aimLine,
+          player
+        );
+        asteroids = initialAsteroids;
+        // Добавляем обработчик столкновений с едой
+        createFoodCollision(this, player, foodGroup);
+        // Размещаем игрока на первом астероиде
+        const leftAsteroid = asteroids[0];
+        player.x = leftAsteroid.x;
+        player.y =
+          leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
+      }
 
       // Настраиваем камеру для следования за игроком
       this.cameras.main.startFollow(player, true);
