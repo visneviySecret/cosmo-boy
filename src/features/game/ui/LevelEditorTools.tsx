@@ -3,6 +3,7 @@ import { Button } from "../../../shared";
 import { EditorPanel, EditorToolsWrapper } from "./LevelEditor.styled";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
+import { PlatformTypeSelector } from "../../../entities";
 
 type LevelEditorToolsProps = {
   onSave: () => void;
@@ -13,17 +14,15 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   onSave,
   onLoad,
 }) => {
-  const { setEditorItem } = useStore();
+  const { editorItem, setEditorItem } = useStore();
 
   return (
     <>
       <EditorToolsWrapper>
-        <Button onClick={() => setEditorItem(EditorItem.ASTEROID)}>
-          Астероид
-        </Button>
-        <Button onClick={() => setEditorItem(EditorItem.PLATFORM)}>
-          Платформа
-        </Button>
+        <PlatformTypeSelector
+          value={editorItem}
+          onChange={(type) => setEditorItem(type as EditorItem)}
+        />
       </EditorToolsWrapper>
       <EditorPanel>
         <Button onClick={onSave} $variant="primary">
