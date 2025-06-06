@@ -21,6 +21,24 @@ const LevelEditor: React.FC = () => {
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem } = useStore();
 
+  const createPreview = (type: EditorItem) => {
+    if (sceneRef.current) {
+      destroyPreview();
+      previewRef.current = sceneRef.current.add.sprite(0, 0, "");
+      previewRef.current.setAlpha(0.5);
+      createPreviewTexture(sceneRef.current, type);
+      previewRef.current.setTexture("preview");
+      previewRef.current.setVisible(true);
+    }
+  };
+
+  const destroyPreview = () => {
+    if (previewRef.current) {
+      previewRef.current.destroy();
+      previewRef.current = null;
+    }
+  };
+
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -51,6 +69,12 @@ const LevelEditor: React.FC = () => {
 
           // Обработчик клика
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+            // Очищаем предварительный просмотр при правом клике
+            if (pointer.rightButtonDown()) {
+              destroyPreview();
+              return;
+            }
+
             let platform;
             const cfg = { x: pointer.x, y: pointer.y };
             if (editorItem === EditorItem.ASTEROID) {
@@ -64,9 +88,10 @@ const LevelEditor: React.FC = () => {
         },
         update: function (this: Phaser.Scene) {
           // Обновляем текстуру предварительного просмотра при изменении выбранного элемента
-          if (previewRef.current && editorItem) {
+          if (editorItem && previewRef.current) {
             createPreviewTexture(this, editorItem);
             previewRef.current.setTexture("preview");
+            previewRef.current.setVisible(true);
           }
         },
       },
@@ -110,9 +135,18 @@ const LevelEditor: React.FC = () => {
     }
   };
 
+  // Обработчик контекстного меню
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
   return (
-    <EditorContainer>
-      <LevelEditorTools onSave={saveLevel} onLoad={loadLevel} />
+    <EditorContainer onContextMenu={handleContextMenu}>
+      <LevelEditorTools
+        onSave={saveLevel}
+        onLoad={loadLevel}
+        onCreatePreview={createPreview}
+      />
       <EditorCanvas ref={phaserRef} />
     </EditorContainer>
   );

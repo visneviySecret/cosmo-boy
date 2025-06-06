@@ -8,21 +8,26 @@ import { PlatformTypeSelector } from "../../../entities";
 type LevelEditorToolsProps = {
   onSave: () => void;
   onLoad: () => void;
+  onCreatePreview: (type: EditorItem) => void;
 };
 
 export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   onSave,
   onLoad,
+  onCreatePreview,
 }) => {
   const { editorItem, setEditorItem } = useStore();
+
+  const handleTypeChange = (type: string) => {
+    const newType = type as EditorItem;
+    setEditorItem(newType);
+    onCreatePreview(newType);
+  };
 
   return (
     <>
       <EditorToolsWrapper>
-        <PlatformTypeSelector
-          value={editorItem}
-          onChange={(type) => setEditorItem(type as EditorItem)}
-        />
+        <PlatformTypeSelector value={editorItem} onChange={handleTypeChange} />
       </EditorToolsWrapper>
       <EditorPanel>
         <Button onClick={onSave} $variant="primary">
