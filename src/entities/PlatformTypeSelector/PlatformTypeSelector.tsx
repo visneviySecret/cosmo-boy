@@ -16,7 +16,7 @@ export const PlatformType = {
 type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
 
 interface PlatformTypeSelectorProps {
-  value: string;
+  value: string | null;
   onChange: (value: string) => void;
 }
 

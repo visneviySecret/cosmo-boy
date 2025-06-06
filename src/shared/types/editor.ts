@@ -5,6 +5,6 @@ export enum EditorItem {
 export type EditorItemType = (typeof EditorItem)[keyof typeof EditorItem];
 
 export interface EditorState {
-  editorItem: EditorItem;
-  setEditorItem: (item: EditorItem) => void;
+  editorItem: EditorItem | null;
+  setEditorItem: (item: EditorItem | null) => void;
 }

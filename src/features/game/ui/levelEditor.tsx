@@ -19,7 +19,7 @@ const LevelEditor: React.FC = () => {
   const platformsRef = useRef<Platform[]>([]);
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
-  const { editorItem } = useStore();
+  const { editorItem, setEditorItem } = useStore();
 
   const createPreview = (type: EditorItem) => {
     if (sceneRef.current) {
@@ -36,6 +36,7 @@ const LevelEditor: React.FC = () => {
     if (previewRef.current) {
       previewRef.current.destroy();
       previewRef.current = null;
+      setEditorItem(null);
     }
   };
 
@@ -72,6 +73,12 @@ const LevelEditor: React.FC = () => {
             // Очищаем предварительный просмотр при правом клике
             if (pointer.rightButtonDown()) {
               destroyPreview();
+              return;
+            }
+
+            // Если нет выбранного объекта, не создаем платформу
+            console.log("editorItem", editorItem);
+            if (!editorItem) {
               return;
             }
 
