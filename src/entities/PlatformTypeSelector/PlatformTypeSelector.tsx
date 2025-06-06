@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Container,
   SelectWrapper,
   IconWrapper,
   Selector,
+  OptionsList,
+  Option,
 } from "./PlatformTypeSelector.style";
 import { GroundIcon } from "./GroundIcon";
 
@@ -22,13 +24,48 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   value,
   onChange,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (type: string) => {
+    onChange(type);
+    setIsOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <Container>
-      <SelectWrapper>
+      <SelectWrapper ref={wrapperRef}>
         <IconWrapper>{GroundIcon}</IconWrapper>
-        <Selector value={value} onChange={(e) => onChange(e.target.value)}>
-          <option value={PlatformType.Asteroid}>Астероид</option>
+        <Selector onClick={toggleDropdown}>
+          {value === PlatformType.Asteroid ? "Астероид" : "Выберите тип"}
         </Selector>
+        {isOpen && (
+          <OptionsList>
+            <Option onClick={() => handleSelect(PlatformType.Asteroid)}>
+              Астероид
+            </Option>
+          </OptionsList>
+        )}
       </SelectWrapper>
     </Container>
   );
