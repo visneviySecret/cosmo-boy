@@ -8,6 +8,7 @@ import { EditorContainer, EditorCanvas } from "./LevelEditor.styled";
 import { LevelEditorTools } from "./LevelEditorTools";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
+import { Player } from "../entities/Player";
 
 const LEVEL_STORAGE_KEY = "custom_level";
 
@@ -20,6 +21,8 @@ const LevelEditor: React.FC = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem, setEditorItem } = useStore();
+  const previewSizeRef = useRef<number | undefined>(undefined);
+  const playerSizeRef = useRef<number | undefined>(undefined); // Начальный размер игрока
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -35,11 +38,15 @@ const LevelEditor: React.FC = () => {
       const ctx = sceneRef.current;
       const cfg = { x: 0, y: 0 };
       const item = itemGetter(type, ctx, cfg);
+      const defaultSize = item.getSize();
+      previewSizeRef.current = defaultSize;
       previewRef.current = ctx.add.sprite(0, 0, item.texture.key);
       previewRef.current.setAlpha(0.5);
+      previewRef.current.setDisplaySize(defaultSize, defaultSize);
       item.destroy();
     }
   };
+
   const itemGetter = (
     itemName: string,
     ctx: Phaser.Scene,
@@ -51,6 +58,38 @@ const LevelEditor: React.FC = () => {
         return new Asteroid(ctx, config);
       default:
         return new Platform(ctx, config);
+    }
+  };
+
+  const updatePreviewSize = (delta: number) => {
+    if (
+      !editorItem ||
+      !previewRef.current ||
+      !previewSizeRef.current ||
+      !playerSizeRef.current
+    )
+      return;
+
+    // Изменяем размер с учетом направления прокрутки
+    const sizeChange = delta < 0 ? 10 : -10;
+
+    const minSize = playerSizeRef.current;
+    const maxSize = playerSizeRef.current * 5;
+    const newSize = Math.max(
+      minSize,
+      Math.min(maxSize, previewSizeRef.current + sizeChange)
+    );
+
+    if (newSize !== previewSizeRef.current) {
+      previewSizeRef.current = newSize;
+      previewRef.current.setDisplaySize(newSize, newSize);
+
+      // Обновляем текстуру превью с новым размером
+      const ctx = sceneRef.current!;
+      const cfg = { x: 0, y: 0, size: newSize };
+      const item = itemGetter(editorItem, ctx, cfg);
+      previewRef.current.setTexture(item.texture.key);
+      item.destroy();
     }
   };
 
@@ -68,6 +107,11 @@ const LevelEditor: React.FC = () => {
         preload: function () {},
         create: function () {
           sceneRef.current = this;
+
+          // Создаем временного игрока для определения размеров
+          const tempPlayer = new Player(this);
+          playerSizeRef.current = tempPlayer.getSize();
+          tempPlayer.destroy();
 
           // Создаем спрайт для предварительного просмотра
           previewRef.current = this.add.sprite(0, 0, "");
@@ -87,6 +131,19 @@ const LevelEditor: React.FC = () => {
             }
           });
 
+          // Обработчик колесика мыши
+          this.input.on(
+            "wheel",
+            (
+              _pointer: Phaser.Input.Pointer,
+              _gameObjects: any[],
+              _deltaX: number,
+              deltaY: number
+            ) => {
+              updatePreviewSize(deltaY);
+            }
+          );
+
           // Обработчик клика
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
             // Очищаем предварительный просмотр при правом клике
@@ -101,7 +158,11 @@ const LevelEditor: React.FC = () => {
             }
 
             let platform;
-            const cfg = { x: pointer.x, y: pointer.y };
+            const cfg = {
+              x: pointer.x,
+              y: pointer.y,
+              size: previewSizeRef.current,
+            };
             platform = itemGetter(editorItem, this, cfg);
             platformsRef.current.push(platform);
             levelRef.current.addPlatform({ ...cfg, type: editorItem });

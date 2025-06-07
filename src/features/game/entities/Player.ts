@@ -32,7 +32,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private progress: PlayerProgress;
   private textureKey: string;
 
-  constructor(scene: Phaser.Scene, config: PlayerConfig) {
+  constructor(scene: Phaser.Scene, config: PlayerConfig = { x: 0, y: 0 }) {
     super(scene, config.x, config.y, "player");
 
     const aimLine = (scene as any).aimLine;
