@@ -23,7 +23,7 @@ const LevelEditor: React.FC = () => {
 
   const createPreview = (type: EditorItem) => {
     if (sceneRef.current) {
-      destroyPreview();
+      resetPreview();
       previewRef.current = sceneRef.current.add.sprite(0, 0, "");
       previewRef.current.setAlpha(0.5);
       createPreviewTexture(sceneRef.current, type);
@@ -32,12 +32,12 @@ const LevelEditor: React.FC = () => {
     }
   };
 
-  const destroyPreview = () => {
+  const resetPreview = () => {
     if (previewRef.current) {
       previewRef.current.destroy();
       previewRef.current = null;
-      setEditorItem(null);
     }
+    setEditorItem(null);
   };
 
   useEffect(() => {
@@ -72,23 +72,18 @@ const LevelEditor: React.FC = () => {
           this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
             // Очищаем предварительный просмотр при правом клике
             if (pointer.rightButtonDown()) {
-              destroyPreview();
+              resetPreview();
               return;
             }
 
             // Если нет выбранного объекта, не создаем платформу
-            console.log("editorItem", editorItem);
-            if (!editorItem) {
+            if (!previewRef.current || !editorItem) {
               return;
             }
 
             let platform;
             const cfg = { x: pointer.x, y: pointer.y };
-            if (editorItem === EditorItem.ASTEROID) {
-              platform = new Asteroid(this, cfg);
-            } else {
-              platform = new Platform(this, cfg);
-            }
+            platform = ItemGetter(editorItem, this, cfg);
             platformsRef.current.push(platform);
             levelRef.current.addPlatform({ ...cfg, type: editorItem });
           });
@@ -104,6 +99,20 @@ const LevelEditor: React.FC = () => {
       },
       physics: { default: "arcade" },
     };
+
+    const ItemGetter = (
+      itemName: string,
+      ctx: Phaser.Scene,
+      cfg: { x: number; y: number }
+    ) => {
+      switch (itemName) {
+        case EditorItem.ASTEROID:
+          return new Asteroid(ctx, cfg);
+        default:
+          return new Platform(ctx, cfg);
+      }
+    };
+
     const game = new Phaser.Game(config);
 
     // Добавляем обработчик resize
@@ -116,7 +125,7 @@ const LevelEditor: React.FC = () => {
       window.removeEventListener("resize", handleResize);
       game.destroy(true);
     };
-  }, [editorItem]);
+  }, []);
 
   const saveLevel = () => {
     localStorage.setItem(LEVEL_STORAGE_KEY, levelRef.current.toJSON());
