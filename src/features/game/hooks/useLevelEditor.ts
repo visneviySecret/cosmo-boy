@@ -22,6 +22,7 @@ export const useLevelEditor = () => {
   const previewSizeRef = useRef<number | undefined>(undefined);
   const playerSizeRef = useRef<number | undefined>(undefined);
   const draggedPlatformRef = useRef<Platform | null>(null);
+  const hoveredPlatformRef = useRef<Platform | null>(null);
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -160,6 +161,19 @@ export const useLevelEditor = () => {
     }
   };
 
+  const deleteHoveredPlatform = () => {
+    if (hoveredPlatformRef.current) {
+      const index = platformsRef.current.indexOf(hoveredPlatformRef.current);
+      if (index !== -1) {
+        hoveredPlatformRef.current.destroy();
+        platformsRef.current.splice(index, 1);
+        const platforms = levelRef.current.getPlatforms();
+        platforms.splice(index, 1);
+      }
+      hoveredPlatformRef.current = null;
+    }
+  };
+
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -201,8 +215,10 @@ export const useLevelEditor = () => {
 
               if (platform) {
                 this.input.setDefaultCursor("grab");
+                hoveredPlatformRef.current = platform;
               } else {
                 this.input.setDefaultCursor("default");
+                hoveredPlatformRef.current = null;
               }
             }
           });
@@ -279,10 +295,19 @@ export const useLevelEditor = () => {
     const handleResize = () => {
       game.scale.resize(window.innerWidth, window.innerHeight);
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete") {
+        deleteHoveredPlatform();
+      }
+    };
+
     window.addEventListener("resize", handleResize);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keydown", handleKeyDown);
       game.destroy(true);
     };
   }, []);
