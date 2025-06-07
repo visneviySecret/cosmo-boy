@@ -21,23 +21,36 @@ const LevelEditor: React.FC = () => {
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem, setEditorItem } = useStore();
 
-  const createPreview = (type: EditorItem) => {
-    if (sceneRef.current) {
-      resetPreview();
-      previewRef.current = sceneRef.current.add.sprite(0, 0, "");
-      previewRef.current.setAlpha(0.5);
-      createPreviewTexture(sceneRef.current, type);
-      previewRef.current.setTexture("preview");
-      previewRef.current.setVisible(true);
-    }
-  };
-
   const resetPreview = () => {
     if (previewRef.current) {
       previewRef.current.destroy();
       previewRef.current = null;
     }
     setEditorItem(null);
+  };
+
+  const createPreview = (type: EditorItem) => {
+    if (sceneRef.current) {
+      resetPreview();
+      const ctx = sceneRef.current;
+      const cfg = { x: 0, y: 0 };
+      const item = itemGetter(type, ctx, cfg);
+      previewRef.current = ctx.add.sprite(0, 0, item.texture.key);
+      previewRef.current.setAlpha(0.5);
+      item.destroy();
+    }
+  };
+  const itemGetter = (
+    itemName: string,
+    ctx: Phaser.Scene,
+    cfg: { x: number; y: number }
+  ) => {
+    switch (itemName) {
+      case EditorItem.ASTEROID:
+        return new Asteroid(ctx, cfg);
+      default:
+        return new Platform(ctx, cfg);
+    }
   };
 
   useEffect(() => {
@@ -59,6 +72,11 @@ const LevelEditor: React.FC = () => {
           previewRef.current = this.add.sprite(0, 0, "");
           previewRef.current.setAlpha(0.5);
           previewRef.current.setVisible(false);
+
+          // Инициализируем предпросмотр астероида
+          if (editorItem) {
+            createPreview(editorItem);
+          }
 
           // Обработчик движения мыши
           this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
@@ -83,34 +101,13 @@ const LevelEditor: React.FC = () => {
 
             let platform;
             const cfg = { x: pointer.x, y: pointer.y };
-            platform = ItemGetter(editorItem, this, cfg);
+            platform = itemGetter(editorItem, this, cfg);
             platformsRef.current.push(platform);
             levelRef.current.addPlatform({ ...cfg, type: editorItem });
           });
         },
-        update: function (this: Phaser.Scene) {
-          // Обновляем текстуру предварительного просмотра при изменении выбранного элемента
-          if (editorItem && previewRef.current) {
-            createPreviewTexture(this, editorItem);
-            previewRef.current.setTexture("preview");
-            previewRef.current.setVisible(true);
-          }
-        },
       },
       physics: { default: "arcade" },
-    };
-
-    const ItemGetter = (
-      itemName: string,
-      ctx: Phaser.Scene,
-      cfg: { x: number; y: number }
-    ) => {
-      switch (itemName) {
-        case EditorItem.ASTEROID:
-          return new Asteroid(ctx, cfg);
-        default:
-          return new Platform(ctx, cfg);
-      }
     };
 
     const game = new Phaser.Game(config);
@@ -166,22 +163,6 @@ const LevelEditor: React.FC = () => {
       <EditorCanvas ref={phaserRef} />
     </EditorContainer>
   );
-};
-
-const createPreviewTexture = (
-  scene: Phaser.Scene,
-  editorItem: EditorItem
-): void => {
-  const graphics = scene.add.graphics();
-  if (editorItem === EditorItem.ASTEROID) {
-    graphics.fillStyle(0xcccccc, 1);
-    graphics.fillCircle(100, 100, 100);
-  } else {
-    graphics.fillStyle(0x00ff00, 1);
-    graphics.fillRect(0, 0, 200, 200);
-  }
-  graphics.generateTexture("preview", 200, 200);
-  graphics.destroy();
 };
 
 export default LevelEditor;
