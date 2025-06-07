@@ -24,6 +24,7 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   value,
   onChange,
 }) => {
+  const [localValue, setLocalValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -44,6 +45,7 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   }, []);
 
   const handleSelect = (type: string) => {
+    setLocalValue(type);
     onChange(type);
     setIsOpen(false);
   };
@@ -57,7 +59,7 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
       <SelectWrapper ref={wrapperRef}>
         <IconWrapper>{GroundIcon}</IconWrapper>
         <Selector onClick={toggleDropdown}>
-          {value === PlatformType.Asteroid ? "Астероид" : "Выберите тип"}
+          {localValue === PlatformType.Asteroid ? "Астероид" : "Выберите тип"}
         </Selector>
         {isOpen && (
           <OptionsList>
