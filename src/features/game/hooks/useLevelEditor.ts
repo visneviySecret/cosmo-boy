@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import Phaser from "phaser";
 import { Level } from "../entities/Level";
 import { Platform } from "../entities/Platform";
