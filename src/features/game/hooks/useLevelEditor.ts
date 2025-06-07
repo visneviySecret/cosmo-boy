@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import Phaser from "phaser";
 import { Level } from "../entities/Level";
 import { Platform } from "../entities/Platform";
@@ -36,11 +36,15 @@ export const useLevelEditor = () => {
     if (sceneRef.current) {
       resetPreview();
       const ctx = sceneRef.current;
-      const cfg = { x: 0, y: 0 };
+      const camera = ctx.cameras.main;
+      const cfg = {
+        x: camera.scrollX + camera.width / 2,
+        y: camera.scrollY + camera.height / 2,
+      };
       const item = itemGetter(type, ctx, cfg);
       const defaultSize = item.getSize();
       previewSizeRef.current = defaultSize;
-      previewRef.current = ctx.add.sprite(0, 0, item.texture.key);
+      previewRef.current = ctx.add.sprite(cfg.x, cfg.y, item.texture.key);
       previewRef.current.setAlpha(0.5);
       previewRef.current.setDisplaySize(defaultSize, defaultSize);
       item.destroy();
@@ -126,14 +130,28 @@ export const useLevelEditor = () => {
   };
 
   const updateDragPosition = (pointer: Phaser.Input.Pointer) => {
-    if (draggedPlatformRef.current) {
-      draggedPlatformRef.current.setPosition(pointer.x, pointer.y);
+    if (draggedPlatformRef.current && sceneRef.current) {
+      const camera = sceneRef.current.cameras.main;
+      const worldX = pointer.x + camera.scrollX;
+      const worldY = pointer.y + camera.scrollY;
+
+      draggedPlatformRef.current.setPosition(worldX, worldY);
 
       const index = platformsRef.current.indexOf(draggedPlatformRef.current);
       if (index !== -1) {
         const platforms = levelRef.current.getPlatforms();
-        platforms[index] = { ...platforms[index], x: pointer.x, y: pointer.y };
+        platforms[index] = { ...platforms[index], x: worldX, y: worldY };
       }
+    }
+  };
+
+  const updatePreviewPosition = (pointer: Phaser.Input.Pointer) => {
+    if (previewRef.current && sceneRef.current) {
+      const camera = sceneRef.current.cameras.main;
+      previewRef.current.setPosition(
+        camera.scrollX + pointer.x,
+        camera.scrollY + pointer.y
+      );
     }
   };
 
@@ -203,14 +221,17 @@ export const useLevelEditor = () => {
 
           this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
             if (previewRef.current) {
-              previewRef.current.setPosition(pointer.x, pointer.y);
+              updatePreviewPosition(pointer);
               previewRef.current.setVisible(true);
             } else if (draggedPlatformRef.current) {
               updateDragPosition(pointer);
             } else {
               const platform = platformsRef.current.find((p) => {
                 const bounds = p.getBounds();
-                return bounds.contains(pointer.x, pointer.y);
+                return bounds.contains(
+                  pointer.x + this.cameras.main.scrollX,
+                  pointer.y + this.cameras.main.scrollY
+                );
               });
 
               if (platform) {
@@ -237,7 +258,10 @@ export const useLevelEditor = () => {
                 const pointer = this.input.activePointer;
                 const platform = platformsRef.current.find((p) => {
                   const bounds = p.getBounds();
-                  return bounds.contains(pointer.x, pointer.y);
+                  return bounds.contains(
+                    pointer.x + this.cameras.main.scrollX,
+                    pointer.y + this.cameras.main.scrollY
+                  );
                 });
 
                 if (platform) {
@@ -259,7 +283,10 @@ export const useLevelEditor = () => {
               }
               const platform = platformsRef.current.find((p) => {
                 const bounds = p.getBounds();
-                return bounds.contains(pointer.x, pointer.y);
+                return bounds.contains(
+                  pointer.x + this.cameras.main.scrollX,
+                  pointer.y + this.cameras.main.scrollY
+                );
               });
 
               if (platform) {
@@ -270,10 +297,11 @@ export const useLevelEditor = () => {
 
             if (!previewRef.current || !editorItem) return;
 
+            const camera = this.cameras.main;
             let platform;
             const cfg = {
-              x: pointer.x,
-              y: pointer.y,
+              x: pointer.x + camera.scrollX,
+              y: pointer.y + camera.scrollY,
               size: previewSizeRef.current,
             };
             platform = itemGetter(editorItem, this, cfg);
@@ -299,6 +327,17 @@ export const useLevelEditor = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete") {
         deleteHoveredPlatform();
+      }
+
+      if (sceneRef.current) {
+        const camera = sceneRef.current.cameras.main;
+        const moveSpeed = 100;
+        if ((e.key === "a" || e.key === "ф") && camera.scrollX > 0) {
+          camera.scrollX -= moveSpeed;
+        }
+        if (e.key === "d" || e.key === "в") {
+          camera.scrollX += moveSpeed;
+        }
       }
     };
 
