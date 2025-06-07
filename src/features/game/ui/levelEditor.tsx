@@ -23,6 +23,7 @@ const LevelEditor: React.FC = () => {
   const { editorItem, setEditorItem } = useStore();
   const previewSizeRef = useRef<number | undefined>(undefined);
   const playerSizeRef = useRef<number | undefined>(undefined); // Начальный размер игрока
+  const draggedPlatformRef = useRef<Platform | null>(null);
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -133,6 +134,31 @@ const LevelEditor: React.FC = () => {
     }
   };
 
+  const startDrag = (platform: Platform) => {
+    draggedPlatformRef.current = platform;
+  };
+
+  const stopDrag = () => {
+    if (draggedPlatformRef.current) {
+      draggedPlatformRef.current = null;
+      if (sceneRef.current) {
+        sceneRef.current.input.setDefaultCursor("default");
+      }
+    }
+  };
+
+  const updateDragPosition = (pointer: Phaser.Input.Pointer) => {
+    if (draggedPlatformRef.current) {
+      draggedPlatformRef.current.setPosition(pointer.x, pointer.y);
+
+      const index = platformsRef.current.indexOf(draggedPlatformRef.current);
+      if (index !== -1) {
+        const platforms = levelRef.current.getPlatforms();
+        platforms[index] = { ...platforms[index], x: pointer.x, y: pointer.y };
+      }
+    }
+  };
+
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -168,6 +194,20 @@ const LevelEditor: React.FC = () => {
             if (previewRef.current) {
               previewRef.current.setPosition(pointer.x, pointer.y);
               previewRef.current.setVisible(true);
+            } else if (draggedPlatformRef.current) {
+              updateDragPosition(pointer);
+            } else {
+              // Проверяем наведение на платформу
+              const platform = platformsRef.current.find((p) => {
+                const bounds = p.getBounds();
+                return bounds.contains(pointer.x, pointer.y);
+              });
+
+              if (platform) {
+                this.input.setDefaultCursor("grab");
+              } else {
+                this.input.setDefaultCursor("default");
+              }
             }
           });
 
@@ -204,10 +244,24 @@ const LevelEditor: React.FC = () => {
               return;
             }
 
-            // Если нет выбранного объекта, не создаем платформу
-            if (!previewRef.current || !editorItem) {
+            // Если нет выбранного объекта, проверяем клик по платформе
+            if (!previewRef.current) {
+              if (sceneRef.current) {
+                sceneRef.current.input.setDefaultCursor("grabbing");
+              }
+              const platform = platformsRef.current.find((p) => {
+                const bounds = p.getBounds();
+                return bounds.contains(pointer.x, pointer.y);
+              });
+
+              if (platform) {
+                startDrag(platform);
+              }
               return;
             }
+
+            // Если есть выбранный объект, создаем новую платформу
+            if (!previewRef.current || !editorItem) return;
 
             let platform;
             const cfg = {
@@ -216,9 +270,13 @@ const LevelEditor: React.FC = () => {
               size: previewSizeRef.current,
             };
             platform = itemGetter(editorItem, this, cfg);
-            platform.setData("type", editorItem); // Сохраняем тип платформы
+            platform.setData("type", editorItem);
             platformsRef.current.push(platform);
             levelRef.current.addPlatform({ ...cfg, type: editorItem });
+          });
+
+          this.input.on("pointerup", () => {
+            stopDrag();
           });
         },
       },

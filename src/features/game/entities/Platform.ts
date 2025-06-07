@@ -41,6 +41,9 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
 
     // Добавляем базовую интерактивность
     this.setInteractive();
+    if (this.input) {
+      this.input.enabled = true;
+    }
 
     // Добавляем в список обновляемых объектов
     scene.events.on("update", this.update, this);
