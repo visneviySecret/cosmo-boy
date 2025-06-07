@@ -1,10 +1,11 @@
 import Phaser from "phaser";
 
 export interface PlatformConfig {
-  size?: number;
   x: number;
   y: number;
+  size?: number;
   type?: string;
+  isEditor?: boolean;
 }
 
 export class Platform extends Phaser.Physics.Arcade.Sprite {
@@ -15,6 +16,7 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
   protected graphics: Phaser.GameObjects.Graphics | null = null;
   protected textureKey: string;
   protected outlineRotation: number = 0;
+  private isEditor: boolean;
 
   constructor(scene: Phaser.Scene, config: PlatformConfig) {
     super(scene, config.x, config.y, "platform");
@@ -22,6 +24,7 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
     this.size = config.size || this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.textureKey = `platform_${this.size}_${Math.random().toString(16)}`;
+    this.isEditor = config.isEditor || false;
 
     // Добавляем спрайт в сцену и включаем физику
     scene.add.existing(this);
@@ -72,6 +75,17 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
 
   // Показать обводку
   protected showOutline() {
+    if (this.isEditor) {
+      if (!this.graphics) {
+        this.graphics = this.scene.add.graphics();
+      }
+      const outlineRadius = this.getSize() / 2;
+      this.graphics.clear();
+      this.graphics.lineStyle(4, 0x00ff00, 1);
+      this.graphics.strokeCircle(this.x, this.y, outlineRadius);
+      return;
+    }
+
     if (!this.graphics) {
       this.graphics = this.scene.add.graphics();
     }

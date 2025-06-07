@@ -45,11 +45,12 @@ const LevelEditor: React.FC = () => {
     ctx: Phaser.Scene,
     cfg: { x: number; y: number }
   ) => {
+    const config = { ...cfg, isEditor: true };
     switch (itemName) {
       case EditorItem.ASTEROID:
-        return new Asteroid(ctx, cfg);
+        return new Asteroid(ctx, config);
       default:
-        return new Platform(ctx, cfg);
+        return new Platform(ctx, config);
     }
   };
 
