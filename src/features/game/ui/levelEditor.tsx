@@ -93,6 +93,46 @@ const LevelEditor: React.FC = () => {
     }
   };
 
+  const updatePlatformSize = (platform: Platform, delta: number) => {
+    if (!playerSizeRef.current) return;
+
+    const currentSize = platform.getSize();
+    const sizeChange = delta < 0 ? 10 : -10;
+    const minSize = playerSizeRef.current;
+    const maxSize = playerSizeRef.current * 5;
+    const newSize = Math.max(
+      minSize,
+      Math.min(maxSize, currentSize + sizeChange)
+    );
+
+    if (newSize !== currentSize) {
+      // Обновляем размер платформы
+      const index = platformsRef.current.indexOf(platform);
+      if (index !== -1) {
+        // Создаем новую платформу с обновленным размером
+        const cfg = {
+          x: platform.x,
+          y: platform.y,
+          size: newSize,
+          type: platform.getData("type"),
+        };
+        const newPlatform = itemGetter(
+          cfg.type || EditorItem.ASTEROID,
+          sceneRef.current!,
+          cfg
+        );
+
+        // Заменяем старую платформу на новую
+        platform.destroy();
+        platformsRef.current[index] = newPlatform;
+
+        // Обновляем данные в levelRef
+        const platforms = levelRef.current.getPlatforms();
+        platforms[index] = { ...platforms[index], size: newSize };
+      }
+    }
+  };
+
   useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -140,7 +180,19 @@ const LevelEditor: React.FC = () => {
               _deltaX: number,
               deltaY: number
             ) => {
-              updatePreviewSize(deltaY);
+              if (previewRef.current) {
+                updatePreviewSize(deltaY);
+              } else {
+                const pointer = this.input.activePointer;
+                const platform = platformsRef.current.find((p) => {
+                  const bounds = p.getBounds();
+                  return bounds.contains(pointer.x, pointer.y);
+                });
+
+                if (platform) {
+                  updatePlatformSize(platform, deltaY);
+                }
+              }
             }
           );
 
@@ -164,6 +216,7 @@ const LevelEditor: React.FC = () => {
               size: previewSizeRef.current,
             };
             platform = itemGetter(editorItem, this, cfg);
+            platform.setData("type", editorItem); // Сохраняем тип платформы
             platformsRef.current.push(platform);
             levelRef.current.addPlatform({ ...cfg, type: editorItem });
           });
