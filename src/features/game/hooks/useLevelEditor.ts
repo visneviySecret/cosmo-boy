@@ -9,11 +9,11 @@ import { EditorItem } from "../../../shared/types/editor";
 import { itemGetter, type PlatformConfigWithType } from "../utils/editorUtils";
 
 export const useLevelEditor = () => {
+  const sceneRef = useRef<Phaser.Scene | null>(null);
   const phaserRef = useRef<HTMLDivElement>(null);
   const levelRef = useRef<Level>(new Level());
   const saveLevel = levelRef.current.saveLevel.bind(levelRef.current);
   const platformsRef = useRef<Platform[]>([]);
-  const sceneRef = useRef<Phaser.Scene | null>(null);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem, setEditorItem } = useStore();
   const previewSizeRef = useRef<number | undefined>(undefined);
@@ -153,9 +153,14 @@ export const useLevelEditor = () => {
   };
 
   const loadLevel = (id: string) => {
+    if (!sceneRef.current) {
+      console.error("Сцена не инициализирована");
+      return;
+    }
+
     const json = localStorage.getItem("gameLevels");
     if (!json) {
-      alert("Нет сохраненных уровней");
+      console.error("Нет сохраненных уровней");
       return;
     }
 
@@ -163,13 +168,12 @@ export const useLevelEditor = () => {
     const data = levels.find((level: LevelData) => level.id === id);
 
     if (!data) {
-      alert("Уровень не найден" + id);
+      console.error(`Уровень с id ${id} не найден`);
       return;
     }
 
     try {
       const storedLevel = new Level(data);
-
       levelRef.current = storedLevel;
 
       // Очищаем существующие платформы
@@ -178,6 +182,7 @@ export const useLevelEditor = () => {
 
       // Создаем новые платформы
       const platforms = storedLevel.getPlatforms();
+      console.log("Загружаемые платформы:", platforms);
 
       platforms.forEach((cfg: PlatformConfigWithType) => {
         let platform;
@@ -189,8 +194,10 @@ export const useLevelEditor = () => {
         }
         platformsRef.current.push(platform);
       });
+
+      console.log("Уровень успешно загружен");
     } catch (error) {
-      alert("Ошибка при загрузке уровня:" + error);
+      console.error("Ошибка при загрузке уровня:", error);
     }
   };
 
@@ -208,11 +215,6 @@ export const useLevelEditor = () => {
   };
 
   useEffect(() => {
-    const loadedLevel = localStorage.getItem("loadedLevel");
-    if (loadedLevel) {
-      loadLevel(loadedLevel);
-    }
-
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       scale: {
@@ -234,6 +236,13 @@ export const useLevelEditor = () => {
           previewRef.current = this.add.sprite(0, 0, "");
           previewRef.current.setAlpha(0.5);
           previewRef.current.setVisible(false);
+
+          // Загружаем сохраненный уровень после инициализации сцены
+          const loadedLevel = localStorage.getItem("loadedLevel");
+          if (loadedLevel) {
+            const levelData = JSON.parse(loadedLevel);
+            loadLevel(levelData.id);
+          }
 
           if (editorItem) {
             createPreview(editorItem);

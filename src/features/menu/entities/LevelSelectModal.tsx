@@ -39,6 +39,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     setSelectedLevel(level);
     setSelectedLevelInStore(level);
     isLoad && onLoad(value.id);
+    localStorage.setItem("loadedLevel", JSON.stringify(level));
   };
 
   const handleCreateNewLevel = () => {
@@ -89,10 +90,6 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   };
 
   useEffect(() => {
-    const loadedLevel = localStorage.getItem("loadedLevel");
-    if (loadedLevel) {
-      setSelectedLevel(JSON.parse(loadedLevel));
-    }
     const gameLevels = localStorage.getItem("gameLevels");
     if (gameLevels) {
       setLevels(JSON.parse(gameLevels));
