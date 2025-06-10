@@ -155,9 +155,16 @@ export const useLevelEditor = () => {
     }
   };
 
-  const saveLevel = () => {
-    localStorage.setItem(LEVEL_STORAGE_KEY, levelRef.current.toJSON());
-    alert("Уровень сохранён!");
+  const saveLevel = (levelKey: string) => {
+    if (!levelKey) return;
+    const key = levelKey || LEVEL_STORAGE_KEY;
+    const levelPayload = {
+      id: levelKey,
+      name: "",
+      level: levelRef.current.toJSON(),
+    };
+    localStorage.setItem(key, JSON.stringify(levelPayload));
+    alert(`Уровень ${LEVEL_STORAGE_KEY} сохранён!`);
   };
 
   const loadLevel = () => {
