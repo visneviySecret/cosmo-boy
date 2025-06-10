@@ -42,17 +42,24 @@ export class Level {
     return this.name;
   }
 
-  saveLevel({ id, name }: LevelData) {
-    if (!id) return;
+  saveLevel(props: LevelData | null) {
+    if (!props?.id) return;
     const currentLevel = {
-      id,
-      name,
+      id: props.id,
+      name: props.name,
       platforms: this.getPlatforms(),
     };
     let levels = JSON.parse(localStorage.getItem("gameLevels") || "[]");
-    const levelIndex = levels.findIndex((level: LevelData) => level.id === id);
-    levels[levelIndex] = currentLevel;
-    localStorage.setItem("gameLevels", JSON.stringify(levels));
+    const levelIndex = levels.findIndex(
+      (level: LevelData) => level.id === props.id
+    );
+    if (levelIndex !== -1) {
+      levels[levelIndex] = currentLevel;
+    } else {
+      levels.push(currentLevel);
+    }
+    const updatedLevels = JSON.stringify(levels);
+    localStorage.setItem("gameLevels", updatedLevels);
   }
 
   static fromJSON(json: string): Level {

@@ -48,12 +48,18 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       : "1";
     const name = `Уровень ${id}`;
     const newLevel: LevelData = { id, name, platforms: [] };
-    !isExistLevelsInStorage && handleSelectChange(newLevel, false);
-    const savedLevels = localStorage.getItem("gameLevels");
-    const parsedLevels = savedLevels ? JSON.parse(savedLevels) : [];
-    const updatedLevels = [...parsedLevels, newLevel];
+    let updatedLevels = [];
+    if (!isExistLevelsInStorage) {
+      handleSelectChange(newLevel, false);
+      onSave(newLevel);
+      updatedLevels = [newLevel];
+    } else {
+      const savedLevels = localStorage.getItem("gameLevels");
+      const parsedLevels = savedLevels ? JSON.parse(savedLevels) : [];
+      updatedLevels = [...parsedLevels, newLevel];
+      localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
+    }
     setLevels(updatedLevels);
-    localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
   };
 
   const handleDeleteLevel = (

@@ -208,6 +208,11 @@ export const useLevelEditor = () => {
   };
 
   useEffect(() => {
+    const loadedLevel = localStorage.getItem("loadedLevel");
+    if (loadedLevel) {
+      loadLevel(loadedLevel);
+    }
+
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       scale: {
