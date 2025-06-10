@@ -150,6 +150,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.currentAsteroid) {
           this.rotationManager.setFinalRotation(this, this.currentAsteroid);
+          // Устанавливаем isOnMeteorite в true при успешном приземлении
+          this.setIsOnMeteorite(true);
         }
         return;
       }
@@ -184,6 +186,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
       // Сбрасываем поворот при отрыве от астероида
       this.currentAsteroid = null;
+    } else {
+      // Если игрок оторвался от астероида, сбрасываем все связанные состояния
+      this.isJumping = false;
+      this.jumpProgress = 0;
+      this.jumpSpeed = this.INITIAL_JUMP_SPEED;
+      if (this.body) {
+        this.body.enable = true;
+      }
     }
   }
 
