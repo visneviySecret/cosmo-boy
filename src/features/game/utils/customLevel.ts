@@ -2,8 +2,7 @@ import { Level } from "../entities/Level";
 import { Asteroid } from "../entities/Asteroid";
 import type { PlatformConfig } from "../entities/Platform";
 import type Phaser from "phaser";
-
-const LEVEL_STORAGE_KEY = "custom_level";
+import { LEVEL_STORAGE_KEY } from "./editorUtils";
 
 export function loadCustomLevel(): Level | null {
   const json = localStorage.getItem(LEVEL_STORAGE_KEY);

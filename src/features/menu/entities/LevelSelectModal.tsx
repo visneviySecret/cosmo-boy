@@ -9,7 +9,7 @@ import {
   RadioButton,
 } from "./LevelSelectModal.style";
 import type { LevelData } from "../../game/entities/Level";
-import { useStore } from "../../../shared/store";
+import { LEVEL_STORAGE_KEY } from "../../game/utils/editorUtils";
 
 type LevelSelectModalProps = {
   isOpen: boolean;
@@ -26,9 +26,6 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
 }) => {
   const [levels, setLevels] = useState<LevelData[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<LevelData | null>(null);
-  const { setSelectedLevel: setSelectedLevelInStore } = useStore();
-
-  // TODO: доставать выбранный уровень из памяти
 
   const handleSelectChange = (value: LevelData, isLoad = true) => {
     const level = {
@@ -37,9 +34,8 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       platforms: value.platforms,
     };
     setSelectedLevel(level);
-    setSelectedLevelInStore(level);
     isLoad && onLoad(value.id);
-    localStorage.setItem("loadedLevel", JSON.stringify(level));
+    localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(level));
   };
 
   const handleCreateNewLevel = () => {

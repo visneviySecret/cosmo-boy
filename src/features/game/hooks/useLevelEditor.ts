@@ -6,7 +6,11 @@ import { Player } from "../entities/Player";
 import { Asteroid } from "../entities/Asteroid";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
-import { itemGetter, type PlatformConfigWithType } from "../utils/editorUtils";
+import {
+  itemGetter,
+  LEVEL_STORAGE_KEY,
+  type PlatformConfigWithType,
+} from "../utils/editorUtils";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -154,13 +158,13 @@ export const useLevelEditor = () => {
 
   const loadLevel = (id: string) => {
     if (!sceneRef.current) {
-      console.error("Сцена не инициализирована");
+      alert("Сцена не инициализирована");
       return;
     }
 
     const json = localStorage.getItem("gameLevels");
     if (!json) {
-      console.error("Нет сохраненных уровней");
+      alert("Нет сохраненных уровней");
       return;
     }
 
@@ -168,7 +172,7 @@ export const useLevelEditor = () => {
     const data = levels.find((level: LevelData) => level.id === id);
 
     if (!data) {
-      console.error(`Уровень с id ${id} не найден`);
+      alert(`Уровень с id ${id} не найден`);
       return;
     }
 
@@ -182,7 +186,6 @@ export const useLevelEditor = () => {
 
       // Создаем новые платформы
       const platforms = storedLevel.getPlatforms();
-      console.log("Загружаемые платформы:", platforms);
 
       platforms.forEach((cfg: PlatformConfigWithType) => {
         let platform;
@@ -194,10 +197,8 @@ export const useLevelEditor = () => {
         }
         platformsRef.current.push(platform);
       });
-
-      console.log("Уровень успешно загружен");
     } catch (error) {
-      console.error("Ошибка при загрузке уровня:", error);
+      alert("Ошибка при загрузке уровня: " + error);
     }
   };
 
@@ -238,9 +239,9 @@ export const useLevelEditor = () => {
           previewRef.current.setVisible(false);
 
           // Загружаем сохраненный уровень после инициализации сцены
-          const loadedLevel = localStorage.getItem("loadedLevel");
-          if (loadedLevel) {
-            const levelData = JSON.parse(loadedLevel);
+          const customLevel = localStorage.getItem(LEVEL_STORAGE_KEY);
+          if (customLevel) {
+            const levelData = JSON.parse(customLevel);
             loadLevel(levelData.id);
           }
 
@@ -337,6 +338,10 @@ export const useLevelEditor = () => {
             platform.setData("type", editorItem);
             platformsRef.current.push(platform);
             levelRef.current?.addPlatform({ ...cfg, type: editorItem });
+            localStorage.setItem(
+              LEVEL_STORAGE_KEY,
+              JSON.stringify(levelRef.current)
+            );
           });
 
           this.input.on("pointerup", () => {
