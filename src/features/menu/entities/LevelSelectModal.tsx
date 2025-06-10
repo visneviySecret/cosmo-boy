@@ -8,17 +8,14 @@ import {
   LevelList,
   RadioButton,
 } from "./LevelSelectModal.style";
-
-type Level = {
-  id: string;
-  name: string;
-};
+import type { LevelData } from "../../game/entities/Level";
+import { useStore } from "../../../shared/store";
 
 type LevelSelectModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (levelKey: string) => void;
-  onLoad: () => void;
+  onSave: (props: LevelData | null) => void;
+  onLoad: (levelId: string) => void;
 };
 
 export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
@@ -27,19 +24,31 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   onSave,
   onLoad,
 }) => {
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
+  const [levels, setLevels] = useState<LevelData[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState<LevelData | null>(null);
+  const { setSelectedLevel: setSelectedLevelInStore } = useStore();
+
   // TODO: доставать выбранный уровень из памяти
 
-  const handleSelectChange = (value: Level) => {
-    const level = { id: value.id, name: value.name };
+  const handleSelectChange = (value: LevelData, isLoad = true) => {
+    const level = {
+      id: value.id,
+      name: value.name,
+      platforms: value.platforms,
+    };
     setSelectedLevel(level);
+    setSelectedLevelInStore(level);
+    isLoad && onLoad(value.id);
   };
 
   const handleCreateNewLevel = () => {
-    const id = String(levels.length + 1);
+    const isExistLevelsInStorage = levels.length !== 0;
+    const id = isExistLevelsInStorage
+      ? String(Number(levels[levels.length - 1].id) + 1)
+      : "1";
     const name = `Уровень ${id}`;
-    const newLevel: Level = { id, name };
+    const newLevel: LevelData = { id, name, platforms: [] };
+    !isExistLevelsInStorage && handleSelectChange(newLevel, false);
     const savedLevels = localStorage.getItem("gameLevels");
     const parsedLevels = savedLevels ? JSON.parse(savedLevels) : [];
     const updatedLevels = [...parsedLevels, newLevel];
@@ -47,13 +56,26 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
   };
 
-  const handleDeleteLevel = (levelId: string) => {
-    //   TODO: если уровень не пустой, то выводить модалку подтверждения
-    const savedLevels = localStorage.getItem("gameLevels");
-    if (savedLevels) {
-      const levels = JSON.parse(savedLevels);
-      const updatedLevels = levels.filter(
-        (level: Level) => level.id !== levelId
+  const handleDeleteLevel = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    levelId: string
+  ) => {
+    e.stopPropagation();
+    const savedLevelsJson = localStorage.getItem("gameLevels");
+
+    if (savedLevelsJson) {
+      const savedLevels = JSON.parse(savedLevelsJson);
+      const deletedLevel = savedLevels.find(
+        (level: LevelData) => level.id === levelId
+      );
+      if (deletedLevel?.platforms?.length) {
+        const response = confirm(
+          "Уровень содержкит платформы, действительно удалить?"
+        );
+        if (!response) return;
+      }
+      const updatedLevels = savedLevels.filter(
+        (level: LevelData) => level.id !== levelId
       );
       localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
       setLevels(updatedLevels);
@@ -61,13 +83,13 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   };
 
   useEffect(() => {
-    const savedLevel = localStorage.getItem("savedLevel");
-    if (savedLevel) {
-      setSelectedLevel(JSON.parse(savedLevel));
+    const loadedLevel = localStorage.getItem("loadedLevel");
+    if (loadedLevel) {
+      setSelectedLevel(JSON.parse(loadedLevel));
     }
-    const savedLevels = localStorage.getItem("gameLevels");
-    if (savedLevels) {
-      setLevels(JSON.parse(savedLevels));
+    const gameLevels = localStorage.getItem("gameLevels");
+    if (gameLevels) {
+      setLevels(JSON.parse(gameLevels));
     }
   }, []);
 
@@ -93,7 +115,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
             <div>
               <Button
                 $variant="danger"
-                onClick={() => handleDeleteLevel(level.id)}
+                onClick={(e) => handleDeleteLevel(e, level.id)}
               >
                 ✕
               </Button>
@@ -105,14 +127,11 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
         Создать новый уровень
       </Button>
       <ButtonGroup>
-        <Button
-          onClick={() => onSave(selectedLevel?.id || "")}
-          $variant="primary"
-        >
+        <Button onClick={() => onSave(selectedLevel)} $variant="primary">
           Сохранить
         </Button>
-        <Button onClick={onLoad} $variant="secondary">
-          Загрузить
+        <Button onClick={onClose} $variant="secondary">
+          Закрыть
         </Button>
       </ButtonGroup>
     </ModalOverlay>

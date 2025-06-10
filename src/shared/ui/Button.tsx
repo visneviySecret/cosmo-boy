@@ -7,7 +7,7 @@ const SECONDARY_COLOR = "#2196f3";
 const DANGER_COLOR = "#f44336";
 
 interface ButtonProps {
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
   $variant?: "default" | "primary" | "secondary" | "danger";
 }

@@ -5,10 +5,11 @@ import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
 import { PlatformTypeSelector } from "../../../entities";
 import { LevelSelectModal } from "../../menu/entities/LevelSelectModal";
+import type { LevelData } from "../entities/Level";
 
 type LevelEditorToolsProps = {
-  onSave: (levelKey: string) => void;
-  onLoad: () => void;
+  onSave: (data: LevelData | null) => void;
+  onLoad: (levelId: string) => void;
   onCreatePreview: (type: EditorItem) => void;
 };
 

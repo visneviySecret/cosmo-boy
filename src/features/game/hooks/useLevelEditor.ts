@@ -1,20 +1,17 @@
 import { useRef, useEffect } from "react";
 import Phaser from "phaser";
-import { Level } from "../entities/Level";
+import { Level, type LevelData } from "../entities/Level";
 import { Platform } from "../entities/Platform";
 import { Player } from "../entities/Player";
 import { Asteroid } from "../entities/Asteroid";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
-import {
-  itemGetter,
-  LEVEL_STORAGE_KEY,
-  type PlatformConfigWithType,
-} from "../utils/editorUtils";
+import { itemGetter, type PlatformConfigWithType } from "../utils/editorUtils";
 
 export const useLevelEditor = () => {
   const phaserRef = useRef<HTMLDivElement>(null);
   const levelRef = useRef<Level>(new Level());
+  const saveLevel = levelRef.current.saveLevel.bind(levelRef.current);
   const platformsRef = useRef<Platform[]>([]);
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
@@ -110,7 +107,7 @@ export const useLevelEditor = () => {
         platform.destroy();
         platformsRef.current[index] = newPlatform;
 
-        const platforms = levelRef.current.getPlatforms();
+        const platforms = levelRef.current?.getPlatforms() || [];
         platforms[index] = { ...platforms[index], size: newSize };
       }
     }
@@ -139,7 +136,7 @@ export const useLevelEditor = () => {
 
       const index = platformsRef.current.indexOf(draggedPlatformRef.current);
       if (index !== -1) {
-        const platforms = levelRef.current.getPlatforms();
+        const platforms = levelRef.current?.getPlatforms() || [];
         platforms[index] = { ...platforms[index], x: worldX, y: worldY };
       }
     }
@@ -155,26 +152,34 @@ export const useLevelEditor = () => {
     }
   };
 
-  const saveLevel = (levelKey: string) => {
-    if (!levelKey) return;
-    const key = levelKey || LEVEL_STORAGE_KEY;
-    const levelPayload = {
-      id: levelKey,
-      name: "",
-      level: levelRef.current.toJSON(),
-    };
-    localStorage.setItem(key, JSON.stringify(levelPayload));
-    alert(`Уровень ${LEVEL_STORAGE_KEY} сохранён!`);
-  };
+  const loadLevel = (id: string) => {
+    const json = localStorage.getItem("gameLevels");
+    if (!json) {
+      alert("Нет сохраненных уровней");
+      return;
+    }
 
-  const loadLevel = () => {
-    const json = localStorage.getItem(LEVEL_STORAGE_KEY);
-    if (json && sceneRef.current) {
-      const level = Level.fromJSON(json);
-      levelRef.current = level;
+    const levels = JSON.parse(json);
+    const data = levels.find((level: LevelData) => level.id === id);
+
+    if (!data) {
+      alert("Уровень не найден" + id);
+      return;
+    }
+
+    try {
+      const storedLevel = new Level(data);
+
+      levelRef.current = storedLevel;
+
+      // Очищаем существующие платформы
       platformsRef.current.forEach((p) => p.destroy());
       platformsRef.current = [];
-      (level.getPlatforms() as PlatformConfigWithType[]).forEach((cfg) => {
+
+      // Создаем новые платформы
+      const platforms = storedLevel.getPlatforms();
+
+      platforms.forEach((cfg: PlatformConfigWithType) => {
         let platform;
         if (cfg.type === EditorItem.ASTEROID) {
           platform = new Asteroid(sceneRef.current!, cfg);
@@ -183,6 +188,8 @@ export const useLevelEditor = () => {
         }
         platformsRef.current.push(platform);
       });
+    } catch (error) {
+      alert("Ошибка при загрузке уровня:" + error);
     }
   };
 
@@ -192,8 +199,8 @@ export const useLevelEditor = () => {
       if (index !== -1) {
         hoveredPlatformRef.current.destroy();
         platformsRef.current.splice(index, 1);
-        const platforms = levelRef.current.getPlatforms();
-        platforms.splice(index, 1);
+        const platforms = levelRef.current?.getPlatforms();
+        platforms?.splice(index, 1);
       }
       hoveredPlatformRef.current = null;
     }
@@ -314,7 +321,7 @@ export const useLevelEditor = () => {
             platform = itemGetter(editorItem, this, cfg);
             platform.setData("type", editorItem);
             platformsRef.current.push(platform);
-            levelRef.current.addPlatform({ ...cfg, type: editorItem });
+            levelRef.current?.addPlatform({ ...cfg, type: editorItem });
           });
 
           this.input.on("pointerup", () => {
