@@ -181,10 +181,11 @@ export const useLevelEditor = () => {
 
       platforms.forEach((cfg: PlatformConfigWithType) => {
         let platform;
-        if (cfg.type === EditorItem.ASTEROID) {
-          platform = new Asteroid(sceneRef.current!, cfg);
+        let editModeCfg = { ...cfg, isEditor: true };
+        if (editModeCfg.type === EditorItem.ASTEROID) {
+          platform = new Asteroid(sceneRef.current!, editModeCfg);
         } else {
-          platform = new Platform(sceneRef.current!, cfg);
+          platform = new Platform(sceneRef.current!, editModeCfg);
         }
         platformsRef.current.push(platform);
       });
