@@ -5,6 +5,7 @@ import type { PlatformConfig } from "./Platform";
 export interface PutinWebConfig extends PlatformConfig {
   webDeformation?: number;
   spiderDelay?: number;
+  tintLevel?: number;
 }
 
 export class PutinWebPlatform extends Platform {
@@ -14,13 +15,14 @@ export class PutinWebPlatform extends Platform {
   private readonly SPIDER_DELAY = 3000; // 3 секунды до появления паука
   private isPlayerTrapped: boolean = false;
   private spider: Phaser.GameObjects.Sprite | null = null;
+  tint: number = 0xffffff;
 
   constructor(scene: Phaser.Scene, config: PutinWebConfig) {
     super(scene, config);
     this.textureKey = "web-sprite";
     this.setTexture(this.textureKey);
-
-    // Устанавливаем размер спрайта
+    this.tint = this.getGradientColor(config.tintLevel);
+    this.setTintFill(this.tint);
     this.setDisplaySize(this.getSize(), this.getSize());
   }
 
@@ -89,5 +91,14 @@ export class PutinWebPlatform extends Platform {
         });
       },
     });
+  }
+
+  getGradientColor(t: number | undefined) {
+    if (!t) return this.tint;
+    t = Math.min(Math.max(t, 0), 1);
+    const v = Math.round(255 * (1 - t));
+    const hex = v.toString(16).padStart(2, "0");
+    console.log(hex);
+    return Number(`0x${hex}${hex}${hex}`);
   }
 }
