@@ -10,6 +10,7 @@ import {
   generatePlatformsFromLevel,
 } from "../utils/customLevel";
 import type { PlatformsType } from "../../../shared/types/platforms";
+import { preloadTextures } from "../utils/scene";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -48,6 +49,7 @@ const Game = React.memo(() => {
       scene: {
         create: create,
         update: update,
+        preload: preloadTextures,
       },
     };
 

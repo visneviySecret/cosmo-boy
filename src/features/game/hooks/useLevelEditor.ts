@@ -11,6 +11,7 @@ import {
   type PlatformConfigWithType,
 } from "../utils/editorUtils";
 import { getPlatformByType } from "../utils/customLevel";
+import { preloadTextures } from "../utils/scene";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -225,9 +226,7 @@ export const useLevelEditor = () => {
       },
       parent: phaserRef.current!,
       scene: {
-        preload: function () {
-          this.load.image("web-sprite", "assets/web-sprite.png");
-        },
+        preload: preloadTextures,
         create: function () {
           sceneRef.current = this;
 
