@@ -7,6 +7,7 @@ import { Asteroid } from "../entities/Asteroid";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
 import {
+  GAME_LEVELS_STORAGE_KEY,
   itemGetter,
   LEVEL_STORAGE_KEY,
   type PlatformConfigWithType,
@@ -162,7 +163,7 @@ export const useLevelEditor = () => {
       return;
     }
 
-    const json = localStorage.getItem("gameLevels");
+    const json = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
     if (!json) {
       alert("Нет сохраненных уровней");
       return;
@@ -338,10 +339,6 @@ export const useLevelEditor = () => {
             platform.setData("type", editorItem);
             platformsRef.current.push(platform);
             levelRef.current?.addPlatform({ ...cfg, type: editorItem });
-            localStorage.setItem(
-              LEVEL_STORAGE_KEY,
-              JSON.stringify(levelRef.current)
-            );
           });
 
           this.input.on("pointerup", () => {

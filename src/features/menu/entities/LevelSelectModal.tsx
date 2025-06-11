@@ -9,7 +9,10 @@ import {
   RadioButton,
 } from "./LevelSelectModal.style";
 import type { LevelData } from "../../game/entities/Level";
-import { LEVEL_STORAGE_KEY } from "../../game/utils/editorUtils";
+import {
+  GAME_LEVELS_STORAGE_KEY,
+  LEVEL_STORAGE_KEY,
+} from "../../game/utils/editorUtils";
 
 type LevelSelectModalProps = {
   isOpen: boolean;
@@ -51,10 +54,13 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       onSave(newLevel);
       updatedLevels = [newLevel];
     } else {
-      const savedLevels = localStorage.getItem("gameLevels");
+      const savedLevels = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
       const parsedLevels = savedLevels ? JSON.parse(savedLevels) : [];
       updatedLevels = [...parsedLevels, newLevel];
-      localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
+      localStorage.setItem(
+        GAME_LEVELS_STORAGE_KEY,
+        JSON.stringify(updatedLevels)
+      );
     }
     setLevels(updatedLevels);
   };
@@ -64,7 +70,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     levelId: string
   ) => {
     e.stopPropagation();
-    const savedLevelsJson = localStorage.getItem("gameLevels");
+    const savedLevelsJson = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
 
     if (savedLevelsJson) {
       const savedLevels = JSON.parse(savedLevelsJson);
@@ -80,13 +86,16 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       const updatedLevels = savedLevels.filter(
         (level: LevelData) => level.id !== levelId
       );
-      localStorage.setItem("gameLevels", JSON.stringify(updatedLevels));
+      localStorage.setItem(
+        GAME_LEVELS_STORAGE_KEY,
+        JSON.stringify(updatedLevels)
+      );
       setLevels(updatedLevels);
     }
   };
 
   useEffect(() => {
-    const gameLevels = localStorage.getItem("gameLevels");
+    const gameLevels = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
     if (gameLevels) {
       setLevels(JSON.parse(gameLevels));
     }
