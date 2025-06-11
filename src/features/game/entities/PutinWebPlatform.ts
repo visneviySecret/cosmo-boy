@@ -48,6 +48,9 @@ export class PutinWebPlatform extends Platform {
         player.y += Math.cos(this.webDeformation * 2) * 2;
       }
     }
+
+    // Вызываем update из базового класса для вращения обводки
+    super.update();
   }
 
   onPlayerCollision(player: Phaser.Physics.Arcade.Sprite) {

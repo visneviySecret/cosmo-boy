@@ -5,8 +5,6 @@ import type { PlatformConfig } from "./Platform";
 export interface AsteroidConfig extends PlatformConfig {}
 
 export class Asteroid extends Platform {
-  private readonly ROTATION_SPEED: number = 0.02;
-
   constructor(scene: Phaser.Scene, config: AsteroidConfig) {
     super(scene, config);
 
@@ -16,24 +14,6 @@ export class Asteroid extends Platform {
 
     // Создаем временную графику для астероида
     this.createTemporaryGraphics();
-
-    // Добавляем обработчики событий наведения
-    this.on("pointerover", () => {
-      this.showOutline();
-      // Получаем ссылку на AimLine из сцены
-      const aimLine = (this.scene as any).aimLine;
-      if (aimLine) {
-        aimLine.setTargetAsteroid(this);
-      }
-    });
-    this.on("pointerout", () => {
-      this.hideOutline();
-      // Получаем ссылку на AimLine из сцены
-      const aimLine = (this.scene as any).aimLine;
-      if (aimLine) {
-        aimLine.setTargetAsteroid(null);
-      }
-    });
   }
 
   private createTemporaryGraphics() {
@@ -50,13 +30,5 @@ export class Asteroid extends Platform {
 
     // Устанавливаем текстуру для спрайта
     this.setTexture(this.textureKey);
-  }
-
-  update() {
-    // Обновляем вращение обводки
-    if (this.graphics) {
-      this.outlineRotation += this.ROTATION_SPEED;
-      this.showOutline();
-    }
   }
 }

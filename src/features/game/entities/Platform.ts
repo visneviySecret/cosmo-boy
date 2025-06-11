@@ -17,6 +17,7 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
   protected textureKey: string;
   protected outlineRotation: number = 0;
   private isEditor: boolean;
+  private readonly ROTATION_SPEED: number = 0.02;
 
   constructor(scene: Phaser.Scene, config: PlatformConfig) {
     super(scene, config.x, config.y, "platform");
@@ -48,6 +49,24 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
 
     // Добавляем в список обновляемых объектов
     scene.events.on("update", this.update, this);
+
+    // Добавляем обработчики событий наведения
+    this.on("pointerover", () => {
+      this.showOutline();
+      // Получаем ссылку на AimLine из сцены
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetAsteroid(this);
+      }
+    });
+    this.on("pointerout", () => {
+      this.hideOutline();
+      // Получаем ссылку на AimLine из сцены
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetAsteroid(null);
+      }
+    });
   }
 
   // Получить массу платформы
@@ -76,9 +95,11 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
     );
   }
 
-  // Базовый метод обновления
   update() {
-    // Может быть переопределен в дочерних классах
+    if (this.graphics) {
+      this.outlineRotation += this.ROTATION_SPEED;
+      this.showOutline();
+    }
   }
 
   // Показать обводку

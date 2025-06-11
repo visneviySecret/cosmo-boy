@@ -86,7 +86,6 @@ export const useLevelEditor = () => {
   };
 
   const updatePlatformSize = (platform: Platform, delta: number) => {
-    console.log("playerSizeRef", playerSizeRef.current);
     if (!playerSizeRef.current) return;
 
     const currentSize = platform.getSize();
