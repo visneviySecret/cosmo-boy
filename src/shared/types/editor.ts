@@ -1,5 +1,6 @@
 export enum EditorItem {
   ASTEROID = "asteroid",
+  PUTIN_WEB = "putin_web",
 }
 
 export type EditorItemType = (typeof EditorItem)[keyof typeof EditorItem];

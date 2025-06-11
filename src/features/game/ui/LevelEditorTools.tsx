@@ -18,7 +18,7 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   onLoad,
   onCreatePreview,
 }) => {
-  const { editorItem, setEditorItem } = useStore();
+  const { setEditorItem } = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleTypeChange = (type: string) => {
@@ -30,7 +30,7 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   return (
     <>
       <EditorToolsWrapper>
-        <PlatformTypeSelector value={editorItem} onChange={handleTypeChange} />
+        <PlatformTypeSelector onChange={handleTypeChange} />
       </EditorToolsWrapper>
       <EditorPanel>
         <Button onClick={() => setIsModalOpen(true)} $variant="secondary">

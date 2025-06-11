@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
-import { Asteroid } from "../entities/Asteroid";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
 import { generateAsteroids } from "../utils/asteroidGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
 import {
   loadCustomLevel,
-  generateAsteroidsFromLevel,
+  generatePlatformsFromLevel,
 } from "../utils/customLevel";
+import type { PlatformsType } from "../../../shared/types/platforms";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -53,7 +53,7 @@ const Game = React.memo(() => {
 
     gameRef.current = new Phaser.Game(config);
 
-    let asteroids: Asteroid[] = [];
+    let platforms: PlatformsType[] = [];
     let player: Player;
     let aimLine: AimLine;
 
@@ -84,10 +84,10 @@ const Game = React.memo(() => {
       // --- Загрузка пользовательского уровня ---
       const customLevel = loadCustomLevel();
       if (customLevel) {
-        asteroids = generateAsteroidsFromLevel(this, customLevel);
+        platforms = generatePlatformsFromLevel(this, customLevel);
         // Разместить игрока на первой платформе, если есть
-        if (asteroids.length > 0) {
-          const first = asteroids[0];
+        if (platforms.length > 0) {
+          const first = platforms[0];
           player.x = first.x;
           player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
         }
@@ -98,11 +98,11 @@ const Game = React.memo(() => {
           aimLine,
           player
         );
-        asteroids = initialAsteroids;
+        platforms = initialAsteroids;
         // Добавляем обработчик столкновений с едой
         createFoodCollision(this, player, foodGroup);
         // Размещаем игрока на первом астероиде
-        const leftAsteroid = asteroids[0];
+        const leftAsteroid = platforms[0];
         player.x = leftAsteroid.x;
         player.y =
           leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
@@ -125,10 +125,10 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && asteroids.length > 0 && aimLine) {
+      if (player && platforms.length > 0 && aimLine) {
         aimLine.update(player);
 
-        const rightmostAsteroid = asteroids[asteroids.length - 1];
+        const rightmostAsteroid = platforms[platforms.length - 1];
 
         // Если самый правый астероид появился на экране, генерируем новые астероиды
         if (rightmostAsteroid.isVisible()) {
@@ -139,14 +139,14 @@ const Game = React.memo(() => {
             rightmostAsteroid.x + aimLine.getCurrentLength(),
             rightmostAsteroid.y
           );
-          asteroids.push(...newAsteroids);
+          platforms.push(...newAsteroids);
 
           // Добавляем обработчик столкновений для новой группы еды
           createFoodCollision(this, player, foodGroup);
         }
 
         // Удаляем невидимые астероиды слева от игрока
-        asteroids = asteroids.filter((asteroid) => {
+        platforms = platforms.filter((asteroid) => {
           if (
             !asteroid.isVisible() &&
             asteroid.x < player.x - this.cameras.main.width

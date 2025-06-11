@@ -8,25 +8,36 @@ import {
   Option,
 } from "./PlatformTypeSelector.style";
 import { GroundIcon } from "./GroundIcon";
+import { useStore } from "../../shared/store";
+import { EditorItem } from "../../shared/types/editor";
 
 export const PlatformType = {
-  Asteroid: "asteroid",
+  Asteroid: EditorItem.ASTEROID,
+  PutinWeb: EditorItem.PUTIN_WEB,
+} as const;
+
+export const PlatformTypeLabel = {
+  Asteroid: "Астероид",
+  PutinWeb: "Паутина Путина",
 } as const;
 
 type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
 
 interface PlatformTypeSelectorProps {
-  value: string | null;
   onChange: (value: string) => void;
 }
 
-const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
+const options = Object.entries(PlatformType).map(([key, value]) => ({
+  label: PlatformTypeLabel[key as keyof typeof PlatformTypeLabel],
   value,
+}));
+
+const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   onChange,
 }) => {
-  const [localValue, setLocalValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { editorItem, setEditorItem } = useStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,7 +56,7 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   }, []);
 
   const handleSelect = (type: string) => {
-    setLocalValue(type);
+    setEditorItem(type as EditorItem);
     onChange(type);
     setIsOpen(false);
   };
@@ -59,13 +70,20 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
       <SelectWrapper ref={wrapperRef}>
         <IconWrapper>{GroundIcon}</IconWrapper>
         <Selector onClick={toggleDropdown}>
-          {localValue === PlatformType.Asteroid ? "Астероид" : "Выберите тип"}
+          {editorItem
+            ? options.find((opt) => opt.value === editorItem)?.label
+            : "Выберите тип"}
         </Selector>
         {isOpen && (
           <OptionsList>
-            <Option onClick={() => handleSelect(PlatformType.Asteroid)}>
-              Астероид
-            </Option>
+            {options.map((option) => (
+              <Option
+                onClick={() => handleSelect(option.value)}
+                key={option.value}
+              >
+                {option.label}
+              </Option>
+            ))}
           </OptionsList>
         )}
       </SelectWrapper>

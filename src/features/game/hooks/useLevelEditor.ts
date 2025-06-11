@@ -3,15 +3,14 @@ import Phaser from "phaser";
 import { Level, type LevelData } from "../entities/Level";
 import { Platform } from "../entities/Platform";
 import { Player } from "../entities/Player";
-import { Asteroid } from "../entities/Asteroid";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
 import {
   GAME_LEVELS_STORAGE_KEY,
-  itemGetter,
   LEVEL_STORAGE_KEY,
   type PlatformConfigWithType,
 } from "../utils/editorUtils";
+import { getPlatformByType } from "../utils/customLevel";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -21,6 +20,7 @@ export const useLevelEditor = () => {
   const platformsRef = useRef<Platform[]>([]);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem, setEditorItem } = useStore();
+  const editorItemRef = useRef<EditorItem | null>(null);
   const previewSizeRef = useRef<number | undefined>(undefined);
   const playerSizeRef = useRef<number | undefined>(undefined);
   const draggedPlatformRef = useRef<Platform | null>(null);
@@ -37,13 +37,16 @@ export const useLevelEditor = () => {
   const createPreview = (type: EditorItem) => {
     if (sceneRef.current) {
       resetPreview();
+      setEditorItem(type);
       const ctx = sceneRef.current;
       const camera = ctx.cameras.main;
       const cfg = {
         x: camera.scrollX + camera.width / 2,
         y: camera.scrollY + camera.height / 2,
+        isEditor: true,
+        type,
       };
-      const item = itemGetter(type, ctx, cfg);
+      const item = getPlatformByType(sceneRef.current!, cfg);
       const defaultSize = item.getSize();
       previewSizeRef.current = defaultSize;
       previewRef.current = ctx.add.sprite(cfg.x, cfg.y, item.texture.key);
@@ -55,7 +58,7 @@ export const useLevelEditor = () => {
 
   const updatePreviewSize = (delta: number) => {
     if (
-      !editorItem ||
+      !editorItemRef.current ||
       !previewRef.current ||
       !previewSizeRef.current ||
       !playerSizeRef.current
@@ -74,15 +77,15 @@ export const useLevelEditor = () => {
       previewSizeRef.current = newSize;
       previewRef.current.setDisplaySize(newSize, newSize);
 
-      const ctx = sceneRef.current!;
-      const cfg = { x: 0, y: 0, size: newSize };
-      const item = itemGetter(editorItem, ctx, cfg);
+      const cfg = { x: 0, y: 0, size: newSize, type: editorItemRef.current };
+      const item = getPlatformByType(sceneRef.current!, cfg);
       previewRef.current.setTexture(item.texture.key);
       item.destroy();
     }
   };
 
   const updatePlatformSize = (platform: Platform, delta: number) => {
+    console.log("playerSizeRef", playerSizeRef.current);
     if (!playerSizeRef.current) return;
 
     const currentSize = platform.getSize();
@@ -101,13 +104,9 @@ export const useLevelEditor = () => {
           x: platform.x,
           y: platform.y,
           size: newSize,
-          type: platform.getData("type"),
+          type: platform.getType(),
         };
-        const newPlatform = itemGetter(
-          cfg.type || EditorItem.ASTEROID,
-          sceneRef.current!,
-          cfg
-        );
+        const newPlatform = getPlatformByType(sceneRef.current!, cfg);
 
         platform.destroy();
         platformsRef.current[index] = newPlatform;
@@ -189,13 +188,8 @@ export const useLevelEditor = () => {
       const platforms = storedLevel.getPlatforms();
 
       platforms.forEach((cfg: PlatformConfigWithType) => {
-        let platform;
         let editModeCfg = { ...cfg, isEditor: true };
-        if (editModeCfg.type === EditorItem.ASTEROID) {
-          platform = new Asteroid(sceneRef.current!, editModeCfg);
-        } else {
-          platform = new Platform(sceneRef.current!, editModeCfg);
-        }
+        const platform = getPlatformByType(sceneRef.current!, editModeCfg);
         platformsRef.current.push(platform);
       });
     } catch (error) {
@@ -217,6 +211,10 @@ export const useLevelEditor = () => {
   };
 
   useEffect(() => {
+    editorItemRef.current = editorItem;
+  }, [editorItem]);
+
+  useEffect(() => {
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       scale: {
@@ -227,7 +225,9 @@ export const useLevelEditor = () => {
       },
       parent: phaserRef.current!,
       scene: {
-        preload: function () {},
+        preload: function () {
+          this.load.image("web-sprite", "assets/web-sprite.png");
+        },
         create: function () {
           sceneRef.current = this;
 
@@ -294,7 +294,6 @@ export const useLevelEditor = () => {
                     pointer.y + this.cameras.main.scrollY
                   );
                 });
-
                 if (platform) {
                   updatePlatformSize(platform, deltaY);
                 }
@@ -326,19 +325,23 @@ export const useLevelEditor = () => {
               return;
             }
 
-            if (!previewRef.current || !editorItem) return;
+            if (!previewRef.current || !editorItemRef.current) return;
 
             const camera = this.cameras.main;
-            let platform;
             const cfg = {
               x: pointer.x + camera.scrollX,
               y: pointer.y + camera.scrollY,
               size: previewSizeRef.current,
+              type: editorItemRef.current,
             };
-            platform = itemGetter(editorItem, this, cfg);
+
+            const platform = getPlatformByType(sceneRef.current!, cfg);
             platform.setData("type", editorItem);
             platformsRef.current.push(platform);
-            levelRef.current?.addPlatform({ ...cfg, type: editorItem });
+            levelRef.current?.addPlatform({
+              ...cfg,
+              type: editorItemRef.current,
+            });
           });
 
           this.input.on("pointerup", () => {

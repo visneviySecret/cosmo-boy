@@ -21,6 +21,7 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
   constructor(scene: Phaser.Scene, config: PlatformConfig) {
     super(scene, config.x, config.y, "platform");
 
+    this.type = config.type || "platform";
     this.size = config.size || this.DEFAULT_SIZE;
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.textureKey = `platform_${this.size}_${Math.random().toString(16)}`;
@@ -57,6 +58,10 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
   // Получить размер платформы
   getSize(): number {
     return this.size;
+  }
+
+  getType(): string {
+    return this.type;
   }
 
   // Проверяет, находится ли платформа в пределах видимости камеры

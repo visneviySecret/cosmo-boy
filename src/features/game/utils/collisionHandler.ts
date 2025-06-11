@@ -1,6 +1,8 @@
 import { Player } from "../entities/Player";
 import { Asteroid } from "../entities/Asteroid";
+import { PutinWebPlatform } from "../entities/PutinWebPlatform";
 import Phaser from "phaser";
+import type { PlatformsType } from "../../../shared/types/platforms";
 
 export function handleCollision(player: Player, asteroid: Asteroid) {
   // Сохраняем скорости перед столкновением
@@ -26,15 +28,20 @@ export function handleCollision(player: Player, asteroid: Asteroid) {
 export function createCollision(
   scene: Phaser.Scene,
   player: Player,
-  asteroid: Asteroid
+  platform: PlatformsType
 ) {
   scene.physics.add.collider(
     player,
-    asteroid,
+    platform,
     (obj1: unknown, obj2: unknown) => {
       const playerObj = obj1 as Player;
-      const asteroidObj = obj2 as Asteroid;
-      handleCollision(playerObj, asteroidObj);
+      const platformObj = obj2 as PlatformsType;
+
+      if (platformObj instanceof Asteroid) {
+        handleCollision(playerObj, platformObj);
+      } else if (platformObj instanceof PutinWebPlatform) {
+        platformObj.onPlayerCollision(playerObj);
+      }
     },
     undefined,
     scene

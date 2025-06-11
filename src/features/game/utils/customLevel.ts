@@ -1,8 +1,11 @@
 import { Level } from "../entities/Level";
 import { Asteroid } from "../entities/Asteroid";
-import type { PlatformConfig } from "../entities/Platform";
+import { Platform, type PlatformConfig } from "../entities/Platform";
 import type Phaser from "phaser";
 import { LEVEL_STORAGE_KEY } from "./editorUtils";
+import { EditorItem } from "../../../shared/types/editor";
+import { PutinWebPlatform } from "../entities/PutinWebPlatform";
+import type { PlatformsType } from "../../../shared/types/platforms";
 
 export function loadCustomLevel(): Level | null {
   const json = localStorage.getItem(LEVEL_STORAGE_KEY);
@@ -12,11 +15,25 @@ export function loadCustomLevel(): Level | null {
   return null;
 }
 
-export function generateAsteroidsFromLevel(
+export function generatePlatformsFromLevel(
   scene: Phaser.Scene,
   level: Level
-): Asteroid[] {
+): PlatformsType[] {
   return level
     .getPlatforms()
-    .map((cfg: PlatformConfig) => new Asteroid(scene, cfg));
+    .map((cfg: PlatformConfig) => getPlatformByType(scene, cfg));
+}
+
+export function getPlatformByType(
+  scene: Phaser.Scene,
+  cfg: PlatformConfig
+): PlatformsType {
+  switch (cfg.type) {
+    case EditorItem.ASTEROID:
+      return new Asteroid(scene, cfg);
+    case EditorItem.PUTIN_WEB:
+      return new PutinWebPlatform(scene, cfg);
+    default:
+      return new Platform(scene, cfg);
+  }
 }
