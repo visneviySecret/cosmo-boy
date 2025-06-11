@@ -12,7 +12,7 @@ export const EditorContainer = styled.div`
 export const EditorPanel = styled.div`
   position: absolute;
   top: 16px;
-  right: 262px;
+  right: 336px;
   display: flex;
   gap: 1rem;
 `;
