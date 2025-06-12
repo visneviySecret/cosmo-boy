@@ -82,7 +82,6 @@ export const useLevelEditor = () => {
       const item = getPlatformByType(sceneRef.current!, cfg);
       previewRef.current.setTexture(item.texture.key);
       item.destroy();
-      saveLevel(levelRef.current.toJSON());
     }
   };
 
