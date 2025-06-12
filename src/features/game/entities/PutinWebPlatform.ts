@@ -99,7 +99,7 @@ export class PutinWebPlatform extends Platform {
 
     // Если достигнуто необходимое количество попыток - освобождаем игрока
     if (this.getEscapeProgress()) {
-      this.releasePlayer(player);
+      this.releasePlayer();
       return true;
     }
 
@@ -109,7 +109,7 @@ export class PutinWebPlatform extends Platform {
     return false;
   }
 
-  private releasePlayer(player: Player) {
+  private releasePlayer() {
     this.isPlayerTrapped = false;
     this.escapeAttempts = 0;
 

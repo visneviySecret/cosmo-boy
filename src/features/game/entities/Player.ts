@@ -15,8 +15,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private size: number;
   private mass: number;
   private readonly MASS_MULTIPLIER = 1;
-  // TODO: удалить логику прыжка на пробел в отдельном коммите
-  // private readonly JUMP_FORCE = 700;
   private readonly CURVE_HEIGHT = 200; // Высота дуги, как в AimLine
   private isOnPlatform: boolean = false;
   private isJumping: boolean = false;
@@ -59,11 +57,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setSize(this.size, this.size);
     this.setOffset(0, 0);
 
-    // TODO: удалить логику прыжка на пробел в отдельном коммите
-    // scene.input.keyboard?.on("keydown-SPACE", () => {
-    //   this.jump();
-    // });
-
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
         this.jumpToPlatform();
@@ -102,24 +95,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setTexture(this.textureKey);
   }
-
-  // TODO: удалить логику прыжка на пробел в отдельном коммите
-  // private jump(): void {
-  //   if (this.isOnMeteorite && !this.isJumping && this.body) {
-  //     this.isJumping = true;
-  //     this.setVelocityY(-this.JUMP_FORCE);
-  //   } else if (this.currentWeb && this.currentWeb.isTrapped()) {
-  //     console.log("Attempting to escape from web");
-  //     // Если игрок в паутине, пытаемся освободиться
-  //     const escaped = this.currentWeb.handleEscapeAttempt(this);
-  //     console.log("Escape attempt result:", escaped);
-  //     if (escaped) {
-  //       this.currentWeb = null;
-  //       // Даем небольшой импульс вверх при освобождении
-  //       this.setVelocityY(-this.JUMP_FORCE * 0.5);
-  //     }
-  //   }
-  // }
 
   private jumpToPlatform(): void {
     if (
