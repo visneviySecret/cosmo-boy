@@ -82,6 +82,7 @@ export const useLevelEditor = () => {
       const item = getPlatformByType(sceneRef.current!, cfg);
       previewRef.current.setTexture(item.texture.key);
       item.destroy();
+      saveLevel(levelRef.current.toJSON());
     }
   };
 
@@ -115,6 +116,7 @@ export const useLevelEditor = () => {
         platforms[index] = { ...platforms[index], size: newSize };
       }
     }
+    saveLevel(levelRef.current.toJSON());
   };
 
   const startDrag = (platform: Platform) => {
@@ -127,6 +129,7 @@ export const useLevelEditor = () => {
       if (sceneRef.current) {
         sceneRef.current.input.setDefaultCursor("default");
       }
+      saveLevel(levelRef.current.toJSON());
     }
   };
 
@@ -201,10 +204,8 @@ export const useLevelEditor = () => {
     if (hoveredPlatformRef.current) {
       const index = platformsRef.current.indexOf(hoveredPlatformRef.current);
       if (index !== -1) {
-        hoveredPlatformRef.current.destroy();
+        levelRef.current.removePlatform(hoveredPlatformRef.current);
         platformsRef.current.splice(index, 1);
-        const platforms = levelRef.current?.getPlatforms();
-        platforms?.splice(index, 1);
       }
       hoveredPlatformRef.current = null;
     }

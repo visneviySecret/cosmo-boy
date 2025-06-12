@@ -61,6 +61,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
         GAME_LEVELS_STORAGE_KEY,
         JSON.stringify(updatedLevels)
       );
+      localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(newLevel));
     }
     setLevels(updatedLevels);
   };

@@ -1,5 +1,8 @@
-import { GAME_LEVELS_STORAGE_KEY } from "../utils/editorUtils";
-import type { PlatformConfig } from "./Platform";
+import {
+  GAME_LEVELS_STORAGE_KEY,
+  LEVEL_STORAGE_KEY,
+} from "../utils/editorUtils";
+import type { Platform, PlatformConfig } from "./Platform";
 
 export interface LevelData {
   id: string;
@@ -23,9 +26,19 @@ export class Level {
     this.onSaveLevel();
   }
 
-  removePlatform(index: number) {
-    this.platforms.splice(index, 1);
-    this.onSaveLevel();
+  removePlatform(platform: Platform) {
+    const index = this.platforms.findIndex(
+      (p) =>
+        p.x === platform.x &&
+        p.y === platform.y &&
+        p.size === platform.getSize()
+    );
+
+    if (index !== -1) {
+      platform.destroy();
+      this.platforms.splice(index, 1);
+      this.onSaveLevel();
+    }
   }
 
   getPlatforms(): PlatformConfig[] {
@@ -61,7 +74,7 @@ export class Level {
     const currentLevel = {
       id: props.id,
       name: props.name,
-      platforms: this.getPlatforms(),
+      platforms: props.platforms,
     };
     let levels = JSON.parse(
       localStorage.getItem(GAME_LEVELS_STORAGE_KEY) || "[]"
@@ -76,6 +89,7 @@ export class Level {
     }
     const updatedLevels = JSON.stringify(levels);
     localStorage.setItem(GAME_LEVELS_STORAGE_KEY, updatedLevels);
+    localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(currentLevel));
   }
 
   static fromJSON(json: string): Level {
