@@ -3,6 +3,7 @@ import { ArcCalculator } from "../utils/ArcCalculator";
 import { RotationManager } from "../utils/RotationManager";
 import { PlayerProgress } from "./PlayerProgress";
 import { Food } from "./Food";
+import { PutinWebPlatform } from "./PutinWebPlatform";
 
 export interface PlayerConfig {
   x: number;
@@ -14,9 +15,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private size: number;
   private mass: number;
   private readonly MASS_MULTIPLIER = 1;
-  private readonly JUMP_FORCE = 700;
+  // TODO: удалить логику прыжка на пробел в отдельном коммите
+  // private readonly JUMP_FORCE = 700;
   private readonly CURVE_HEIGHT = 200; // Высота дуги, как в AimLine
-  private isOnMeteorite: boolean = false;
+  private isOnPlatform: boolean = false;
   private isJumping: boolean = false;
   private jumpStartX: number = 0;
   private jumpStartY: number = 0;
@@ -31,6 +33,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
   private progress: PlayerProgress;
   private textureKey: string;
+  private currentWeb: PutinWebPlatform | null = null;
+  public hasEscaped: boolean = false;
 
   constructor(scene: Phaser.Scene, config: PlayerConfig = { x: 0, y: 0 }) {
     super(scene, config.x, config.y, "player");
@@ -55,18 +59,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setSize(this.size, this.size);
     this.setOffset(0, 0);
 
-    scene.input.keyboard?.on("keydown-SPACE", () => {
-      this.jump();
-    });
+    // TODO: удалить логику прыжка на пробел в отдельном коммите
+    // scene.input.keyboard?.on("keydown-SPACE", () => {
+    //   this.jump();
+    // });
 
-    // Добавляем обработчик клика левой кнопкой мыши
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
-        this.jumpToAsteroid();
+        this.jumpToPlatform();
       }
     });
 
-    // Добавляем обработчик обновления для движения по дуге
     scene.events.on("update", this.update, this);
   }
 
@@ -100,40 +103,80 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setTexture(this.textureKey);
   }
 
-  private jump(): void {
-    if (this.isOnMeteorite && !this.isJumping && this.body) {
-      this.isJumping = true;
-      // Применяем силу прыжка вверх
-      this.setVelocityY(-this.JUMP_FORCE);
-    }
-  }
+  // TODO: удалить логику прыжка на пробел в отдельном коммите
+  // private jump(): void {
+  //   if (this.isOnMeteorite && !this.isJumping && this.body) {
+  //     this.isJumping = true;
+  //     this.setVelocityY(-this.JUMP_FORCE);
+  //   } else if (this.currentWeb && this.currentWeb.isTrapped()) {
+  //     console.log("Attempting to escape from web");
+  //     // Если игрок в паутине, пытаемся освободиться
+  //     const escaped = this.currentWeb.handleEscapeAttempt(this);
+  //     console.log("Escape attempt result:", escaped);
+  //     if (escaped) {
+  //       this.currentWeb = null;
+  //       // Даем небольшой импульс вверх при освобождении
+  //       this.setVelocityY(-this.JUMP_FORCE * 0.5);
+  //     }
+  //   }
+  // }
 
-  private jumpToAsteroid(): void {
-    if (this.isOnMeteorite && !this.isJumping && this.body) {
+  private jumpToPlatform(): void {
+    if (
+      this.currentWeb &&
+      this.currentWeb.isTrapped() &&
+      !this.currentWeb.getEscapeProgress()
+    ) {
+      this.jumpBlocker();
+      return;
+    }
+
+    if (
+      (this.isOnPlatform || this.currentWeb) &&
+      !this.isJumping &&
+      this.body
+    ) {
       const aimLine = (this.scene as any).aimLine;
       if (!aimLine) return;
 
-      const targetAsteroid = aimLine.getTargetAsteroid();
-      if (!targetAsteroid) return;
+      const targetPlatform = aimLine.getTargetPlatform();
+      if (!targetPlatform) return;
 
       this.isJumping = true;
-      this.isOnMeteorite = false;
-      this.currentAsteroid = targetAsteroid;
+      this.isOnPlatform = false;
 
-      // Сохраняем начальную и конечную точки прыжка
+      if (targetPlatform instanceof PutinWebPlatform) {
+        this.currentAsteroid = null;
+        this.currentWeb = targetPlatform;
+        this.jumpTargetY = targetPlatform.y;
+        this.hasEscaped = false;
+      } else {
+        this.currentAsteroid = targetPlatform;
+        this.currentWeb = null;
+        this.jumpTargetY = targetPlatform.y - targetPlatform.height / 2;
+      }
+
       this.jumpStartX = this.x;
       this.jumpStartY = this.y;
-      this.jumpTargetX = targetAsteroid.x;
-      this.jumpTargetY = targetAsteroid.y - targetAsteroid.height / 2;
+      this.jumpTargetX = targetPlatform.x;
       this.jumpProgress = 0;
-
       // Отключаем физику на время прыжка
       this.body.enable = false;
     }
   }
 
+  private jumpBlocker(): void {
+    if (this.currentWeb && this.currentWeb.isTrapped()) {
+      const escaped = this.currentWeb.handleEscapeAttempt(this);
+      if (escaped) {
+        this.hasEscaped = true;
+        this.jumpToPlatform();
+      }
+    }
+  }
+
   update(): void {
-    if (this.isJumping && !this.isOnMeteorite) {
+    if (this.isJumping && !this.isOnPlatform) {
       // Обновляем прогресс прыжка
       this.jumpProgress += this.jumpSpeed;
 
@@ -150,8 +193,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.currentAsteroid) {
           this.rotationManager.setFinalRotation(this, this.currentAsteroid);
-          // Устанавливаем isOnMeteorite в true при успешном приземлении
-          this.setIsOnMeteorite(true);
+          this.setIsOnPlatform(true);
+        }
+        if (this.currentWeb) {
+          this.setIsOnPlatform(true);
         }
         return;
       }
@@ -177,8 +222,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  setIsOnMeteorite(value: boolean): void {
-    this.isOnMeteorite = value;
+  setIsOnPlatform(value: boolean): void {
+    this.isOnPlatform = value;
     if (value) {
       this.isJumping = false;
       if (this.body && this.body.enable) {
@@ -262,5 +307,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getCollectedItems(): number {
     return this.progress.getCollectedItems();
+  }
+
+  setCurrentWeb(web: PutinWebPlatform | null): void {
+    this.currentWeb = web;
+  }
+
+  isTrappedInWeb(): boolean {
+    return this.currentWeb !== null && this.currentWeb.isTrapped();
   }
 }

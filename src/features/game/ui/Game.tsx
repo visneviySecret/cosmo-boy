@@ -69,7 +69,7 @@ const Game = React.memo(() => {
         x: this.cameras.main.width / 4,
         y: this.cameras.main.height * 0.75,
       });
-      player.setIsOnMeteorite(true);
+      player.setIsOnPlatform(true);
 
       // Создаем текст для отображения счётчика
       const scoreText = this.add.text(16, 16, "Собрано: 0", {
@@ -86,7 +86,7 @@ const Game = React.memo(() => {
       // --- Загрузка пользовательского уровня ---
       const customLevel = loadCustomLevel();
       if (customLevel) {
-        platforms = generatePlatformsFromLevel(this, customLevel);
+        platforms = generatePlatformsFromLevel(this, player, customLevel);
         // Разместить игрока на первой платформе, если есть
         if (platforms.length > 0) {
           const first = platforms[0];

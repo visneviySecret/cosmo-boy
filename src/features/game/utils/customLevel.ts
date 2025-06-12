@@ -6,6 +6,8 @@ import { LEVEL_STORAGE_KEY } from "./editorUtils";
 import { EditorItem } from "../../../shared/types/editor";
 import { PutinWebPlatform } from "../entities/PutinWebPlatform";
 import type { PlatformsType } from "../../../shared/types/platforms";
+import { createCollision } from "./collisionHandler";
+import type { Player } from "../entities/Player";
 
 export function loadCustomLevel(): Level | null {
   const json = localStorage.getItem(LEVEL_STORAGE_KEY);
@@ -17,11 +19,14 @@ export function loadCustomLevel(): Level | null {
 
 export function generatePlatformsFromLevel(
   scene: Phaser.Scene,
+  player: Player,
   level: Level
 ): PlatformsType[] {
-  return level
-    .getPlatforms()
-    .map((cfg: PlatformConfig) => getPlatformByType(scene, cfg));
+  return level.getPlatforms().map((cfg: PlatformConfig) => {
+    const platform = getPlatformByType(scene, cfg);
+    createCollision(scene, player, platform);
+    return platform;
+  });
 }
 
 export function getPlatformByType(

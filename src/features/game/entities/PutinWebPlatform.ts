@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Platform } from "./Platform";
 import type { PlatformConfig } from "./Platform";
+import { Player } from "./Player";
 
 export interface PutinWebConfig extends PlatformConfig {
   webDeformation?: number;
@@ -12,9 +13,14 @@ export class PutinWebPlatform extends Platform {
   private webDeformation: number = 0;
   private readonly MAX_DEFORMATION = 20;
   private readonly DEFORMATION_SPEED = 0.5;
-  private readonly SPIDER_DELAY = 3000; // 3 секунды до появления паука
   private isPlayerTrapped: boolean = false;
   private spider: Phaser.GameObjects.Sprite | null = null;
+  private escapeAttempts: number = 1;
+  private spiderSpeed: number = 6000;
+  private requiredEscapeAttempts: number = 4;
+  private readonly BASE_ESCAPE_ATTEMPTS = 1; // Базовое количество прыжков для освобождения
+  private readonly MAX_ESCAPE_ATTEMPTS = 4; // Максимальное количество прыжков
+  private readonly SIZE_RATIO_MULTIPLIER = 2; // Множитель влияния соотношения размеров
   tint: number = 0xffffff;
 
   constructor(scene: Phaser.Scene, config: PutinWebConfig) {
@@ -24,6 +30,129 @@ export class PutinWebPlatform extends Platform {
     this.tint = this.getGradientColor(config.tintLevel);
     this.setTintFill(this.tint);
     this.setDisplaySize(this.getSize(), this.getSize());
+
+    // Инициализируем количество требуемых попыток
+    this.requiredEscapeAttempts = this.BASE_ESCAPE_ATTEMPTS;
+
+    // Добавляем обработчики событий наведения
+    this.on("pointerover", () => {
+      this.showOutline();
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetWeb(this);
+      }
+    });
+
+    this.on("pointerout", () => {
+      this.hideOutline();
+      const aimLine = (this.scene as any).aimLine;
+      if (aimLine) {
+        aimLine.setTargetWeb(null);
+      }
+    });
+  }
+
+  onPlayerCollision(player: Player) {
+    if (!this.isPlayerTrapped) {
+      this.isPlayerTrapped = true;
+      this.escapeAttempts = 0;
+
+      // Рассчитываем необходимое количество прыжков на основе соотношения размеров
+      const sizeRatio = this.getSize() / player.getSize();
+      this.requiredEscapeAttempts = Math.min(
+        Math.max(
+          this.BASE_ESCAPE_ATTEMPTS,
+          Math.floor(
+            this.BASE_ESCAPE_ATTEMPTS * sizeRatio * this.SIZE_RATIO_MULTIPLIER
+          )
+        ),
+        this.MAX_ESCAPE_ATTEMPTS
+      );
+
+      // Останавливаем игрока
+      player.setVelocity(0, 0);
+
+      if (this.isPlayerTrapped) {
+        this.spawnSpider(player);
+      }
+    }
+  }
+
+  handleEscapeAttempt(player: Player): boolean {
+    if (!this.isPlayerTrapped) return false;
+
+    this.escapeAttempts++;
+    this.webDeformation += this.DEFORMATION_SPEED * 2; // Увеличиваем деформацию при попытке побега
+
+    // Вычисляем прогресс освобождения
+    const escapeProgress = this.escapeAttempts / this.requiredEscapeAttempts;
+
+    // Визуальный эффект попытки освобождения
+    this.scene.tweens.add({
+      targets: this,
+      scaleX: 1 + Math.random() * 0.2,
+      scaleY: 1 + Math.random() * 0.2,
+      duration: 100,
+      yoyo: true,
+      ease: "Quad.easeInOut",
+    });
+
+    // Если достигнуто необходимое количество попыток - освобождаем игрока
+    if (this.getEscapeProgress()) {
+      this.releasePlayer(player);
+      return true;
+    }
+
+    // Добавляем визуальную обратную связь о прогрессе
+    this.updateTint(escapeProgress);
+
+    return false;
+  }
+
+  private releasePlayer(player: Player) {
+    this.isPlayerTrapped = false;
+    this.escapeAttempts = 0;
+
+    // Визуальный эффект разрыва паутины
+    this.scene.tweens.add({
+      targets: this,
+      alpha: 0.3,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 300,
+      onComplete: () => {
+        this.scene.tweens.add({
+          targets: this,
+          alpha: 1,
+          scaleX: 0.4,
+          scaleY: 0.4,
+          duration: 200,
+        });
+      },
+    });
+
+    // Если паук уже появился, убираем его
+    if (this.spider) {
+      this.scene.tweens.add({
+        targets: this.spider,
+        alpha: 0,
+        y: this.y - window.innerHeight,
+        duration: this.spiderSpeed / 4,
+        onComplete: () => {
+          if (this.spider) {
+            this.spider.destroy();
+            this.spider = null;
+          }
+        },
+      });
+    }
+  }
+
+  private updateTint(progress: number) {
+    // Меняем цвет паутины от белого к красному по мере освобождения
+    const red = 0xff;
+    const greenBlue = Math.floor(0xff * (1 - progress));
+    this.setTintFill((red << 16) + (greenBlue << 8) + greenBlue);
   }
 
   update() {
@@ -49,49 +178,61 @@ export class PutinWebPlatform extends Platform {
       }
     }
 
-    // Вызываем update из базового класса для вращения обводки
     super.update();
   }
 
-  onPlayerCollision(player: Phaser.Physics.Arcade.Sprite) {
-    if (!this.isPlayerTrapped) {
-      this.isPlayerTrapped = true;
+  private spawnSpider(player: Player) {
+    if (!this.isPlayerTrapped) return;
 
-      // Останавливаем игрока
-      player.setVelocity(0, 0);
-
-      // Запускаем таймер появления паука
-      this.scene.time.delayedCall(this.SPIDER_DELAY, () => {
-        this.spawnSpider(player);
-      });
-    }
-  }
-
-  private spawnSpider(player: Phaser.Physics.Arcade.Sprite) {
-    // Создаем спрайт паука
     this.spider = this.scene.add.sprite(
-      this.x - this.getSize() * 2,
-      this.y,
-      "spider" // Нужно будет добавить текстуру паука в ассеты
+      this.x,
+      this.y - window.innerHeight,
+      "spider-from-mars"
     );
 
-    // Анимация появления паука
+    this.spider.setAngle(180);
+
+    // Создаем анимацию спуска с качанием
+    const swingAmplitude = 30; // Амплитуда качания
+    const swingFrequency = 2000; // Частота качания в миллисекундах
+
+    let progress = 0;
+
+    // Создаем таймер для качания
+    const swingTimer = this.scene.time.addEvent({
+      delay: 16, // 60 fps
+      callback: () => {
+        if (!this.spider) return;
+
+        progress += 16;
+        const swingOffset =
+          Math.sin((progress / swingFrequency) * Math.PI * 2) * swingAmplitude;
+        this.spider.x = this.x + swingOffset;
+      },
+      loop: true,
+    });
+
+    // Анимация спуска
     this.scene.tweens.add({
       targets: this.spider,
-      x: this.x,
-      duration: 1000,
-      ease: "Power2",
+      y: this.y,
+      duration: this.spiderSpeed,
+      ease: "Power1",
       onComplete: () => {
+        // Останавливаем качание
+        swingTimer.destroy();
+
         // Анимация поедания игрока
-        this.scene.tweens.add({
-          targets: player,
-          scale: 0,
-          duration: 500,
-          onComplete: () => {
-            // Вызываем событие проигрыша
-            this.scene.events.emit("gameOver");
-          },
-        });
+        if (this.isPlayerTrapped) {
+          this.scene.tweens.add({
+            targets: player,
+            scale: 0,
+            duration: 500,
+            onComplete: () => {
+              this.scene.events.emit("gameOver");
+            },
+          });
+        }
       },
     });
   }
@@ -101,7 +242,23 @@ export class PutinWebPlatform extends Platform {
     t = Math.min(Math.max(t, 0), 1);
     const v = Math.round(255 * (1 - t));
     const hex = v.toString(16).padStart(2, "0");
-    console.log(hex);
     return Number(`0x${hex}${hex}${hex}`);
+  }
+
+  isTrapped(): boolean {
+    return this.isPlayerTrapped;
+  }
+
+  getEscapeProgress(): boolean {
+    if (this.requiredEscapeAttempts === 0) return true;
+    return this.escapeAttempts / this.requiredEscapeAttempts > 0.5;
+  }
+
+  getEscapeAttempts(): number {
+    return this.escapeAttempts;
+  }
+
+  getRequiredEscapeAttempts(): number {
+    return this.requiredEscapeAttempts;
   }
 }

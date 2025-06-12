@@ -22,7 +22,13 @@ export function handleCollision(player: Player, asteroid: Asteroid) {
   player.setVelocity(newVelocityX, newVelocityY);
 
   // Устанавливаем флаг нахождения на метеорите
-  player.setIsOnMeteorite(true);
+  player.setIsOnPlatform(true);
+}
+
+export function handleWebCollision(player: Player, web: PutinWebPlatform) {
+  player.setIsOnPlatform(false);
+  player.setCurrentWeb(web);
+  web.onPlayerCollision(player);
 }
 
 export function createCollision(
@@ -40,7 +46,7 @@ export function createCollision(
       if (platformObj instanceof Asteroid) {
         handleCollision(playerObj, platformObj);
       } else if (platformObj instanceof PutinWebPlatform) {
-        platformObj.onPlayerCollision(playerObj);
+        handleWebCollision(playerObj, platformObj);
       }
     },
     undefined,

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { ArcCalculator } from "../utils/ArcCalculator";
+import { PutinWebPlatform } from "./PutinWebPlatform";
 
 export class AimLineGraphics {
   private graphics: Phaser.GameObjects.Graphics;
@@ -25,7 +26,7 @@ export class AimLineGraphics {
     playerY: number,
     endX: number,
     endY: number,
-    targetAsteroid: Phaser.Physics.Arcade.Sprite | null
+    target: Phaser.Physics.Arcade.Sprite | PutinWebPlatform | null
   ): void {
     this.graphics.clear();
 
@@ -63,13 +64,18 @@ export class AimLineGraphics {
 
     // Рисуем зеленую метку
     this.graphics.fillStyle(this.MARKER_COLOR, 1);
-    if (targetAsteroid) {
-      // Если есть целевой астероид, рисуем метку на его верхушке
-      this.graphics.fillCircle(
-        targetAsteroid.x,
-        targetAsteroid.y - (targetAsteroid as any).getSize() / 2,
-        this.MARKER_RADIUS
-      );
+    if (target) {
+      if (target instanceof PutinWebPlatform) {
+        // Если цель - паутина, рисуем метку в её центре
+        this.graphics.fillCircle(target.x, target.y, this.MARKER_RADIUS);
+      } else {
+        // Если цель - астероид, рисуем метку на его верхушке
+        this.graphics.fillCircle(
+          target.x,
+          target.y - (target as any).getSize() / 2,
+          this.MARKER_RADIUS
+        );
+      }
     } else {
       // Иначе рисуем метку в конце линии
       this.graphics.fillCircle(endX, endY, this.MARKER_RADIUS);

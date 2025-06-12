@@ -1,13 +1,15 @@
 import Phaser from "phaser";
 import { Player } from "./Player";
 import { AimLineGraphics } from "./AimLineGraphics";
+import { PutinWebPlatform } from "./PutinWebPlatform";
+import { Platform } from "./Platform";
 
 export class AimLine {
   private readonly BASE_LENGTH = 800;
   private readonly MAX_LENGTH = 2000;
   private readonly POWERUP_LENGTH_INCREASE = 200; // Увеличение длины при получении паверапа
   private currentLength: number;
-  private targetAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
+  private targetPlatform: Platform | Phaser.Physics.Arcade.Sprite | null = null;
   private scene: Phaser.Scene;
   private graphics: AimLineGraphics;
 
@@ -17,45 +19,63 @@ export class AimLine {
     this.graphics = new AimLineGraphics(scene);
   }
 
-  setTargetAsteroid(asteroid: Phaser.Physics.Arcade.Sprite | null) {
-    if (asteroid) {
-      // Получаем игрока из сцены
+  setTargetPlatform(platform: Platform | Phaser.Physics.Arcade.Sprite | null) {
+    if (platform) {
       const player = this.scene.children.list.find(
         (child) => child instanceof Player
       ) as Player;
 
       if (player) {
-        // Получаем размеры астероида и игрока
-        const asteroidSize = (asteroid as any).getSize();
+        const platformSize = (platform as any).getSize();
         const playerSize = player.getSize();
 
-        // Вычисляем расстояние между центрами объектов
         const distance = Phaser.Math.Distance.Between(
           player.x,
           player.y,
-          asteroid.x,
-          asteroid.y
+          platform.x,
+          platform.y
         );
 
-        // Вычитаем половины размеров объектов, чтобы получить расстояние между их поверхностями
-        const surfaceDistance = distance - (asteroidSize + playerSize) / 2;
-
-        // Проверяем, что расстояние не отрицательное (объекты не пересекаются)
+        const surfaceDistance = distance - (platformSize + playerSize) / 2;
         const finalDistance = Math.max(0, surfaceDistance);
 
         if (finalDistance <= this.currentLength) {
-          this.targetAsteroid = asteroid;
+          this.targetPlatform = platform;
         } else {
-          this.targetAsteroid = null;
+          this.targetPlatform = null;
         }
       }
     } else {
-      this.targetAsteroid = null;
+      this.targetPlatform = null;
     }
   }
 
+  // Устаревший метод, оставлен для обратной совместимости
+  setTargetAsteroid(asteroid: Phaser.Physics.Arcade.Sprite | null) {
+    this.setTargetPlatform(asteroid);
+  }
+
+  // Устаревший метод, оставлен для обратной совместимости
+  setTargetWeb(web: PutinWebPlatform | null) {
+    this.setTargetPlatform(web);
+  }
+
+  getTargetPlatform(): Platform | Phaser.Physics.Arcade.Sprite | null {
+    return this.targetPlatform;
+  }
+
+  // Устаревший метод, оставлен для обратной совместимости
   getTargetAsteroid(): Phaser.Physics.Arcade.Sprite | null {
-    return this.targetAsteroid;
+    return this.targetPlatform instanceof Phaser.Physics.Arcade.Sprite
+      ? this.targetPlatform
+      : null;
+  }
+
+  // Устаревший метод, оставлен для обратной совместимости
+  getTargetWeb(): PutinWebPlatform | null {
+    return this.targetPlatform instanceof PutinWebPlatform
+      ? this.targetPlatform
+      : null;
   }
 
   getCurrentLength(): number {
@@ -84,14 +104,20 @@ export class AimLine {
   update(player: Player): void {
     const pointer = player.scene.input.activePointer;
 
-    // Определяем конечную точку дуги
     let endX: number;
     let endY: number;
 
-    if (this.targetAsteroid) {
-      // Если есть целевой астероид, используем его верхушку как конечную точку
-      endX = this.targetAsteroid.x;
-      endY = this.targetAsteroid.y - (this.targetAsteroid as any).getSize() / 2;
+    if (this.targetPlatform) {
+      if (this.targetPlatform instanceof PutinWebPlatform) {
+        // Если цель - паутина, используем её центр
+        endX = this.targetPlatform.x;
+        endY = this.targetPlatform.y;
+      } else {
+        // Если цель - астероид или другая платформа, используем верхушку
+        endX = this.targetPlatform.x;
+        endY =
+          this.targetPlatform.y - (this.targetPlatform as any).getSize() / 2;
+      }
     } else {
       // Иначе используем позицию курсора
       const distance = Phaser.Math.Distance.Between(
@@ -114,7 +140,7 @@ export class AimLine {
           : pointer.worldY;
     }
 
-    this.graphics.update(player.x, player.y, endX, endY, this.targetAsteroid);
+    this.graphics.update(player.x, player.y, endX, endY, this.targetPlatform);
   }
 
   destroy(): void {
