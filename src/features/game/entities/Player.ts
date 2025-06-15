@@ -142,12 +142,40 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private jumpBlocker(): void {
     if (this.currentWeb && this.currentWeb.isTrapped()) {
-      const escaped = this.currentWeb.handleEscapeAttempt(this);
+      const escaped = this.currentWeb.handleEscapeAttempt();
       if (escaped) {
         this.hasEscaped = true;
         this.jumpToPlatform();
+      } else {
+        this.playShakeAnimation();
       }
     }
+  }
+
+  private playShakeAnimation(): void {
+    const originalX = this.x;
+    const originalY = this.y;
+
+    this.scene.tweens.add({
+      targets: this,
+      x: originalX + 5,
+      duration: 30,
+      yoyo: true,
+      repeat: 2,
+      ease: "Power2",
+      onComplete: () => {
+        this.setPosition(originalX, originalY);
+      },
+    });
+
+    this.scene.tweens.add({
+      targets: this,
+      y: originalY + 2,
+      duration: 30,
+      yoyo: true,
+      repeat: 2,
+      ease: "Power2",
+    });
   }
 
   update(): void {

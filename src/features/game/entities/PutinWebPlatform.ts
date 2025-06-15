@@ -78,7 +78,7 @@ export class PutinWebPlatform extends Platform {
     }
   }
 
-  handleEscapeAttempt(player: Player): boolean {
+  handleEscapeAttempt(): boolean {
     if (!this.isPlayerTrapped) return false;
 
     this.escapeAttempts++;
@@ -86,16 +86,6 @@ export class PutinWebPlatform extends Platform {
 
     // Вычисляем прогресс освобождения
     const escapeProgress = this.escapeAttempts / this.requiredEscapeAttempts;
-
-    // Визуальный эффект попытки освобождения
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: 1 + Math.random() * 0.2,
-      scaleY: 1 + Math.random() * 0.2,
-      duration: 100,
-      yoyo: true,
-      ease: "Quad.easeInOut",
-    });
 
     // Если достигнуто необходимое количество попыток - освобождаем игрока
     if (this.getEscapeProgress()) {
