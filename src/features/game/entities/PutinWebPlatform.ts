@@ -15,6 +15,7 @@ export class PutinWebPlatform extends Platform {
   private readonly DEFORMATION_SPEED = 0.5;
   private isPlayerTrapped: boolean = false;
   private spider: Phaser.GameObjects.Sprite | null = null;
+  private spiderThread: Phaser.GameObjects.Graphics | null = null; // Ниточка паука
   private escapeAttempts: number = 1;
   private spiderSpeed: number = 6000;
   private requiredEscapeAttempts: number = 4;
@@ -32,6 +33,7 @@ export class PutinWebPlatform extends Platform {
     this.tint = this.getGradientColor(config.tintLevel);
     this.setTintFill(this.tint);
     this.setDisplaySize(this.getSize(), this.getSize());
+    this.setDepth(90);
 
     // Инициализируем количество требуемых попыток
     this.requiredEscapeAttempts = this.BASE_ESCAPE_ATTEMPTS;
@@ -143,6 +145,12 @@ export class PutinWebPlatform extends Platform {
       });
     }
 
+    // Убираем ниточку
+    if (this.spiderThread) {
+      this.spiderThread.destroy();
+      this.spiderThread = null;
+    }
+
     this.lastReleaseTime = Date.now();
   }
 
@@ -179,6 +187,32 @@ export class PutinWebPlatform extends Platform {
     super.update();
   }
 
+  private updateSpiderThread() {
+    if (!this.spiderThread || !this.spider) return;
+
+    this.spiderThread.clear();
+
+    const camera = this.scene.cameras.main;
+    const threadStartY = camera.scrollY - 50;
+    const threadEndX = this.spider.x;
+    const threadEndY = this.spider.y;
+
+    this.spiderThread.lineStyle(2, 0x888888, 0.8);
+
+    const midX = (this.x + threadEndX) / 2;
+    const midY = (threadStartY + threadEndY) / 2;
+    const curveOffset = Math.sin(Date.now() * 0.002) * 5;
+
+    const path = new Phaser.Curves.QuadraticBezier(
+      new Phaser.Math.Vector2(this.x, threadStartY),
+      new Phaser.Math.Vector2(midX + curveOffset, midY),
+      new Phaser.Math.Vector2(threadEndX, threadEndY)
+    );
+
+    path.draw(this.spiderThread, 32);
+    this.spiderThread.setDepth(100);
+  }
+
   private spawnSpider(player: Player) {
     if (!this.isPlayerTrapped) return;
 
@@ -189,6 +223,9 @@ export class PutinWebPlatform extends Platform {
     );
 
     this.spider.setAngle(180);
+    this.spider.setDepth(101);
+    this.spiderThread = this.scene.add.graphics();
+    this.updateSpiderThread();
 
     // Создаем анимацию спуска с качанием
     const swingAmplitude = 30; // Амплитуда качания
@@ -196,7 +233,7 @@ export class PutinWebPlatform extends Platform {
 
     let progress = 0;
 
-    // Создаем таймер для качания
+    // Создаем таймер для качания и обновления ниточки
     const swingTimer = this.scene.time.addEvent({
       delay: 16, // 60 fps
       callback: () => {
@@ -206,6 +243,8 @@ export class PutinWebPlatform extends Platform {
         const swingOffset =
           Math.sin((progress / swingFrequency) * Math.PI * 2) * swingAmplitude;
         this.spider.x = this.x + swingOffset;
+
+        this.updateSpiderThread();
       },
       loop: true,
     });
