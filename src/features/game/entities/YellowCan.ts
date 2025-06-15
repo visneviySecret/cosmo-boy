@@ -1,11 +1,11 @@
-import { Food } from "./Food";
+import { Food, type FoodConfig } from "./Food";
 import Phaser from "phaser";
 
 export class YellowCan extends Food {
   private static readonly SPAWN_CHANCE = 0.27; // 90% от 30%
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, "yellowCan");
+  constructor(scene: Phaser.Scene, config: FoodConfig) {
+    super(scene, config);
     this.value = 1; // Базовое значение для роста
   }
 

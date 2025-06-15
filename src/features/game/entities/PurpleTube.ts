@@ -1,11 +1,11 @@
-import { Food } from "./Food";
+import { Food, type FoodConfig } from "./Food";
 import Phaser from "phaser";
 
 export class PurpleTube extends Food {
   private static readonly SPAWN_CHANCE = 0.03; // 10% от 30%
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, "purpleTube");
+  constructor(scene: Phaser.Scene, config: FoodConfig) {
+    super(scene, config);
     this.value = 5; // Дает 5 опыта
 
     // Создаем временную текстуру для фиолетового тюбика

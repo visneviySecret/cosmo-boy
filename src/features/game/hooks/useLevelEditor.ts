@@ -1,31 +1,31 @@
 import { useRef, useEffect } from "react";
 import Phaser from "phaser";
 import { Level, type LevelData } from "../entities/Level";
-import { Platform } from "../entities/Platform";
+import { Platform as GameObject } from "../entities/Platform";
 import { Player } from "../entities/Player";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
 import {
   GAME_LEVELS_STORAGE_KEY,
   LEVEL_STORAGE_KEY,
-  type PlatformConfigWithType,
 } from "../utils/editorUtils";
-import { getPlatformByType } from "../utils/customLevel";
+import { getGameObjectByType } from "../utils/customLevel";
 import { preloadTextures } from "../utils/scene";
+import type { GameObjects } from "../../../shared/types/game";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const phaserRef = useRef<HTMLDivElement>(null);
   const levelRef = useRef<Level>(new Level());
   const saveLevel = levelRef.current.saveLevel.bind(levelRef.current);
-  const platformsRef = useRef<Platform[]>([]);
+  const gameObjectsRef = useRef<GameObjects[]>([]);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
   const { editorItem, setEditorItem } = useStore();
   const editorItemRef = useRef<EditorItem | null>(null);
   const previewSizeRef = useRef<number | undefined>(undefined);
   const playerSizeRef = useRef<number | undefined>(undefined);
-  const draggedPlatformRef = useRef<Platform | null>(null);
-  const hoveredPlatformRef = useRef<Platform | null>(null);
+  const draggedGameObjectRef = useRef<GameObject | null>(null);
+  const hoveredPlatformRef = useRef<GameObject | null>(null);
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -47,7 +47,7 @@ export const useLevelEditor = () => {
         isEditor: true,
         type,
       };
-      const item = getPlatformByType(sceneRef.current!, cfg);
+      const item = getGameObjectByType(sceneRef.current!, cfg);
       const defaultSize = item.getSize();
       previewSizeRef.current = defaultSize;
       previewRef.current = ctx.add.sprite(cfg.x, cfg.y, item.texture.key);
@@ -79,13 +79,13 @@ export const useLevelEditor = () => {
       previewRef.current.setDisplaySize(newSize, newSize);
 
       const cfg = { x: 0, y: 0, size: newSize, type: editorItemRef.current };
-      const item = getPlatformByType(sceneRef.current!, cfg);
+      const item = getGameObjectByType(sceneRef.current!, cfg);
       previewRef.current.setTexture(item.texture.key);
       item.destroy();
     }
   };
 
-  const updatePlatformSize = (platform: Platform, delta: number) => {
+  const updatePlatformSize = (platform: GameObject, delta: number) => {
     if (!playerSizeRef.current) return;
 
     const currentSize = platform.getSize();
@@ -98,7 +98,7 @@ export const useLevelEditor = () => {
     );
 
     if (newSize !== currentSize) {
-      const index = platformsRef.current.indexOf(platform);
+      const index = gameObjectsRef.current.indexOf(platform);
       if (index !== -1) {
         const cfg = {
           x: platform.x,
@@ -106,25 +106,25 @@ export const useLevelEditor = () => {
           size: newSize,
           type: platform.getType(),
         };
-        const newPlatform = getPlatformByType(sceneRef.current!, cfg);
+        const newGameObject = getGameObjectByType(sceneRef.current!, cfg);
 
         platform.destroy();
-        platformsRef.current[index] = newPlatform;
+        gameObjectsRef.current[index] = newGameObject;
 
-        const platforms = levelRef.current?.getPlatforms() || [];
+        const platforms = levelRef.current?.getGameObjects() || [];
         platforms[index] = { ...platforms[index], size: newSize };
       }
     }
     saveLevel(levelRef.current.toJSON());
   };
 
-  const startDrag = (platform: Platform) => {
-    draggedPlatformRef.current = platform;
+  const startDrag = (gameObject: GameObject) => {
+    draggedGameObjectRef.current = gameObject;
   };
 
   const stopDrag = () => {
-    if (draggedPlatformRef.current) {
-      draggedPlatformRef.current = null;
+    if (draggedGameObjectRef.current) {
+      draggedGameObjectRef.current = null;
       if (sceneRef.current) {
         sceneRef.current.input.setDefaultCursor("default");
       }
@@ -133,16 +133,18 @@ export const useLevelEditor = () => {
   };
 
   const updateDragPosition = (pointer: Phaser.Input.Pointer) => {
-    if (draggedPlatformRef.current && sceneRef.current) {
+    if (draggedGameObjectRef.current && sceneRef.current) {
       const camera = sceneRef.current.cameras.main;
       const worldX = pointer.x + camera.scrollX;
       const worldY = pointer.y + camera.scrollY;
 
-      draggedPlatformRef.current.setPosition(worldX, worldY);
+      draggedGameObjectRef.current.setPosition(worldX, worldY);
 
-      const index = platformsRef.current.indexOf(draggedPlatformRef.current);
+      const index = gameObjectsRef.current.indexOf(
+        draggedGameObjectRef.current
+      );
       if (index !== -1) {
-        const platforms = levelRef.current?.getPlatforms() || [];
+        const platforms = levelRef.current?.getGameObjects() || [];
         platforms[index] = { ...platforms[index], x: worldX, y: worldY };
       }
     }
@@ -182,17 +184,17 @@ export const useLevelEditor = () => {
       const storedLevel = new Level(data);
       levelRef.current = storedLevel;
 
-      // Очищаем существующие платформы
-      platformsRef.current.forEach((p) => p.destroy());
-      platformsRef.current = [];
+      // Очищаем существующие объекты
+      gameObjectsRef.current.forEach((p) => p.destroy());
+      gameObjectsRef.current = [];
 
-      // Создаем новые платформы
-      const platforms = storedLevel.getPlatforms();
+      // Создаем все игровые объекты
+      const gameObjectConfigs = storedLevel.getGameObjects();
 
-      platforms.forEach((cfg: PlatformConfigWithType) => {
+      gameObjectConfigs.forEach((cfg) => {
         let editModeCfg = { ...cfg, isEditor: true };
-        const platform = getPlatformByType(sceneRef.current!, editModeCfg);
-        platformsRef.current.push(platform);
+        const gameObject = getGameObjectByType(sceneRef.current!, editModeCfg);
+        gameObjectsRef.current.push(gameObject);
       });
     } catch (error) {
       alert("Ошибка при загрузке уровня: " + error);
@@ -201,10 +203,10 @@ export const useLevelEditor = () => {
 
   const deleteHoveredPlatform = () => {
     if (hoveredPlatformRef.current) {
-      const index = platformsRef.current.indexOf(hoveredPlatformRef.current);
+      const index = gameObjectsRef.current.indexOf(hoveredPlatformRef.current);
       if (index !== -1) {
-        levelRef.current.removePlatform(hoveredPlatformRef.current);
-        platformsRef.current.splice(index, 1);
+        levelRef.current.removeGameObject(hoveredPlatformRef.current);
+        gameObjectsRef.current.splice(index, 1);
       }
       hoveredPlatformRef.current = null;
     }
@@ -252,20 +254,20 @@ export const useLevelEditor = () => {
             if (previewRef.current) {
               updatePreviewPosition(pointer);
               previewRef.current.setVisible(true);
-            } else if (draggedPlatformRef.current) {
+            } else if (draggedGameObjectRef.current) {
               updateDragPosition(pointer);
             } else {
-              const platform = platformsRef.current.find((p) => {
-                const bounds = p.getBounds();
-                return bounds.contains(
+              const gameObject = gameObjectsRef.current.find((p) => {
+                const gameObject = p.getBounds();
+                return gameObject.contains(
                   pointer.x + this.cameras.main.scrollX,
                   pointer.y + this.cameras.main.scrollY
                 );
               });
 
-              if (platform) {
+              if (gameObject) {
                 this.input.setDefaultCursor("grab");
-                hoveredPlatformRef.current = platform;
+                hoveredPlatformRef.current = gameObject as GameObject;
               } else {
                 this.input.setDefaultCursor("default");
                 hoveredPlatformRef.current = null;
@@ -285,13 +287,15 @@ export const useLevelEditor = () => {
                 updatePreviewSize(deltaY);
               } else {
                 const pointer = this.input.activePointer;
-                const platform = platformsRef.current.find((p) => {
+                const platform = gameObjectsRef.current.find((p) => {
                   const bounds = p.getBounds();
-                  return bounds.contains(
-                    pointer.x + this.cameras.main.scrollX,
-                    pointer.y + this.cameras.main.scrollY
-                  );
-                });
+                  if (p instanceof GameObject) {
+                    return bounds.contains(
+                      pointer.x + this.cameras.main.scrollX,
+                      pointer.y + this.cameras.main.scrollY
+                    );
+                  }
+                }) as GameObject;
                 if (platform) {
                   updatePlatformSize(platform, deltaY);
                 }
@@ -309,16 +313,16 @@ export const useLevelEditor = () => {
               if (sceneRef.current) {
                 sceneRef.current.input.setDefaultCursor("grabbing");
               }
-              const platform = platformsRef.current.find((p) => {
+              const gameObject = gameObjectsRef.current.find((p) => {
                 const bounds = p.getBounds();
                 return bounds.contains(
                   pointer.x + this.cameras.main.scrollX,
                   pointer.y + this.cameras.main.scrollY
                 );
-              });
+              }) as GameObject;
 
-              if (platform) {
-                startDrag(platform);
+              if (gameObject) {
+                startDrag(gameObject);
               }
               return;
             }
@@ -333,10 +337,10 @@ export const useLevelEditor = () => {
               type: editorItemRef.current,
             };
 
-            const platform = getPlatformByType(sceneRef.current!, cfg);
-            platform.setData("type", editorItem);
-            platformsRef.current.push(platform);
-            levelRef.current?.addPlatform({
+            const gameObject = getGameObjectByType(sceneRef.current!, cfg);
+            gameObject.setData("type", editorItem);
+            gameObjectsRef.current.push(gameObject);
+            levelRef.current?.addGameObject({
               ...cfg,
               type: editorItemRef.current,
             });

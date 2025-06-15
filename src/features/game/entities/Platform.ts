@@ -83,6 +83,7 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
     return this.type;
   }
 
+  // TODO: вынести в GameObject
   // Проверяет, находится ли платформа в пределах видимости камеры
   isVisible(): boolean {
     const camera = this.scene.cameras.main;

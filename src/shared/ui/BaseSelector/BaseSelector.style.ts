@@ -19,10 +19,6 @@ export const IconWrapper = styled.span`
   z-index: 2;
 `;
 
-export const PlatformIcon = styled.svg`
-  display: block;
-`;
-
 export const Selector = styled.div`
   font-size: 1.2rem;
   border-radius: 8px;

@@ -34,7 +34,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     const level = {
       id: value.id,
       name: value.name,
-      platforms: value.platforms,
+      gameObjects: value.gameObjects || [],
     };
     setSelectedLevel(level);
     isLoad && onLoad(value.id);
@@ -47,7 +47,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       ? String(Number(levels[levels.length - 1].id) + 1)
       : "1";
     const name = `Уровень ${id}`;
-    const newLevel: LevelData = { id, name, platforms: [] };
+    const newLevel: LevelData = { id, name, gameObjects: [] };
     let updatedLevels = [];
     if (!isExistLevelsInStorage) {
       handleSelectChange(newLevel, false);
@@ -78,9 +78,11 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       const deletedLevel = savedLevels.find(
         (level: LevelData) => level.id === levelId
       );
-      if (deletedLevel?.platforms?.length) {
+      const hasObjects =
+        deletedLevel?.gameObjects?.length || deletedLevel?.platforms?.length;
+      if (hasObjects) {
         const response = confirm(
-          "Уровень содержкит платформы, действительно удалить?"
+          "Уровень содержит объекты, действительно удалить?"
         );
         if (!response) return;
       }

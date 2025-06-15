@@ -7,10 +7,10 @@ import { generateAsteroids } from "../utils/asteroidGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
 import {
   loadCustomLevel,
-  generatePlatformsFromLevel,
+  generateGameObjectsFromLevel,
 } from "../utils/customLevel";
-import type { PlatformsType } from "../../../shared/types/platforms";
 import { preloadTextures } from "../utils/scene";
+import type { GameObjects } from "../../../shared/types/game";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -55,7 +55,7 @@ const Game = React.memo(() => {
 
     gameRef.current = new Phaser.Game(config);
 
-    let platforms: PlatformsType[] = [];
+    let gameObjects: GameObjects[] = [];
     let player: Player;
     let aimLine: AimLine;
 
@@ -86,7 +86,13 @@ const Game = React.memo(() => {
       // --- Загрузка пользовательского уровня ---
       const customLevel = loadCustomLevel();
       if (customLevel) {
-        platforms = generatePlatformsFromLevel(this, player, customLevel);
+        const { platforms } = generateGameObjectsFromLevel(
+          this,
+          player,
+          customLevel
+        );
+        gameObjects = [...platforms];
+
         // Разместить игрока на первой платформе, если есть
         if (platforms.length > 0) {
           const first = platforms[0];
@@ -100,11 +106,11 @@ const Game = React.memo(() => {
           aimLine,
           player
         );
-        platforms = initialAsteroids;
+        gameObjects = initialAsteroids;
         // Добавляем обработчик столкновений с едой
         createFoodCollision(this, player, foodGroup);
         // Размещаем игрока на первом астероиде
-        const leftAsteroid = platforms[0];
+        const leftAsteroid = gameObjects[0];
         player.x = leftAsteroid.x;
         player.y =
           leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
@@ -127,10 +133,10 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && platforms.length > 0 && aimLine) {
+      if (player && gameObjects.length > 0 && aimLine) {
         aimLine.update(player);
 
-        const rightmostAsteroid = platforms[platforms.length - 1];
+        const rightmostAsteroid = gameObjects[gameObjects.length - 1];
 
         // Если самый правый астероид появился на экране, генерируем новые астероиды
         if (rightmostAsteroid.isVisible()) {
@@ -141,19 +147,26 @@ const Game = React.memo(() => {
             rightmostAsteroid.x + aimLine.getCurrentLength(),
             rightmostAsteroid.y
           );
-          platforms.push(...newAsteroids);
+          gameObjects.push(...newAsteroids);
 
           // Добавляем обработчик столкновений для новой группы еды
           createFoodCollision(this, player, foodGroup);
         }
 
         // Удаляем невидимые астероиды слева от игрока
-        platforms = platforms.filter((asteroid) => {
+        gameObjects = gameObjects.filter((object) => {
+          // Проверяем, что объект не уничтожен
+          if (!object.scene) {
+            return false;
+          }
+
+          // Удаляем объекты, которые находятся далеко слева от игрока и не видны
           if (
-            !asteroid.isVisible() &&
-            asteroid.x < player.x - this.cameras.main.width
+            object.isVisible &&
+            !object.isVisible() &&
+            object.x < player.x - this.cameras.main.width
           ) {
-            asteroid.destroy();
+            object.destroy();
             return false;
           }
           return true;

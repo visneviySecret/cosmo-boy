@@ -87,11 +87,15 @@ function tryAddFood(
   const totalChance = YellowCan.getSpawnChance() + PurpleTube.getSpawnChance();
 
   if (random < totalChance) {
+    const config = {
+      x,
+      y: y - asteroidSize / 2 - 40,
+    };
     if (random < PurpleTube.getSpawnChance()) {
-      const purpleTube = new PurpleTube(scene, x, y - asteroidSize / 2 - 40);
+      const purpleTube = new PurpleTube(scene, config);
       foodGroup.add(purpleTube);
     } else {
-      const yellowCan = new YellowCan(scene, x, y - asteroidSize / 2 - 40);
+      const yellowCan = new YellowCan(scene, config);
       foodGroup.add(yellowCan);
     }
   }

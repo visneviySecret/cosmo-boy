@@ -2,47 +2,51 @@ import {
   GAME_LEVELS_STORAGE_KEY,
   LEVEL_STORAGE_KEY,
 } from "../utils/editorUtils";
-import type { Platform, PlatformConfig } from "./Platform";
+import type { PlatformConfig } from "./Platform";
+import type { FoodConfig } from "./Food";
+import type { GameObjects } from "../../../shared/types/game";
+
+export type GameObjectConfig = PlatformConfig | FoodConfig;
 
 export interface LevelData {
   id: string;
   name: string;
-  platforms: PlatformConfig[];
+  gameObjects: GameObjectConfig[];
 }
 
 export class Level {
   private id: string;
   private name: string;
-  private platforms: PlatformConfig[];
+  private gameObjects: GameObjectConfig[];
 
   constructor(data?: LevelData) {
     this.id = data?.id || "";
     this.name = data?.name || "";
-    this.platforms = data?.platforms || [];
+    this.gameObjects = data?.gameObjects || [];
   }
 
-  addPlatform(config: PlatformConfig) {
-    this.platforms.push(config);
+  addGameObject(config: GameObjectConfig) {
+    this.gameObjects.push(config);
     this.onSaveLevel();
   }
 
-  removePlatform(platform: Platform) {
-    const index = this.platforms.findIndex(
-      (p) =>
-        p.x === platform.x &&
-        p.y === platform.y &&
-        p.size === platform.getSize()
+  removeGameObject(gameObject: GameObjects) {
+    const index = this.gameObjects.findIndex(
+      (obj) =>
+        obj.x === gameObject.x &&
+        obj.y === gameObject.y &&
+        obj.size === gameObject.getSize()
     );
 
     if (index !== -1) {
-      platform.destroy();
-      this.platforms.splice(index, 1);
+      gameObject.destroy();
+      this.gameObjects.splice(index, 1);
       this.onSaveLevel();
     }
   }
 
-  getPlatforms(): PlatformConfig[] {
-    return this.platforms;
+  getGameObjects(): GameObjectConfig[] {
+    return this.gameObjects;
   }
 
   getLevelId(): string {
@@ -57,7 +61,7 @@ export class Level {
     return {
       id: this.id,
       name: this.name,
-      platforms: this.platforms,
+      gameObjects: this.gameObjects,
     };
   }
 
@@ -65,7 +69,7 @@ export class Level {
     this.saveLevel({
       id: this.id,
       name: this.name,
-      platforms: this.platforms,
+      gameObjects: this.gameObjects,
     });
   }
 
@@ -74,7 +78,7 @@ export class Level {
     const currentLevel = {
       id: props.id,
       name: props.name,
-      platforms: props.platforms,
+      gameObjects: props.gameObjects,
     };
     let levels = JSON.parse(
       localStorage.getItem(GAME_LEVELS_STORAGE_KEY) || "[]"
@@ -93,6 +97,7 @@ export class Level {
   }
 
   static fromJSON(json: string): Level {
-    return new Level(JSON.parse(json));
+    const data = JSON.parse(json);
+    return new Level(data);
   }
 }
