@@ -313,10 +313,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   setCurrentWeb(web: PutinWebPlatform | null): void {
+    if (this.isCurrentlyJumping()) {
+      return;
+    }
     this.currentWeb = web;
   }
 
   isTrappedInWeb(): boolean {
     return this.currentWeb !== null && this.currentWeb.isTrapped();
+  }
+
+  isCurrentlyJumping(): boolean {
+    return this.isJumping;
   }
 }

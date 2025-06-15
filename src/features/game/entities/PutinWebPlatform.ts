@@ -21,6 +21,8 @@ export class PutinWebPlatform extends Platform {
   private readonly BASE_ESCAPE_ATTEMPTS = 1; // Базовое количество прыжков для освобождения
   private readonly MAX_ESCAPE_ATTEMPTS = 4; // Максимальное количество прыжков
   private readonly SIZE_RATIO_MULTIPLIER = 2; // Множитель влияния соотношения размеров
+  private lastReleaseTime: number = 0; // Время последнего освобождения
+  private readonly IMMUNITY_DURATION = 2000; // 2 секунды иммунитета после освобождения
   tint: number = 0xffffff;
 
   constructor(scene: Phaser.Scene, config: PutinWebConfig) {
@@ -53,6 +55,10 @@ export class PutinWebPlatform extends Platform {
   }
 
   onPlayerCollision(player: Player) {
+    if (this.isImmune()) {
+      return;
+    }
+
     if (!this.isPlayerTrapped) {
       this.isPlayerTrapped = true;
       this.escapeAttempts = 0;
@@ -136,6 +142,8 @@ export class PutinWebPlatform extends Platform {
         },
       });
     }
+
+    this.lastReleaseTime = Date.now();
   }
 
   private updateTint(progress: number) {
@@ -250,5 +258,11 @@ export class PutinWebPlatform extends Platform {
 
   getRequiredEscapeAttempts(): number {
     return this.requiredEscapeAttempts;
+  }
+
+  isImmune(): boolean {
+    const currentTime = Date.now();
+    const timeSinceRelease = currentTime - this.lastReleaseTime;
+    return timeSinceRelease < this.IMMUNITY_DURATION;
   }
 }

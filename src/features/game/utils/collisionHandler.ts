@@ -26,6 +26,10 @@ export function handleCollision(player: Player, asteroid: Asteroid) {
 }
 
 export function handleWebCollision(player: Player, web: PutinWebPlatform) {
+  if (player.isCurrentlyJumping()) {
+    return;
+  }
+
   player.setIsOnPlatform(false);
   player.setCurrentWeb(web);
   web.onPlayerCollision(player);
