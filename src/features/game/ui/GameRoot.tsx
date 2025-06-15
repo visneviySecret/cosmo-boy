@@ -28,8 +28,12 @@ export const GameRoot: React.FC = () => {
   const { mode, setMode } = useStore();
   const [isFAQOpen, setIsFAQOpen] = useState(false);
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
   return (
-    <div>
+    <div onContextMenu={handleContextMenu}>
       <GameRootWrapper>
         <Button onClick={() => setMode(GameMode.PLAY)}>Играть</Button>
         <Button onClick={() => setMode(GameMode.EDITOR)}>Редактор</Button>
