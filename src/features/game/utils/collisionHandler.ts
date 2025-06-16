@@ -4,24 +4,8 @@ import { PutinWebPlatform } from "../entities/PutinWebPlatform";
 import Phaser from "phaser";
 import type { PlatformsType } from "../../../shared/types/platforms";
 
-export function handleCollision(player: Player, asteroid: Asteroid) {
-  // Сохраняем скорости перед столкновением
-  const playerVelocityX = player.body?.velocity.x || 0;
-  const playerVelocityY = player.body?.velocity.y || 0;
-
-  // Вычисляем импульс игрока (p = mv)
-  const playerMomentumX = playerVelocityX * player.getMass();
-  const playerMomentumY = playerVelocityY * player.getMass();
-
-  // Вычисляем новую скорость метеорита (v = p/m)
-  const newVelocityX = playerMomentumX / asteroid.getMass();
-  const newVelocityY = playerMomentumY / asteroid.getMass();
-
-  // Устанавливаем одинаковую скорость для метеорита и игрока
-  asteroid.setVelocity(newVelocityX, newVelocityY);
-  player.setVelocity(newVelocityX, newVelocityY);
-
-  // Устанавливаем флаг нахождения на метеорите
+export function handleCollision(player: Player) {
+  player.setVelocity(0, 0);
   player.setIsOnPlatform(true);
 }
 
@@ -48,7 +32,7 @@ export function createCollision(
       const platformObj = obj2 as PlatformsType;
 
       if (platformObj instanceof Asteroid) {
-        handleCollision(playerObj, platformObj);
+        handleCollision(playerObj);
       } else if (platformObj instanceof PutinWebPlatform) {
         handleWebCollision(playerObj, platformObj);
       }

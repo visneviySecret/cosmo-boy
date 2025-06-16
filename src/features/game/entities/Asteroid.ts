@@ -24,6 +24,9 @@ export class Asteroid extends Platform {
       this.body.setOffset(0, 0);
       this.body.setCircle(TEXTURE_SIZE / 2);
       this.body.setOffset(0, 0);
+
+      // Делаем астероид неподвижным, чтобы он не двигался при столкновениях
+      (this.body as Phaser.Physics.Arcade.Body).immovable = true;
     }
   }
 }
