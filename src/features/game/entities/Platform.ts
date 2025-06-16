@@ -19,8 +19,12 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
   private isEditor: boolean;
   private readonly ROTATION_SPEED: number = 0.02;
 
-  constructor(scene: Phaser.Scene, config: PlatformConfig) {
-    super(scene, config.x, config.y, "platform");
+  constructor(
+    scene: Phaser.Scene,
+    config: PlatformConfig,
+    textureKey?: string
+  ) {
+    super(scene, config.x, config.y, textureKey || "platform");
 
     this.type = config.type || "platform";
     this.size = config.size || this.DEFAULT_SIZE;

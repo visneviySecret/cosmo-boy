@@ -4,6 +4,7 @@ import { RotationManager } from "../utils/RotationManager";
 import { PlayerProgress } from "./PlayerProgress";
 import { Food } from "./Food";
 import { PutinWebPlatform } from "./PutinWebPlatform";
+import type { Asteroid } from "./Asteroid";
 
 export interface PlayerConfig {
   x: number;
@@ -28,7 +29,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly JUMP_SPEED_DECREASE = 0.00025;
   private arcCalculator: ArcCalculator;
   private rotationManager: RotationManager;
-  private currentAsteroid: Phaser.Physics.Arcade.Sprite | null = null;
+  private currentAsteroid: Asteroid | null = null;
   private progress: PlayerProgress;
   private textureKey: string;
   private currentWeb: PutinWebPlatform | null = null;

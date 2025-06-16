@@ -4,31 +4,26 @@ import type { PlatformConfig } from "./Platform";
 
 export interface AsteroidConfig extends PlatformConfig {}
 
+const textures = ["asteroid_1", "asteroid_2", "asteroid_3"];
+
+function getRandomTexture() {
+  return textures[Math.floor(Math.random() * textures.length)];
+}
+
+const TEXTURE_SIZE = 240;
+
 export class Asteroid extends Platform {
   constructor(scene: Phaser.Scene, config: AsteroidConfig) {
-    super(scene, config);
+    super(scene, config, getRandomTexture());
+    scene.add.existing(this); // Добавляем спрайт в сцену
+    scene.physics.add.existing(this); // Добавляем физику
+    if (this.body) {
+      const scale = this.getSize() / TEXTURE_SIZE;
+      this.setScale(scale); // увеличиваем визуальный размер спрайта
 
-    this.textureKey = `asteroid_${this.getSize()}_${Math.random().toString(
-      16
-    )}`;
-
-    // Создаем временную графику для астероида
-    this.createTemporaryGraphics();
-  }
-
-  private createTemporaryGraphics() {
-    // Создаем временную текстуру для астероида
-    const graphics = this.scene.add.graphics();
-    graphics.fillStyle(0xcccccc, 1); // Светло-серый цвет
-    graphics.fillCircle(
-      this.getSize() / 2,
-      this.getSize() / 2,
-      this.getSize() / 2
-    );
-    graphics.generateTexture(this.textureKey, this.getSize(), this.getSize());
-    graphics.destroy();
-
-    // Устанавливаем текстуру для спрайта
-    this.setTexture(this.textureKey);
+      this.body.setOffset(0, 0);
+      this.body.setCircle(TEXTURE_SIZE / 2);
+      this.body.setOffset(0, 0);
+    }
   }
 }
