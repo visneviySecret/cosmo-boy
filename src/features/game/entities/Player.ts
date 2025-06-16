@@ -10,6 +10,7 @@ import {
   getCurrentTexture,
   textureResize,
 } from "../utils/player";
+import { growthAnimation, playShakeAnimation } from "../animations/player";
 
 export interface PlayerConfig {
   x: number;
@@ -135,35 +136,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.hasEscaped = true;
         this.jumpToPlatform();
       } else {
-        this.playShakeAnimation();
+        playShakeAnimation(this.scene, this);
       }
     }
-  }
-
-  private playShakeAnimation(): void {
-    const originalX = this.x;
-    const originalY = this.y;
-
-    this.scene.tweens.add({
-      targets: this,
-      x: originalX + 5,
-      duration: 30,
-      yoyo: true,
-      repeat: 2,
-      ease: "Power2",
-      onComplete: () => {
-        this.setPosition(originalX, originalY);
-      },
-    });
-
-    this.scene.tweens.add({
-      targets: this,
-      y: originalY + 2,
-      duration: 30,
-      yoyo: true,
-      repeat: 2,
-      ease: "Power2",
-    });
   }
 
   update(): void {
@@ -269,30 +244,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private playerLvlUpper(): void {
     this.updateTexture();
     this.decreaseJumpSpeed();
-
-    const timeline = this.scene.add.timeline({});
-
-    this.scene.input.enabled = false;
-
-    timeline.add({
-      tween: {
-        targets: this,
-        alpha: 0,
-        duration: 100,
-        yoyo: true,
-        repeat: 5,
-        ease: "Linear",
-      },
-    });
-
-    timeline.on("complete", () => {
-      this.alpha = 1;
-      setTimeout(() => {
-        this.scene.input.enabled = true;
-      }, 500);
-    });
-
-    timeline.play();
+    growthAnimation(this.scene, this);
   }
 
   private decreaseJumpSpeed(): void {

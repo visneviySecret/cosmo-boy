@@ -2,7 +2,11 @@ import Phaser from "phaser";
 import { Platform } from "./Platform";
 import type { PlatformConfig } from "./Platform";
 import { Player } from "./Player";
-import { playVideo } from "../../../shared/utils/playVideo";
+import {
+  spiderApperAnimation,
+  spiderDisappearAnimation,
+  webBreakAnimation,
+} from "../animations/spider";
 
 export interface PutinWebConfig extends PlatformConfig {
   webDeformation?: number;
@@ -14,17 +18,16 @@ export class PutinWebPlatform extends Platform {
   private webDeformation: number = 0;
   private readonly MAX_DEFORMATION = 20;
   private readonly DEFORMATION_SPEED = 0.5;
-  private isPlayerTrapped: boolean = false;
   private spider: Phaser.GameObjects.Sprite | null = null;
   private spiderThread: Phaser.GameObjects.Graphics | null = null; // Ниточка паука
   private escapeAttempts: number = 1;
-  private spiderSpeed: number = 6000;
   private requiredEscapeAttempts: number = 4;
   private readonly BASE_ESCAPE_ATTEMPTS = 1; // Базовое количество прыжков для освобождения
   private readonly MAX_ESCAPE_ATTEMPTS = 4; // Максимальное количество прыжков
   private readonly SIZE_RATIO_MULTIPLIER = 2; // Множитель влияния соотношения размеров
   private lastReleaseTime: number = 0; // Время последнего освобождения
   private readonly IMMUNITY_DURATION = 2000; // 2 секунды иммунитета после освобождения
+  public isPlayerTrapped: boolean = false;
   tint: number = 0xffffff;
 
   constructor(scene: Phaser.Scene, config: PutinWebConfig) {
@@ -113,37 +116,11 @@ export class PutinWebPlatform extends Platform {
     this.escapeAttempts = 0;
 
     // Визуальный эффект разрыва паутины
-    this.scene.tweens.add({
-      targets: this,
-      alpha: 0.3,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      duration: 300,
-      onComplete: () => {
-        this.scene.tweens.add({
-          targets: this,
-          alpha: 1,
-          scaleX: 0.4,
-          scaleY: 0.4,
-          duration: 200,
-        });
-      },
-    });
+    webBreakAnimation(this.scene, this);
 
     // Если паук уже появился, убираем его
     if (this.spider) {
-      this.scene.tweens.add({
-        targets: this.spider,
-        alpha: 0,
-        y: this.y - window.innerHeight,
-        duration: this.spiderSpeed / 4,
-        onComplete: () => {
-          if (this.spider) {
-            this.spider.destroy();
-            this.spider = null;
-          }
-        },
-      });
+      spiderDisappearAnimation(this.scene, this.spider);
     }
 
     // Убираем ниточку
@@ -227,55 +204,13 @@ export class PutinWebPlatform extends Platform {
     this.spider.setDepth(101);
     this.spiderThread = this.scene.add.graphics();
     this.updateSpiderThread();
-
-    // Создаем анимацию спуска с качанием
-    const swingAmplitude = 30; // Амплитуда качания
-    const swingFrequency = 2000; // Частота качания в миллисекундах
-
-    let progress = 0;
-
-    // Создаем таймер для качания и обновления ниточки
-    const swingTimer = this.scene.time.addEvent({
-      delay: 16, // 60 fps
-      callback: () => {
-        if (!this.spider) return;
-
-        progress += 16;
-        const swingOffset =
-          Math.sin((progress / swingFrequency) * Math.PI * 2) * swingAmplitude;
-        this.spider.x = this.x + swingOffset;
-
-        this.updateSpiderThread();
-      },
-      loop: true,
-    });
-
-    // Анимация спуска
-    this.scene.tweens.add({
-      targets: this.spider,
-      y: this.y,
-      duration: this.spiderSpeed,
-      ease: "Power1",
-      onComplete: () => {
-        // Останавливаем качание
-        swingTimer.destroy();
-
-        // Анимация поедания игрока
-        if (this.isPlayerTrapped) {
-          this.scene.tweens.add({
-            targets: player,
-            scale: 0,
-            duration: 0,
-            onComplete: () => {
-              playVideo(this.scene, "spider-death", () => {
-                //   // TODO: перезагрузить сцену
-                //   // this.scene.start("GameScene");
-              });
-            },
-          });
-        }
-      },
-    });
+    spiderApperAnimation(
+      this.scene,
+      this.spider,
+      this.updateSpiderThread.bind(this),
+      this,
+      player
+    );
   }
 
   getGradientColor(t: number | undefined) {
