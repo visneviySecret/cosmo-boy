@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { Platform } from "./Platform";
 import type { PlatformConfig } from "./Platform";
 import { Player } from "./Player";
+import { playVideo } from "../../../shared/utils/playVideo";
 
 export interface PutinWebConfig extends PlatformConfig {
   webDeformation?: number;
@@ -264,9 +265,12 @@ export class PutinWebPlatform extends Platform {
           this.scene.tweens.add({
             targets: player,
             scale: 0,
-            duration: 500,
+            duration: 0,
             onComplete: () => {
-              this.scene.events.emit("gameOver");
+              playVideo(this.scene, "spider-death", () => {
+                //   // TODO: перезагрузить сцену
+                //   // this.scene.start("GameScene");
+              });
             },
           });
         }

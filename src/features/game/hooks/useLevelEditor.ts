@@ -10,7 +10,7 @@ import {
   LEVEL_STORAGE_KEY,
 } from "../utils/editorUtils";
 import { getGameObjectByType } from "../utils/customLevel";
-import { preloadTextures } from "../utils/scene";
+import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 
 export const useLevelEditor = () => {
@@ -227,7 +227,7 @@ export const useLevelEditor = () => {
       },
       parent: phaserRef.current!,
       scene: {
-        preload: preloadTextures,
+        preload: preload,
         create: function () {
           sceneRef.current = this;
 
@@ -351,7 +351,12 @@ export const useLevelEditor = () => {
           });
         },
       },
-      physics: { default: "arcade" },
+      physics: {
+        default: "arcade",
+        arcade: {
+          debug: true,
+        },
+      },
     };
 
     const game = new Phaser.Game(config);

@@ -9,7 +9,7 @@ import {
   loadCustomLevel,
   generateGameObjectsFromLevel,
 } from "../utils/customLevel";
-import { preloadTextures } from "../utils/scene";
+import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 
 const GameContainer = styled.div`
@@ -43,13 +43,13 @@ const Game = React.memo(() => {
         default: "arcade",
         arcade: {
           gravity: { x: 0, y: 0 },
-          debug: false,
+          debug: true,
         },
       },
       scene: {
         create: create,
         update: update,
-        preload: preloadTextures,
+        preload: preload,
       },
     };
 
