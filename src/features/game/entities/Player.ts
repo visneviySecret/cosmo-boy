@@ -269,6 +269,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private playerLvlUpper(): void {
     this.updateTexture();
     this.decreaseJumpSpeed();
+
+    const timeline = this.scene.add.timeline({});
+
+    this.scene.input.enabled = false;
+
+    timeline.add({
+      tween: {
+        targets: this,
+        alpha: 0,
+        duration: 100,
+        yoyo: true,
+        repeat: 5,
+        ease: "Linear",
+      },
+    });
+
+    timeline.on("complete", () => {
+      this.alpha = 1;
+      setTimeout(() => {
+        this.scene.input.enabled = true;
+      }, 500);
+    });
+
+    timeline.play();
   }
 
   private decreaseJumpSpeed(): void {
