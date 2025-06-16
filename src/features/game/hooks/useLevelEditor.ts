@@ -354,7 +354,7 @@ export const useLevelEditor = () => {
       physics: {
         default: "arcade",
         arcade: {
-          debug: true,
+          debug: process.env.NODE_ENV === "development",
         },
       },
     };

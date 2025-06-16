@@ -43,7 +43,7 @@ const Game = React.memo(() => {
         default: "arcade",
         arcade: {
           gravity: { x: 0, y: 0 },
-          debug: true,
+          debug: process.env.NODE_ENV === "development",
         },
       },
       scene: {
