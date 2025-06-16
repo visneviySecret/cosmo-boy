@@ -5,6 +5,11 @@ import { PlayerProgress } from "./PlayerProgress";
 import { Food } from "./Food";
 import { PutinWebPlatform } from "./PutinWebPlatform";
 import type { Asteroid } from "./Asteroid";
+import {
+  calculateTextureScale,
+  getCurrentTexture,
+  textureResize,
+} from "../utils/player";
 
 export interface PlayerConfig {
   x: number;
@@ -31,7 +36,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private rotationManager: RotationManager;
   private currentAsteroid: Asteroid | null = null;
   private progress: PlayerProgress;
-  private textureKey: string;
   private currentWeb: PutinWebPlatform | null = null;
   public hasEscaped: boolean = false;
 
@@ -42,7 +46,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.progress = new PlayerProgress(aimLine);
     this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;
-    this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
 
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
     this.rotationManager = new RotationManager();
@@ -50,13 +53,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.createTemporaryGraphics();
-
     this.setCollideWorldBounds(false);
     this.setBounce(0);
-
-    this.setSize(this.size, this.size);
-    this.setOffset(0, 0);
+    this.updateTexture();
 
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
@@ -67,34 +66,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.events.on("update", this.update, this);
   }
 
-  private createTemporaryGraphics() {
-    const graphics = this.scene.add.graphics();
-    const experience = this.progress.getExperience();
-
-    // Рассчитываем радиус скругления на основе опыта
-    const maxRadius = this.size / 2;
-    const radius = Math.min(maxRadius, experience * 10);
-    const radiusParamsTop = { tl: radius, tr: radius, bl: 0, br: 0 };
-    const radiusParamsBottom = { tl: 0, tr: 0, bl: radius, br: radius };
-
-    // Рисуем верхний скругленный прямоугольник
-    graphics.fillStyle(0x00ff00, 1);
-    graphics.fillRoundedRect(0, 0, this.size, this.size / 2, radiusParamsTop);
-
-    // Рисуем нижний скругленный прямоугольник
-    graphics.fillStyle(0x00cc00, 1);
-    graphics.fillRoundedRect(
-      0,
-      this.size / 2,
-      this.size,
-      this.size / 2,
-      radiusParamsBottom
-    );
-
-    graphics.generateTexture(this.textureKey, this.size, this.size);
-    graphics.destroy();
-
-    this.setTexture(this.textureKey);
+  private updateTexture(): void {
+    this.setTexture(getCurrentTexture(this.progress.getLevel()));
+    this.setFrame(this.progress.getExperience());
+    const textureScale = calculateTextureScale(this.progress.getLevel());
+    this.setScale(textureScale);
+    if (this.body) {
+      const textureSize = textureResize(this.progress.getLevel());
+      this.body.setSize(textureSize, textureSize);
+      this.setOffset(textureSize, textureSize);
+    }
   }
 
   private jumpToPlatform(): void {
@@ -135,6 +116,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.jumpStartX = this.x;
       this.jumpStartY = this.y;
       this.jumpTargetX = targetPlatform.x;
+      if (this.jumpTargetX < this.jumpStartX) {
+        this.setFlipX(false);
+      } else {
+        this.setFlipX(true);
+      }
+
       this.jumpProgress = 0;
       // Отключаем физику на время прыжка
       this.body.enable = false;
@@ -275,30 +262,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
-    this.progress.handleLevelUp(this.size, this.playerLvlUpper.bind(this));
-    this.updateRoundness();
+    this.progress.handleLevelUp(this.playerLvlUpper.bind(this));
+    this.updateTexture();
   }
 
   private playerLvlUpper(): void {
-    this.updateSize();
+    this.updateTexture();
     this.decreaseJumpSpeed();
   }
 
-  private updateSize(): void {
-    this.size = this.size * this.progress.getSizeMultiplier();
-    this.mass = this.size * this.MASS_MULTIPLIER;
-    this.setSize(this.size, this.size);
-    this.createTemporaryGraphics();
-  }
-
   private decreaseJumpSpeed(): void {
-    this.jumpSpeed = this.jumpSpeed - this.JUMP_SPEED_DECREASE;
-  }
-
-  private updateRoundness(): void {
-    this.setSize(this.size, this.size);
-    this.textureKey = `player_${this.getSize()}_${Math.random().toString(16)}`;
-    this.createTemporaryGraphics();
+    this.jumpSpeed = Math.max(
+      this.jumpSpeed - this.JUMP_SPEED_DECREASE,
+      this.JUMP_SPEED_DECREASE
+    );
   }
 
   public getLevel(): number {

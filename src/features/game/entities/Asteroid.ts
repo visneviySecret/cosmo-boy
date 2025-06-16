@@ -21,7 +21,6 @@ export class Asteroid extends Platform {
       const scale = this.getSize() / TEXTURE_SIZE;
       this.setScale(scale); // увеличиваем визуальный размер спрайта
 
-      this.body.setOffset(0, 0);
       this.body.setCircle(TEXTURE_SIZE / 2);
       this.body.setOffset(0, 0);
 

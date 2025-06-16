@@ -1,3 +1,4 @@
+import { getExperienceToNextLevel } from "../utils/player";
 import { AimLine } from "./AimLine";
 
 export class PlayerProgress {
@@ -20,14 +21,9 @@ export class PlayerProgress {
     this.experience = 0;
   }
 
-  public handleLevelUp(
-    currentSize: number,
-    playerLvlUpper: () => void
-  ): boolean {
-    const maxRadius = currentSize / 2;
-    const currentRadius = Math.min(maxRadius, this.experience * 10);
-
-    if (currentRadius === maxRadius) {
+  public handleLevelUp(playerLvlUpper: () => void): boolean {
+    const experienceToNextLevel = getExperienceToNextLevel(this.level);
+    if (this.experience >= experienceToNextLevel && this.level < 2) {
       this.level++;
       this.resetExperience();
       playerLvlUpper();
@@ -44,6 +40,9 @@ export class PlayerProgress {
   }
 
   public getExperience(): number {
+    if (this.experience > 9) {
+      return 9;
+    }
     return this.experience;
   }
 
