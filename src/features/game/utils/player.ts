@@ -59,11 +59,15 @@ export const frameSizes = [
     frameHeight: 232,
   },
   {
-    frameWidth: 184,
-    frameHeight: 280,
+    frameWidth: 186,
+    frameHeight: 282,
   },
   {
     frameWidth: 184,
     frameHeight: 312,
+  },
+  {
+    frameWidth: 249,
+    frameHeight: 352,
   },
 ];
