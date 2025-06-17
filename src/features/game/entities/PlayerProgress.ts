@@ -1,4 +1,4 @@
-import { getExperienceToNextLevel } from "../utils/player";
+import { frameSizes, getExperienceToNextLevel } from "../utils/player";
 import { AimLine } from "./AimLine";
 
 export class PlayerProgress {
@@ -23,7 +23,10 @@ export class PlayerProgress {
 
   public handleLevelUp(playerLvlUpper: () => void): boolean {
     const experienceToNextLevel = getExperienceToNextLevel(this.level);
-    if (this.experience >= experienceToNextLevel && this.level < 2) {
+    if (
+      this.experience >= experienceToNextLevel &&
+      this.level < frameSizes.length
+    ) {
       this.level++;
       this.resetExperience();
       playerLvlUpper();
