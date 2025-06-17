@@ -8,6 +8,7 @@ import type { Asteroid } from "./Asteroid";
 import {
   calculateTextureScale,
   getCurrentTexture,
+  getOffset,
   textureResize,
 } from "../utils/player";
 import { growthAnimation, playShakeAnimation } from "../animations/player";
@@ -75,7 +76,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.body) {
       const textureSize = textureResize(this.progress.getLevel());
       this.body.setSize(textureSize, textureSize);
-      this.setOffset(textureSize, textureSize);
+      this.setOffset(...getOffset(this.progress.getLevel(), textureSize));
     }
   }
 

@@ -11,10 +11,14 @@ function preloadTextures(scene: Phaser.Scene) {
   scene.load.image("asteroid_2", "assets/asteroids/asteroid_2.png");
   scene.load.image("asteroid_3", "assets/asteroids/asteroid_3.png");
   scene.load.spritesheet("player_phase_1", "assets/player/phase_1.png", {
+    frameWidth: 182,
+    frameHeight: 218,
+  });
+  scene.load.spritesheet("player_phase_2", "assets/player/phase_2.png", {
     frameWidth: 276,
     frameHeight: 266,
   });
-  scene.load.spritesheet("player_phase_2", "assets/player/phase_2.png", {
+  scene.load.spritesheet("player_phase_4", "assets/player/phase_4.png", {
     frameWidth: 606,
     frameHeight: 606,
   });
