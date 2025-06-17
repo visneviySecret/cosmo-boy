@@ -1,4 +1,4 @@
-import { frameSizes, getFrameSize } from "./player";
+import { frameSizes } from "./player";
 
 export function preload(this: Phaser.Scene) {
   const scene = this;

@@ -11,7 +11,7 @@ export const calculateTextureScale = (level: number): number => {
     case 3:
       return 1;
     default:
-      return 0.4;
+      return 1;
   }
 };
 
@@ -36,6 +36,7 @@ export const getOffset = (level: number, size: number): [number, number] => {
     case 1:
       return [size, size * 2];
     case 3:
+    case 4:
       return [size / 2, size];
     default:
       return [size, size];
@@ -62,7 +63,7 @@ export const frameSizes = [
     frameHeight: 280,
   },
   {
-    frameWidth: 606,
-    frameHeight: 606,
+    frameWidth: 184,
+    frameHeight: 312,
   },
 ];
