@@ -48,7 +48,7 @@ export const getFrameSize = (
   return frameSizes[level - 1];
 };
 
-const frameSizes = [
+export const frameSizes = [
   {
     frameWidth: 182,
     frameHeight: 218,
