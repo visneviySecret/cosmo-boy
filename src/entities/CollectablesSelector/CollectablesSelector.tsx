@@ -8,11 +8,13 @@ import { optionsFromConstObject } from "../utils";
 export const CollectablesType = {
   Food_1: EditorItem.FOOD_1,
   Food_5: EditorItem.FOOD_5,
+  Browny: EditorItem.BROWNY,
 } as const;
 
 export const CollectablesTypeLabel = {
   Food_1: "Еда +1",
   Food_5: "Еда +5",
+  Browny: "Брауни",
 } as const;
 
 type CollectablesType =

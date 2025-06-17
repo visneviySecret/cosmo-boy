@@ -6,6 +6,7 @@ export enum EditorItem {
   // Collectables
   FOOD_1 = "food_1",
   FOOD_5 = "food_5",
+  BROWNY = "browny",
 }
 
 export type EditorItemType = (typeof EditorItem)[keyof typeof EditorItem];

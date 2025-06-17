@@ -13,6 +13,7 @@ import type { FoodConfig } from "../entities/Food";
 import { YellowCan } from "../entities/YellowCan";
 import type { GameObjects } from "../../../shared/types/game";
 import { PurpleTube } from "../entities/PurpleTube";
+import { Browny } from "../entities/Browny";
 import { handleFoodCollision } from "./foodCollisionHandler";
 
 export function loadCustomLevel(): Level | null {
@@ -78,7 +79,11 @@ export function generatePlatformsFromLevel(
 }
 
 function isFood(type?: string): boolean {
-  return type === EditorItem.FOOD_1 || type === EditorItem.FOOD_5;
+  return (
+    type === EditorItem.FOOD_1 ||
+    type === EditorItem.FOOD_5 ||
+    type === EditorItem.BROWNY
+  );
 }
 
 export function getGameObjectByType(
@@ -94,6 +99,8 @@ export function getGameObjectByType(
       return new YellowCan(scene, cfg);
     case EditorItem.FOOD_5:
       return new PurpleTube(scene, cfg);
+    case EditorItem.BROWNY:
+      return new Browny(scene, cfg);
     default:
       return new Platform(scene, cfg);
   }
