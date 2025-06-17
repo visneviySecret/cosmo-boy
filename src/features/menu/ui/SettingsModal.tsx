@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Button } from "../../../shared/ui/Button";
-import { SETTINGS_KEY } from "../../game/utils/editorUtils";
 import type { GameSettings } from "../../../shared/types/game";
+import { SETTINGS_KEY } from "../../game/utils/gameSave";
 
 const ModalOverlay = styled.div`
   position: fixed;
