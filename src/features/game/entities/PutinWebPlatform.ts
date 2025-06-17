@@ -36,7 +36,10 @@ export class PutinWebPlatform extends Platform {
     this.setTexture(this.textureKey);
     this.tint = this.getGradientColor(config.tintLevel);
     this.setTintFill(this.tint);
-    this.setDisplaySize(this.getSize(), this.getSize());
+    if (this.body) {
+      this.setDisplaySize(this.getSize(), this.getSize());
+      this.body.setSize(this.getSize(), this.getSize());
+    }
     this.setDepth(90);
 
     // Инициализируем количество требуемых попыток
