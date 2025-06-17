@@ -58,6 +58,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(false);
     this.setBounce(0);
     this.updateTexture();
+    this.setDepth(200);
 
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
@@ -70,7 +71,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private updateTexture(): void {
     this.setTexture(getCurrentTexture(this.progress.getLevel()));
-    this.setFrame(this.progress.getExperience());
+    this.setFrame(this.progress.getTextureFrameByExperience());
     const textureScale = calculateTextureScale(this.progress.getLevel());
     this.setScale(textureScale);
     if (this.body) {
@@ -257,10 +258,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getLevel(): number {
     return this.progress.getLevel();
-  }
-
-  public getExperience(): number {
-    return this.progress.getExperience();
   }
 
   public getCollectedItems(): number {

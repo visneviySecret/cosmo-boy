@@ -22,7 +22,7 @@ export class PlayerProgress {
   }
 
   public handleLevelUp(playerLvlUpper: () => void): boolean {
-    const experienceToNextLevel = getExperienceToNextLevel(this.level);
+    const experienceToNextLevel = getExperienceToNextLevel();
     if (
       this.experience >= experienceToNextLevel &&
       this.level < frameSizes.length
@@ -42,7 +42,10 @@ export class PlayerProgress {
     return this.level;
   }
 
-  public getExperience(): number {
+  public getTextureFrameByExperience(): number {
+    if (this.level === 6 && this.experience > 4) {
+      return 4;
+    }
     if (this.experience > 9) {
       return 9;
     }
