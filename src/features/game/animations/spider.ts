@@ -2,7 +2,7 @@ import { playVideo } from "../../../shared/utils/playVideo";
 import type { Player } from "../entities/Player";
 import type { PutinWebPlatform } from "../entities/PutinWebPlatform";
 
-const SPIDER_SPEED: number = 6000;
+const SPIDER_SPEED: number = 3000;
 
 export const webBreakAnimation = (
   scene: Phaser.Scene,
@@ -58,27 +58,34 @@ export const spiderApperAnimation = (
   // Анимация спуска
   scene.tweens.add({
     targets: spider,
-    y: web.y,
+    y: web.y / 8,
     duration: SPIDER_SPEED,
     ease: "Power1",
     onComplete: () => {
-      // Останавливаем качание
-      swingTimer.destroy();
-
-      // Анимация поедания игрока
-      if (web.isPlayerTrapped) {
-        scene.tweens.add({
-          targets: player,
-          scale: 0,
-          duration: 0,
-          onComplete: () => {
-            playVideo(scene, "spider-death", () => {
-              //   // TODO: перезагрузить сцену
-              //   // this.scene.start("GameScene");
+      scene.tweens.add({
+        targets: spider,
+        y: web.y,
+        duration: 100,
+        ease: "Power1",
+        onComplete: () => {
+          // Останавливаем качание
+          swingTimer.destroy();
+          // Анимация поедания игрока
+          if (web.isPlayerTrapped) {
+            scene.tweens.add({
+              targets: player,
+              scale: 0,
+              duration: 0,
+              onComplete: () => {
+                playVideo(scene, "spider-death", () => {
+                  //   // TODO: перезагрузить сцену
+                  //   // this.scene.start("GameScene");
+                });
+              },
             });
-          },
-        });
-      }
+          }
+        },
+      });
     },
   });
 };
