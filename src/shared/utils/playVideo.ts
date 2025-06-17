@@ -1,7 +1,7 @@
 export function playVideo(
   scene: Phaser.Scene,
   videoName: string,
-  onComplete: () => void
+  onComplete?: () => void
 ) {
   scene.input.enabled = false;
   const camera = scene.cameras.main;
@@ -21,6 +21,6 @@ export function playVideo(
   video.on("complete", () => {
     scene.input.enabled = true;
     video.destroy();
-    onComplete();
+    onComplete?.();
   });
 }
