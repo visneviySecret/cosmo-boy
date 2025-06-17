@@ -13,4 +13,17 @@ export interface GameState {
   setMode: (mode: GameMode) => void;
 }
 
+export interface GameSave {
+  playerLevel: number;
+  playerExperience: number;
+  collectedItems: number;
+  playerX: number;
+  playerY: number;
+  timestamp: number;
+}
+
+export interface GameSettings {
+  volume: number;
+}
+
 export type GameObjects = PlatformsType | FoodsType;

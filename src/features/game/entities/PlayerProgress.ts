@@ -42,6 +42,10 @@ export class PlayerProgress {
     return this.level;
   }
 
+  public getExperience(): number {
+    return this.experience;
+  }
+
   public getTextureFrameByExperience(): number {
     if (this.level === 6 && this.experience > 4) {
       return 4;
@@ -65,5 +69,16 @@ export class PlayerProgress {
       return 1;
     }
     return 1.5 - (this.level - 1) * 0.1;
+  }
+
+  // Методы для загрузки состояния из сохранения
+  public loadFromSave(
+    level: number,
+    experience: number,
+    collectedItems: number
+  ): void {
+    this.level = level;
+    this.experience = experience;
+    this.collectedItems = collectedItems;
   }
 }

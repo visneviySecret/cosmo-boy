@@ -6,7 +6,7 @@ const PRIMARY_COLOR = "#4caf50";
 const SECONDARY_COLOR = "#2196f3";
 const DANGER_COLOR = "#f44336";
 
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
   $variant?: "default" | "primary" | "secondary" | "danger";
@@ -16,9 +16,10 @@ export const Button = ({
   onClick,
   children,
   $variant = "default",
+  ...props
 }: ButtonProps) => {
   return (
-    <ButtonStyle onClick={onClick} $variant={$variant}>
+    <ButtonStyle onClick={onClick} $variant={$variant} {...props}>
       {children}
     </ButtonStyle>
   );
@@ -56,6 +57,7 @@ const ButtonStyle = styled.button<ButtonProps>`
   font-size: 1.2rem;
   transition: background 0.2s;
   padding: 1rem;
+  border: none;
 
   &:hover {
     filter: brightness(1.1);

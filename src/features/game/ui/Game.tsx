@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Phaser from "phaser";
 import styled from "styled-components";
 import { Player } from "../entities/Player";
@@ -11,6 +11,13 @@ import {
 } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
+import { default as GameMenu } from "../../menu/ui/GameMenu";
+import {
+  saveGame,
+  loadGame,
+  hasSavedGame,
+  deleteSavedGame,
+} from "../utils/gameSave";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -23,8 +30,51 @@ const GameContainer = styled.div`
 
 const Game = React.memo(() => {
   const gameRef = useRef<Phaser.Game | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
+  const playerRef = useRef<Player | null>(null);
+  const sceneRef = useRef<Phaser.Scene | null>(null);
+
+  // Проверяем, есть ли сохранения при первом запуске
+  useEffect(() => {
+    if (hasSavedGame()) {
+      setIsMenuOpen(false); // Если есть сохранения, не показываем меню при старте
+    }
+  }, []);
+
+  // Обработчик клавиши ESC
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (gameStarted) {
+          setIsMenuOpen(!isMenuOpen);
+        } else {
+          setIsMenuOpen(true);
+        }
+      }
+    },
+    [isMenuOpen, gameStarted]
+  );
 
   useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
+  const startNewGame = useCallback(() => {
+    deleteSavedGame(); // Удаляем старое сохранение
+    initializeGame(false);
+    setGameStarted(true);
+  }, []);
+
+  const continueGame = useCallback(() => {
+    initializeGame(true);
+    setGameStarted(true);
+  }, []);
+
+  const initializeGame = useCallback((loadFromSave: boolean) => {
     if (gameRef.current) {
       gameRef.current.destroy(true);
       gameRef.current = null;
@@ -59,6 +109,8 @@ const Game = React.memo(() => {
     let aimLine: AimLine;
 
     function create(this: Phaser.Scene) {
+      sceneRef.current = this;
+
       // Создаем линию наводки
       aimLine = new AimLine(this);
       (this as any).aimLine = aimLine;
@@ -68,15 +120,36 @@ const Game = React.memo(() => {
         x: this.cameras.main.width / 4,
         y: this.cameras.main.height * 0.75,
       });
+
+      playerRef.current = player;
       player.setIsOnPlatform(true);
 
+      // Загружаем сохранение, если требуется
+      if (loadFromSave) {
+        const savedGame = loadGame();
+        if (savedGame) {
+          player.loadFromSave(
+            savedGame.playerLevel,
+            savedGame.playerExperience,
+            savedGame.collectedItems,
+            savedGame.playerX,
+            savedGame.playerY
+          );
+        }
+      }
+
       // Создаем текст для отображения счётчика
-      const scoreText = this.add.text(16, 16, "Собрано: 0", {
-        fontSize: "32px",
-        color: "#fff",
-        stroke: "#000",
-        strokeThickness: 4,
-      });
+      const scoreText = this.add.text(
+        16,
+        16,
+        `Собрано: ${player.getCollectedItems()}`,
+        {
+          fontSize: "32px",
+          color: "#fff",
+          stroke: "#000",
+          strokeThickness: 4,
+        }
+      );
       scoreText.setScrollFactor(0); // Фиксируем текст на экране
 
       // Сохраняем ссылку на текст в сцене
@@ -93,7 +166,7 @@ const Game = React.memo(() => {
         gameObjects = [...platforms];
 
         // Разместить игрока на первой платформе, если есть
-        if (platforms.length > 0) {
+        if (platforms.length > 0 && !loadFromSave) {
           const first = platforms[0];
           player.x = first.x;
           player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
@@ -109,10 +182,12 @@ const Game = React.memo(() => {
         // Добавляем обработчик столкновений с едой
         createFoodCollision(this, player, foodGroup);
         // Размещаем игрока на первом астероиде
-        const leftAsteroid = gameObjects[0];
-        player.x = leftAsteroid.x;
-        player.y =
-          leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
+        if (!loadFromSave) {
+          const leftAsteroid = gameObjects[0];
+          player.x = leftAsteroid.x;
+          player.y =
+            leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
+        }
       }
 
       // Настраиваем камеру для следования за игроком
@@ -128,6 +203,17 @@ const Game = React.memo(() => {
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
+      });
+
+      // Автосохранение каждые 10 секунд
+      this.time.addEvent({
+        delay: 10000,
+        callback: () => {
+          if (playerRef.current) {
+            saveGame(playerRef.current);
+          }
+        },
+        loop: true,
       });
     }
 
@@ -172,17 +258,32 @@ const Game = React.memo(() => {
         });
       }
     }
+  }, []);
 
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (gameRef.current) {
-        aimLine?.destroy();
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
     };
   }, []);
 
-  return <GameContainer id="game-root" />;
+  return (
+    <>
+      <GameContainer id="game-root" />
+      <GameMenu
+        isOpen={isMenuOpen}
+        onStartNewGame={startNewGame}
+        onContinueGame={continueGame}
+        onClose={closeMenu}
+      />
+    </>
+  );
 });
 
 export default Game;

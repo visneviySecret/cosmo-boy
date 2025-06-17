@@ -279,6 +279,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.progress.getLevel();
   }
 
+  public getExperience(): number {
+    return this.progress.getExperience();
+  }
+
   public getCollectedItems(): number {
     return this.progress.getCollectedItems();
   }
@@ -296,5 +300,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   isCurrentlyJumping(): boolean {
     return this.isJumping;
+  }
+
+  // Метод для загрузки состояния из сохранения
+  public loadFromSave(
+    level: number,
+    experience: number,
+    collectedItems: number,
+    x: number,
+    y: number
+  ): void {
+    this.progress.loadFromSave(level, experience, collectedItems);
+    this.setPosition(x, y);
+    this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
+    this.mass = this.size * this.MASS_MULTIPLIER;
+    this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
+    this.updateTexture();
   }
 }
