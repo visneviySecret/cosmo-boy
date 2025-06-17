@@ -70,4 +70,8 @@ export const frameSizes = [
     frameWidth: 249,
     frameHeight: 352,
   },
+  {
+    frameWidth: 600,
+    frameHeight: 280,
+  },
 ];
