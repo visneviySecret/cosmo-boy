@@ -7,6 +7,7 @@ import { PutinWebPlatform } from "./PutinWebPlatform";
 import type { Asteroid } from "./Asteroid";
 import {
   calculateTextureScale,
+  frameSizes,
   getCurrentTexture,
   getOffset,
   textureResize,
@@ -33,7 +34,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpProgress: number = 0;
   private readonly INITIAL_JUMP_SPEED = 0.02; // Скорость движения по дуге
   private jumpSpeed: number = this.INITIAL_JUMP_SPEED;
-  private readonly JUMP_SPEED_DECREASE = 0.00025;
+  private readonly JUMP_SPEED_DECREASE = 0.0004;
+  private readonly JUMP_SPEED_INCREASE = 0.0005;
   private arcCalculator: ArcCalculator;
   private rotationManager: RotationManager;
   private currentAsteroid: Asteroid | null = null;
@@ -48,6 +50,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.progress = new PlayerProgress(aimLine);
     this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;
+    this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
 
     this.arcCalculator = new ArcCalculator(this.CURVE_HEIGHT);
     this.rotationManager = new RotationManager();
@@ -203,7 +206,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       // Если игрок оторвался от астероида, сбрасываем все связанные состояния
       this.isJumping = false;
       this.jumpProgress = 0;
-      this.jumpSpeed = this.INITIAL_JUMP_SPEED;
       if (this.body) {
         this.body.enable = true;
       }
@@ -239,21 +241,38 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public collectFood(food: Food): void {
     this.progress.addExperience(food.getValue());
-    this.progress.handleLevelUp(this.playerLvlUpper.bind(this));
+    const isLevelUp = this.progress.handleLevelUp(
+      this.playerLvlUpper.bind(this)
+    );
+    if (!isLevelUp && this.progress.getLevel() <= frameSizes.length) {
+      this.decreaseJumpSpeed(food.getValue());
+    }
     this.updateTexture();
   }
 
   private playerLvlUpper(): void {
     this.updateTexture();
-    this.decreaseJumpSpeed();
+    this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
     growthAnimation(this.scene, this);
   }
 
-  private decreaseJumpSpeed(): void {
+  private decreaseJumpSpeed(foodValue: number): void {
     this.jumpSpeed = Math.max(
-      this.jumpSpeed - this.JUMP_SPEED_DECREASE,
+      this.jumpSpeed -
+        this.JUMP_SPEED_DECREASE * this.progress.getLevel() * foodValue,
       this.JUMP_SPEED_DECREASE
     );
+  }
+
+  private calculateJumpSpeed(level: number): number {
+    if (level === 1) {
+      return this.INITIAL_JUMP_SPEED;
+    } else {
+      const speed =
+        this.calculateJumpSpeed(level - 1) +
+        Math.pow(this.JUMP_SPEED_INCREASE * 1000, level - 1) / 1000;
+      return speed;
+    }
   }
 
   public getLevel(): number {
