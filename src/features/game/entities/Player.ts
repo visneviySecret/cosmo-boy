@@ -74,9 +74,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const textureScale = calculateTextureScale(this.progress.getLevel());
     this.setScale(textureScale);
     if (this.body) {
-      const textureSize = textureResize(this.progress.getLevel());
-      this.body.setSize(textureSize, textureSize);
-      this.setOffset(...getOffset(this.progress.getLevel(), textureSize));
+      const { width, height } = textureResize(this.progress.getLevel());
+      this.body.setSize(width, height);
+      this.setOffset(...getOffset(this.progress.getLevel(), width));
     }
   }
 

@@ -1,12 +1,5 @@
 export const getCurrentTexture = (level: number): string => {
-  switch (level) {
-    case 1:
-      return "player_phase_1";
-    case 2:
-      return "player_phase_2";
-    default:
-      return "player_phase_2";
-  }
+  return `player_phase_${level}`;
 };
 
 export const calculateTextureScale = (level: number): number => {
@@ -16,30 +9,23 @@ export const calculateTextureScale = (level: number): number => {
     case 2:
       return 0.7;
     case 3:
-      return 0.5;
+      return 1;
     default:
       return 0.4;
   }
 };
 
-export const textureResize = (level: number): number => {
-  switch (level) {
-    case 1:
-      return 220 / 3;
-    case 2:
-      return 232 / 3;
-    case 4:
-      return 606 / 3;
-    default:
-      return 400;
-  }
+export const textureResize = (
+  level: number
+): { width: number; height: number } => {
+  const frameSize = getFrameSize(level);
+  return { width: frameSize.frameWidth / 2, height: frameSize.frameHeight / 2 };
 };
 
 export const getExperienceToNextLevel = (level: number): number => {
   switch (level) {
-    case 1:
-    case 2:
-      return 9;
+    case 5:
+      return 6;
     default:
       return 9;
   }
@@ -49,7 +35,34 @@ export const getOffset = (level: number, size: number): [number, number] => {
   switch (level) {
     case 1:
       return [size, size * 2];
+    case 3:
+      return [size / 2, size];
     default:
       return [size, size];
   }
 };
+
+export const getFrameSize = (
+  level: number
+): { frameWidth: number; frameHeight: number } => {
+  return frameSizes[level - 1];
+};
+
+const frameSizes = [
+  {
+    frameWidth: 182,
+    frameHeight: 218,
+  },
+  {
+    frameWidth: 258,
+    frameHeight: 232,
+  },
+  {
+    frameWidth: 184,
+    frameHeight: 280,
+  },
+  {
+    frameWidth: 606,
+    frameHeight: 606,
+  },
+];

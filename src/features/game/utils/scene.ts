@@ -1,3 +1,5 @@
+import { getFrameSize } from "./player";
+
 export function preload(this: Phaser.Scene) {
   const scene = this;
   preloadTextures(scene);
@@ -10,18 +12,26 @@ function preloadTextures(scene: Phaser.Scene) {
   scene.load.image("asteroid_1", "assets/asteroids/asteroid_1.png");
   scene.load.image("asteroid_2", "assets/asteroids/asteroid_2.png");
   scene.load.image("asteroid_3", "assets/asteroids/asteroid_3.png");
-  scene.load.spritesheet("player_phase_1", "assets/player/phase_1.png", {
-    frameWidth: 182,
-    frameHeight: 218,
-  });
-  scene.load.spritesheet("player_phase_2", "assets/player/phase_2.png", {
-    frameWidth: 258,
-    frameHeight: 232,
-  });
-  scene.load.spritesheet("player_phase_4", "assets/player/phase_4.png", {
-    frameWidth: 606,
-    frameHeight: 606,
-  });
+  scene.load.spritesheet(
+    "player_phase_1",
+    "assets/player/phase_1.png",
+    getFrameSize(1)
+  );
+  scene.load.spritesheet(
+    "player_phase_2",
+    "assets/player/phase_2.png",
+    getFrameSize(2)
+  );
+  scene.load.spritesheet(
+    "player_phase_3",
+    "assets/player/phase_3.png",
+    getFrameSize(3)
+  );
+  scene.load.spritesheet(
+    "player_phase_4",
+    "assets/player/phase_4.png",
+    getFrameSize(4)
+  );
 }
 
 function preloadVideos(scene: Phaser.Scene) {
