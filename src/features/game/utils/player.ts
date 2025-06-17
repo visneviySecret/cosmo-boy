@@ -25,9 +25,9 @@ export const calculateTextureScale = (level: number): number => {
 export const textureResize = (level: number): number => {
   switch (level) {
     case 1:
-      return 218 / 3;
+      return 220 / 3;
     case 2:
-      return 266 / 3;
+      return 232 / 3;
     case 4:
       return 606 / 3;
     default:

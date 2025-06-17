@@ -15,8 +15,8 @@ function preloadTextures(scene: Phaser.Scene) {
     frameHeight: 218,
   });
   scene.load.spritesheet("player_phase_2", "assets/player/phase_2.png", {
-    frameWidth: 276,
-    frameHeight: 266,
+    frameWidth: 258,
+    frameHeight: 232,
   });
   scene.load.spritesheet("player_phase_4", "assets/player/phase_4.png", {
     frameWidth: 606,
