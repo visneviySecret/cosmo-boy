@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import styled from "styled-components";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
-import { generateAsteroids } from "../utils/asteroidGenerator";
+import { generatePlatforms } from "../utils/platformsGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
 import {
   loadCustomLevel,
@@ -100,7 +100,7 @@ const Game = React.memo(() => {
         }
       } else {
         // --- Генерация стандартных астероидов ---
-        const { asteroids: initialAsteroids, foodGroup } = generateAsteroids(
+        const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
           this,
           aimLine,
           player
@@ -139,7 +139,7 @@ const Game = React.memo(() => {
 
         // Если самый правый астероид появился на экране, генерируем новые астероиды
         if (rightmostAsteroid.isVisible()) {
-          const { asteroids: newAsteroids, foodGroup } = generateAsteroids(
+          const { asteroids: newAsteroids, foodGroup } = generatePlatforms(
             this,
             aimLine,
             player,
