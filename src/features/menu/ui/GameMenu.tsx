@@ -73,6 +73,12 @@ const MenuButton = styled(Button)<{ disabled?: boolean }>`
   }
 `;
 
+const ImgWrapper = styled.div`
+  position: absolute;
+  right: 1.5rem;
+  top: 1rem;
+`;
+
 interface GameMenuProps {
   isOpen: boolean;
   onStartNewGame: () => void;
@@ -114,6 +120,10 @@ const GameMenu: React.FC<GameMenuProps> = ({
     setIsSettingsOpen(false);
   };
 
+  const goToDeveloperPage = () => {
+    window.open("https://github.com/visneviySecret/cosmo-boy", "_blank");
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -129,6 +139,17 @@ const GameMenu: React.FC<GameMenuProps> = ({
           </MenuButton>
 
           <MenuButton onClick={handleSettings}>Настройки</MenuButton>
+          <MenuButton onClick={() => goToDeveloperPage()}>
+            <ImgWrapper>
+              <img
+                src="assets/images/github.png"
+                alt="github"
+                width={50}
+                height={50}
+              />
+            </ImgWrapper>
+            <span>Разработчик</span>
+          </MenuButton>
         </MenuContent>
       </MenuOverlay>
 
