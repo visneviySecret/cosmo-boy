@@ -5,10 +5,7 @@ import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
 import { generatePlatforms } from "../utils/platformsGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
-import {
-  loadCustomLevel,
-  generateGameObjectsFromLevel,
-} from "../utils/customLevel";
+import { loadLevel, generateGameObjectsFromLevel } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 import { default as GameMenu } from "../../menu/ui/GameMenu";
@@ -75,6 +72,11 @@ const Game = React.memo(() => {
     setGameStarted(true);
   }, []);
 
+  const restartLevel = useCallback(() => {
+    initializeGame(false);
+    setGameStarted(true);
+  }, []);
+
   const initializeGame = useCallback((loadFromSave: boolean) => {
     if (gameRef.current) {
       gameRef.current.destroy(true);
@@ -122,10 +124,12 @@ const Game = React.memo(() => {
 
       playerRef.current = player;
       player.setIsOnPlatform(true);
+      let level;
 
       if (loadFromSave) {
         const savedGame = loadGame();
         if (savedGame) {
+          level = loadLevel(savedGame.playerLevel)!;
           player.loadFromSave(
             savedGame.playerLevel,
             savedGame.playerExperience,
@@ -134,8 +138,43 @@ const Game = React.memo(() => {
             savedGame.playerY
           );
         }
+      } else {
+        level = loadLevel(1);
       }
 
+      if (level) {
+        if (level.getLevelName() !== "Уровень 6") {
+          const { platforms } = generateGameObjectsFromLevel(
+            this,
+            player,
+            level
+          );
+          gameObjects = [...platforms];
+
+          if (platforms.length > 0 && !loadFromSave) {
+            const first = platforms[0];
+            player.x = first.x;
+            player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
+          }
+        } else {
+          // --- Генерация стандартных астероидов ---
+          const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
+            this,
+            aimLine,
+            player
+          );
+          gameObjects = initialAsteroids;
+          createFoodCollision(this, player, foodGroup);
+          if (!loadFromSave) {
+            const leftAsteroid = gameObjects[0];
+            player.x = leftAsteroid.x;
+            player.y =
+              leftAsteroid.y -
+              leftAsteroid.getSize() / 2 -
+              player.getSize() / 2;
+          }
+        }
+      }
       const scoreText = this.add.text(
         16,
         16,
@@ -150,42 +189,6 @@ const Game = React.memo(() => {
       scoreText.setScrollFactor(0);
 
       (this as any).scoreText = scoreText;
-
-      // --- Загрузка пользовательского уровня ---
-      const customLevel = loadCustomLevel();
-      if (customLevel) {
-        const { platforms } = generateGameObjectsFromLevel(
-          this,
-          player,
-          customLevel
-        );
-        gameObjects = [...platforms];
-
-        // Разместить игрока на первой платформе, если есть
-        if (platforms.length > 0 && !loadFromSave) {
-          const first = platforms[0];
-          player.x = first.x;
-          player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
-        }
-      } else {
-        // --- Генерация стандартных астероидов ---
-        const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
-          this,
-          aimLine,
-          player
-        );
-        gameObjects = initialAsteroids;
-        // Добавляем обработчик столкновений с едой
-        createFoodCollision(this, player, foodGroup);
-        // Размещаем игрока на первом астероиде
-        if (!loadFromSave) {
-          const leftAsteroid = gameObjects[0];
-          player.x = leftAsteroid.x;
-          player.y =
-            leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
-        }
-      }
-
       // Настраиваем камеру для следования за игроком
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);

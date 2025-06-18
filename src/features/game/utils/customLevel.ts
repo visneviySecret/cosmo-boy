@@ -1,8 +1,8 @@
-import { Level } from "../entities/Level";
+import { Level, type LevelData } from "../entities/Level";
 import { Asteroid } from "../entities/Asteroid";
 import { Platform, type PlatformConfig } from "../entities/Platform";
 import type Phaser from "phaser";
-import { LEVEL_STORAGE_KEY } from "./editorUtils";
+import { GAME_LEVELS_STORAGE_KEY } from "./editorUtils";
 import { EditorItem } from "../../../shared/types/editor";
 import { PutinWebPlatform } from "../entities/PutinWebPlatform";
 import type { PlatformsType } from "../../../shared/types/platforms";
@@ -16,10 +16,14 @@ import { PurpleTube } from "../entities/PurpleTube";
 import { Browny } from "../entities/Browny";
 import { handleFoodCollision } from "./foodCollisionHandler";
 
-export function loadCustomLevel(): Level | null {
-  const json = localStorage.getItem(LEVEL_STORAGE_KEY);
-  if (json) {
-    return Level.fromJSON(json);
+export function loadLevel(savedPlayerLevel: number): Level | null {
+  const json = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
+  const levels = JSON.parse(json || "[]");
+  const level = levels.find(
+    (level: LevelData) => level.id === savedPlayerLevel.toString()
+  );
+  if (level) {
+    return Level.fromJSON(JSON.stringify(level));
   }
   return null;
 }
