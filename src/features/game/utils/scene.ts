@@ -29,4 +29,5 @@ function preloadVideos(scene: Phaser.Scene) {
   scene.load.video("spider-death", "assets/player/cosmonaut-spider-death.mp4");
   scene.load.video("growth", "assets/player/cosmonaut-growth.mp4");
   scene.load.video("death", "assets/player/cosmonaut-death.mp4");
+  scene.load.video("cosmonaut-end", "assets/player/cosmonaut-end.mp4");
 }

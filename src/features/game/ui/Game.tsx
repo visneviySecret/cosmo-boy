@@ -15,6 +15,8 @@ import {
   hasSavedGame,
   deleteSavedGame,
 } from "../utils/gameSave";
+import { GameEndLogic } from "../utils/gameEndLogic";
+import { Credits } from "../../../shared/ui/Credits";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -29,8 +31,17 @@ const Game = React.memo(() => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
   const playerRef = useRef<Player | null>(null);
   const sceneRef = useRef<Phaser.Scene | null>(null);
+  const gameObjectsRef = useRef<GameObjects[]>([]);
+  const gameEndLogicRef = useRef<GameEndLogic | null>(null);
+
+  useEffect(() => {
+    gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () =>
+      setShowCredits(true)
+    );
+  }, []);
 
   useEffect(() => {
     if (hasSavedGame()) {
@@ -73,6 +84,9 @@ const Game = React.memo(() => {
   }, []);
 
   const initializeGame = useCallback((loadFromSave: boolean) => {
+    gameObjectsRef.current = []; // Очищаем массив объектов
+    gameEndLogicRef.current?.reset(); // Сбрасываем состояние завершения игры
+
     if (gameRef.current) {
       gameRef.current.destroy(true);
       gameRef.current = null;
@@ -136,38 +150,31 @@ const Game = React.memo(() => {
       } else {
         level = loadLevel(1);
       }
+      if (player.getLevel() !== 6 && level) {
+        const { platforms } = generateGameObjectsFromLevel(this, player, level);
+        gameObjects = [...platforms];
+        gameObjectsRef.current = gameObjects;
 
-      if (level) {
-        if (level.getLevelName() !== "Уровень 6") {
-          const { platforms } = generateGameObjectsFromLevel(
-            this,
-            player,
-            level
-          );
-          gameObjects = [...platforms];
-
-          if (platforms.length > 0 && !loadFromSave) {
-            const first = platforms[0];
-            player.x = first.x;
-            player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
-          }
-        } else {
-          // --- Генерация стандартных астероидов ---
-          const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
-            this,
-            aimLine,
-            player
-          );
-          gameObjects = initialAsteroids;
-          createFoodCollision(this, player, foodGroup);
-          if (!loadFromSave) {
-            const leftAsteroid = gameObjects[0];
-            player.x = leftAsteroid.x;
-            player.y =
-              leftAsteroid.y -
-              leftAsteroid.getSize() / 2 -
-              player.getSize() / 2;
-          }
+        if (platforms.length > 0 && !loadFromSave) {
+          const first = platforms[0];
+          player.x = first.x;
+          player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
+        }
+      } else {
+        // --- Генерация стандартных астероидов ---
+        const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
+          this,
+          aimLine,
+          player
+        );
+        gameObjects = initialAsteroids;
+        gameObjectsRef.current = gameObjects;
+        createFoodCollision(this, player, foodGroup);
+        if (!loadFromSave) {
+          const leftAsteroid = gameObjects[0];
+          player.x = leftAsteroid.x;
+          player.y =
+            leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
         }
       }
       const scoreText = this.add.text(
@@ -209,8 +216,10 @@ const Game = React.memo(() => {
       });
 
       this.events.on("restartLevel", () => {
-        initializeGame(false);
-        setGameStarted(true);
+        setTimeout(() => {
+          initializeGame(false);
+          setGameStarted(true);
+        }, 1000);
       });
 
       // Добавляем обработчик изменения размера окна
@@ -231,7 +240,12 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
-      if (player && gameObjects.length > 0 && aimLine) {
+      if (
+        player &&
+        gameObjectsRef.current.length > 0 &&
+        aimLine &&
+        gameEndLogicRef.current
+      ) {
         aimLine.update(player);
 
         if (player.getLevel() >= 6 && player.isInFlightMode()) {
@@ -245,32 +259,31 @@ const Game = React.memo(() => {
           }
         }
 
-        const rightmostAsteroid = gameObjects[gameObjects.length - 1];
+        if (gameEndLogicRef.current.shouldGenerateAsteroids()) {
+          const rightmostAsteroid =
+            gameObjectsRef.current[gameObjectsRef.current.length - 1];
 
-        // Если самый правый астероид появился на экране, генерируем новые астероиды
-        if (rightmostAsteroid.isVisible()) {
-          const { asteroids: newAsteroids, foodGroup } = generatePlatforms(
-            this,
-            aimLine,
-            player,
-            rightmostAsteroid.x + aimLine.getCurrentLength(),
-            rightmostAsteroid.y
-          );
-          gameObjects.push(...newAsteroids);
-
-          // Добавляем обработчик столкновений для новой группы еды
-          createFoodCollision(this, player, foodGroup);
+          if (rightmostAsteroid && rightmostAsteroid.isVisible()) {
+            const { asteroids: newAsteroids, foodGroup } = generatePlatforms(
+              this,
+              aimLine,
+              player,
+              rightmostAsteroid.x + aimLine.getCurrentLength(),
+              rightmostAsteroid.y
+            );
+            gameObjectsRef.current.push(...newAsteroids);
+            createFoodCollision(this, player, foodGroup);
+          }
         }
 
-        // Удаляем невидимые астероиды слева от игрока
-        gameObjects = gameObjects.filter((object) => {
-          // Проверяем, что объект не уничтожен
+        const isLastLevel = player.getLevel() === 6;
+        gameObjectsRef.current = gameObjectsRef.current.filter((object) => {
           if (!object.scene) {
             return false;
           }
 
-          // Удаляем объекты, которые находятся далеко слева от игрока и не видны
           if (
+            isLastLevel &&
             object.isVisible &&
             !object.isVisible() &&
             object.x < player.x - this.cameras.main.width
@@ -280,12 +293,19 @@ const Game = React.memo(() => {
           }
           return true;
         });
+
+        gameEndLogicRef.current.handleEndGameSequence(this);
       }
     }
   }, []);
 
   const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
+  }, []);
+
+  const handleCreditsClose = useCallback(() => {
+    setShowCredits(false);
+    setIsMenuOpen(true);
   }, []);
 
   useEffect(() => {
@@ -306,6 +326,7 @@ const Game = React.memo(() => {
         onContinueGame={continueGame}
         onClose={closeMenu}
       />
+      <Credits isOpen={showCredits} onClose={handleCreditsClose} />
     </>
   );
 });

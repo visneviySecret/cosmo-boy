@@ -14,13 +14,13 @@ export function generatePlatforms(
   startX: number = 0,
   startY: number = 0
 ): { asteroids: Asteroid[]; foodGroup: Phaser.Physics.Arcade.Group } {
-  const PLATFORMS_COUNT = 50; // Увеличиваем количество объектов
+  const PLATFORMS_COUNT = 60; // Увеличиваем количество объектов
   const asteroids: Asteroid[] = [];
   const foodGroup = scene.physics.add.group();
   const screenHeight = scene.cameras.main.height;
 
-  const maxDistance = aimLine.getCurrentLength() - player.getSize() * 1.5;
-  const minDistance = maxDistance / 4;
+  const maxDistance = aimLine.getCurrentLength() - player.getSize();
+  const minDistance = maxDistance / 15; // Уменьшаем минимальное расстояние для более частой генерации
 
   const MIN_Y = screenHeight * 0.01;
   const MAX_Y = screenHeight * 0.9;
