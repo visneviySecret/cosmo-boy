@@ -132,7 +132,7 @@ const GameMenu: React.FC<GameMenuProps> = ({
         <MenuContent>
           <GameTitle>Cosmo Boy</GameTitle>
 
-          <MenuButton onClick={handleStartNewGame}>Начать игру</MenuButton>
+          <MenuButton onClick={handleStartNewGame}>Новая игра</MenuButton>
 
           <MenuButton onClick={handleContinueGame} disabled={!hasSavedGame}>
             Продолжить

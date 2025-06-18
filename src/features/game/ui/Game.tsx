@@ -72,11 +72,6 @@ const Game = React.memo(() => {
     setGameStarted(true);
   }, []);
 
-  const restartLevel = useCallback(() => {
-    initializeGame(false);
-    setGameStarted(true);
-  }, []);
-
   const initializeGame = useCallback((loadFromSave: boolean) => {
     if (gameRef.current) {
       gameRef.current.destroy(true);
@@ -211,6 +206,11 @@ const Game = React.memo(() => {
         delay: 1000,
         callback: updateCameraSettings,
         loop: true,
+      });
+
+      this.events.on("restartLevel", () => {
+        initializeGame(false);
+        setGameStarted(true);
       });
 
       // Добавляем обработчик изменения размера окна

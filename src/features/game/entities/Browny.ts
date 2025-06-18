@@ -60,13 +60,9 @@ export class Browny extends Food {
     this.scene.input.enabled = false;
 
     playVideo(this.scene, "death", () => {
-      this.restartLevel();
+      this.scene.events.emit("restartLevel");
     });
 
     this.destroy();
-  }
-
-  private restartLevel(): void {
-    this.scene.scene.restart();
   }
 }

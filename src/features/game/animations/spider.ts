@@ -78,8 +78,7 @@ export const spiderApperAnimation = (
               duration: 0,
               onComplete: () => {
                 playVideo(scene, "spider-death", () => {
-                  //   // TODO: перезагрузить сцену
-                  //   // this.scene.start("GameScene");
+                  scene.events.emit("restartLevel");
                 });
               },
             });
