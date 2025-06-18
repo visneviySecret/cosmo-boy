@@ -35,14 +35,6 @@ const Game = React.memo(() => {
   const playerRef = useRef<Player | null>(null);
   const sceneRef = useRef<Phaser.Scene | null>(null);
 
-  // Проверяем, есть ли сохранения при первом запуске
-  useEffect(() => {
-    if (hasSavedGame()) {
-      setIsMenuOpen(false); // Если есть сохранения, не показываем меню при старте
-    }
-  }, []);
-
-  // Обработчик клавиши ESC
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -64,7 +56,7 @@ const Game = React.memo(() => {
   }, [handleKeyPress]);
 
   const startNewGame = useCallback(() => {
-    deleteSavedGame(); // Удаляем старое сохранение
+    deleteSavedGame();
     initializeGame(false);
     setGameStarted(true);
   }, []);
@@ -111,11 +103,9 @@ const Game = React.memo(() => {
     function create(this: Phaser.Scene) {
       sceneRef.current = this;
 
-      // Создаем линию наводки
       aimLine = new AimLine(this);
       (this as any).aimLine = aimLine;
 
-      // Создаем игрока в начальной позиции
       player = new Player(this, {
         x: this.cameras.main.width / 4,
         y: this.cameras.main.height * 0.75,
@@ -124,7 +114,6 @@ const Game = React.memo(() => {
       playerRef.current = player;
       player.setIsOnPlatform(true);
 
-      // Загружаем сохранение, если требуется
       if (loadFromSave) {
         const savedGame = loadGame();
         if (savedGame) {
@@ -138,7 +127,6 @@ const Game = React.memo(() => {
         }
       }
 
-      // Создаем текст для отображения счётчика
       const scoreText = this.add.text(
         16,
         16,
@@ -150,9 +138,8 @@ const Game = React.memo(() => {
           strokeThickness: 4,
         }
       );
-      scoreText.setScrollFactor(0); // Фиксируем текст на экране
+      scoreText.setScrollFactor(0);
 
-      // Сохраняем ссылку на текст в сцене
       (this as any).scoreText = scoreText;
 
       // --- Загрузка пользовательского уровня ---
