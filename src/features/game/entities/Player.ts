@@ -44,6 +44,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private currentWeb: PutinWebPlatform | null = null;
   public hasEscaped: boolean = false;
 
+  // Новые свойства для режима полета на 6 уровне
+  private isFlightMode: boolean = false;
+  private targetX: number = 0;
+  private targetY: number = 0;
+  private velocityX: number = 0;
+  private velocityY: number = 0;
+  private readonly FLIGHT_ACCELERATION = 0.5;
+  private readonly FLIGHT_FRICTION = 0.92;
+  private readonly MAX_FLIGHT_SPEED = 8;
+
   constructor(scene: Phaser.Scene, config: PlayerConfig = { x: 0, y: 0 }) {
     super(scene, config.x, config.y, "player");
 
@@ -67,6 +77,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
         this.jumpToPlatform();
+      }
+    });
+
+    // Обработчик движения мыши для режима полета
+    scene.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (this.isFlightMode) {
+        this.targetX = pointer.worldX;
+        this.targetY = pointer.worldY;
       }
     });
 
@@ -148,6 +166,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(): void {
+    // Проверяем, нужно ли активировать режим полета
+    if (this.progress.getLevel() >= 6 && !this.isFlightMode) {
+      this.activateFlightMode();
+    }
+
+    if (this.isFlightMode) {
+      this.updateFlightMovement();
+      return;
+    }
+
     if (this.isJumping && !this.isOnPlatform) {
       // Обновляем прогресс прыжка
       this.jumpProgress += this.jumpSpeed;
@@ -194,6 +222,55 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  private activateFlightMode(): void {
+    this.isFlightMode = true;
+    this.isOnPlatform = false;
+    this.isJumping = false;
+
+    if (this.body) {
+      this.body.enable = true;
+      (this.body as Phaser.Physics.Arcade.Body).setGravityY(0);
+    }
+
+    this.targetX = this.x;
+    this.targetY = this.y;
+  }
+
+  private updateFlightMovement(): void {
+    if (!this.body) return;
+
+    const deltaX = this.targetX - this.x;
+    const deltaY = this.targetY - this.y;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (distance > 5) {
+      const dirX = deltaX / distance;
+      const dirY = deltaY / distance;
+
+      this.velocityX += dirX * this.FLIGHT_ACCELERATION;
+      this.velocityY += dirY * this.FLIGHT_ACCELERATION;
+
+      const currentSpeed = Math.sqrt(
+        this.velocityX * this.velocityX + this.velocityY * this.velocityY
+      );
+      if (currentSpeed > this.MAX_FLIGHT_SPEED) {
+        this.velocityX =
+          (this.velocityX / currentSpeed) * this.MAX_FLIGHT_SPEED;
+        this.velocityY =
+          (this.velocityY / currentSpeed) * this.MAX_FLIGHT_SPEED;
+      }
+    }
+
+    this.velocityX *= this.FLIGHT_FRICTION;
+    this.velocityY *= this.FLIGHT_FRICTION;
+
+    this.setPosition(this.x + this.velocityX, this.y + this.velocityY);
+
+    if (Math.abs(this.velocityX) > 0.1) {
+      this.setFlipX(this.velocityX > 0);
+    }
+  }
+
   setIsOnPlatform(value: boolean): void {
     this.isOnPlatform = value;
     if (value) {
@@ -201,10 +278,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.body && this.body.enable) {
         this.body.enable = true;
       }
-      // Сбрасываем поворот при отрыве от астероида
       this.currentAsteroid = null;
     } else {
-      // Если игрок оторвался от астероида, сбрасываем все связанные состояния
       this.isJumping = false;
       this.jumpProgress = 0;
       if (this.body) {
@@ -310,6 +385,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.isJumping;
   }
 
+  public isInFlightMode(): boolean {
+    return this.isFlightMode;
+  }
+
   // Метод для загрузки состояния из сохранения
   public loadFromSave(
     level: number,
@@ -324,5 +403,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.mass = this.size * this.MASS_MULTIPLIER;
     this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
     this.updateTexture();
+
+    // Активируем режим полета, если уровень >= 6
+    if (this.progress.getLevel() >= 6) {
+      this.activateFlightMode();
+    }
   }
 }

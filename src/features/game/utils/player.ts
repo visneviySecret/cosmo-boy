@@ -16,7 +16,13 @@ export const textureResize = (
   level: number
 ): { width: number; height: number } => {
   const frameSize = getFrameSize(level);
-  return { width: frameSize.frameWidth / 2, height: frameSize.frameHeight / 2 };
+  if (level === 6) {
+    return {
+      width: frameSize.frameWidth / 2,
+      height: frameSize.frameHeight + 10,
+    };
+  }
+  return { width: frameSize.frameWidth, height: frameSize.frameHeight };
 };
 
 export const getExperienceToNextLevel = (): number => {
@@ -26,12 +32,13 @@ export const getExperienceToNextLevel = (): number => {
 export const getOffset = (level: number, size: number): [number, number] => {
   switch (level) {
     case 2:
-    case 6:
       return [size / 2, size / 2];
     case 1:
     case 3:
     case 4:
       return [size / 2, size];
+    case 6:
+      return [-size / 100 + size / 2, -size / 100 + 10];
     default:
       return [size, size];
   }

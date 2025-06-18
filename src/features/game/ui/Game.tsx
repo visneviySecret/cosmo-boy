@@ -196,6 +196,20 @@ const Game = React.memo(() => {
         this.cameras.main.height
       );
 
+      const updateCameraSettings = () => {
+        if (player.getLevel() >= 6 && player.isInFlightMode()) {
+          this.cameras.main.stopFollow();
+        } else {
+          this.cameras.main.startFollow(player, true);
+        }
+      };
+
+      this.time.addEvent({
+        delay: 1000,
+        callback: updateCameraSettings,
+        loop: true,
+      });
+
       // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
@@ -216,6 +230,17 @@ const Game = React.memo(() => {
     function update(this: Phaser.Scene) {
       if (player && gameObjects.length > 0 && aimLine) {
         aimLine.update(player);
+
+        if (player.getLevel() >= 6 && player.isInFlightMode()) {
+          const CAMERA_SPEED = 2;
+          this.cameras.main.scrollX += CAMERA_SPEED;
+
+          const leftBound =
+            this.cameras.main.scrollX - this.cameras.main.width * 0.3;
+          if (player.x < leftBound) {
+            player.x = leftBound;
+          }
+        }
 
         const rightmostAsteroid = gameObjects[gameObjects.length - 1];
 
