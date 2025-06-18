@@ -57,10 +57,11 @@ export class Browny extends Food {
   }
 
   private triggerDeath(): void {
-    this.scene.input.enabled = false;
+    const scene = this.scene; // Сохраняем ссылку на сцену
+    scene.input.enabled = false;
 
-    playVideo(this.scene, "death", () => {
-      this.scene.events.emit("restartLevel");
+    playVideo(scene, "death", () => {
+      scene.events.emit("restartLevel");
     });
 
     this.destroy();

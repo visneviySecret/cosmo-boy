@@ -229,10 +229,10 @@ const Game = React.memo(() => {
       });
 
       this.events.on("restartLevel", () => {
+        initializeGame(false);
         setTimeout(() => {
-          initializeGame(false);
           setGameStarted(true);
-        }, 1000);
+        }, 2000);
       });
 
       // Добавляем обработчик изменения размера окна
@@ -264,6 +264,9 @@ const Game = React.memo(() => {
         gameEndLogicRef.current
       ) {
         aimLine.update(player);
+
+        // Проверяем условия завершения игры
+        gameEndLogicRef.current.checkGameEnd(player);
 
         if (player.getLevel() >= 6 && player.isInFlightMode()) {
           const CAMERA_SPEED = 2;

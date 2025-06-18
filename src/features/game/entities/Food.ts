@@ -43,9 +43,4 @@ export abstract class Food extends Collectible {
       repeat: -1,
     });
   }
-
-  // Статический метод для получения шанса появления еды
-  public static getSpawnChance(): number {
-    throw new Error("Method getSpawnChance() must be implemented");
-  }
 }

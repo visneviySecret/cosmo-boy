@@ -316,6 +316,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public collectFood(food: Food): void {
+    if (food.getValue() === -1) return;
+
     this.progress.addExperience(food.getValue());
     const isLevelUp = this.progress.handleLevelUp(
       this.playerLvlUpper.bind(this)
