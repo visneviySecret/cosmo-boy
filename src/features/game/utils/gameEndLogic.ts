@@ -76,8 +76,8 @@ export class GameEndLogic {
     }
   }
 
-  public shouldGenerateAsteroids(): boolean {
-    return !this.gameEndTriggered;
+  public shouldGenerateAsteroids(playerLevel: number): boolean {
+    return !this.gameEndTriggered && playerLevel === 6;
   }
 
   public reset(): void {

@@ -279,7 +279,9 @@ const Game = React.memo(() => {
           }
         }
 
-        if (gameEndLogicRef.current.shouldGenerateAsteroids()) {
+        if (
+          gameEndLogicRef.current.shouldGenerateAsteroids(player.getLevel())
+        ) {
           const rightmostAsteroid =
             gameObjectsRef.current[gameObjectsRef.current.length - 1];
 
