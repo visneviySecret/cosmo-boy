@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Button } from "../../../shared/ui/Button";
-import { GAME_SAVE_KEY, SETTINGS_KEY } from "../../game/utils/gameSave";
-import type { GameSave, GameSettings } from "../../../shared/types/game";
+import { GAME_SAVE_KEY } from "../../game/utils/gameSave";
 import { SettingsModal } from "./SettingsModal";
 
 const MenuOverlay = styled.div`

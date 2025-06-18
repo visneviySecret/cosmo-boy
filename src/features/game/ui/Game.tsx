@@ -35,6 +35,15 @@ const Game = React.memo(() => {
   const playerRef = useRef<Player | null>(null);
   const sceneRef = useRef<Phaser.Scene | null>(null);
 
+  useEffect(() => {
+    if (hasSavedGame()) {
+      if (process.env.NODE_ENV === "development") {
+        continueGame();
+        setIsMenuOpen(false);
+      }
+    }
+  }, []);
+
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape") {
