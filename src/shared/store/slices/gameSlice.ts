@@ -16,5 +16,10 @@ export const createGameSlice: StateCreator<GameState> = (set) => {
       set({ mode });
       localStorage.setItem("mode", mode);
     },
+    cameraX: undefined,
+    cameraY: undefined,
+    setCameraPosition: (x: number, y: number) => {
+      set({ cameraX: x, cameraY: y });
+    },
   };
 };

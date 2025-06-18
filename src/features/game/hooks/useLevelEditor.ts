@@ -20,7 +20,7 @@ export const useLevelEditor = () => {
   const saveLevel = levelRef.current.saveLevel.bind(levelRef.current);
   const gameObjectsRef = useRef<GameObjects[]>([]);
   const previewRef = useRef<Phaser.GameObjects.Sprite | null>(null);
-  const { editorItem, setEditorItem } = useStore();
+  const { editorItem, setEditorItem, cameraX, cameraY } = useStore();
   const editorItemRef = useRef<EditorItem | null>(null);
   const previewSizeRef = useRef<number | undefined>(undefined);
   const playerSizeRef = useRef<number | undefined>(undefined);
@@ -230,6 +230,12 @@ export const useLevelEditor = () => {
         preload: preload,
         create: function () {
           sceneRef.current = this;
+
+          // Устанавливаем позицию камеры из игры, если она есть
+          if (cameraX !== undefined && cameraY !== undefined) {
+            this.cameras.main.scrollX = cameraX;
+            this.cameras.main.scrollY = cameraY;
+          }
 
           const tempPlayer = new Player(this);
           playerSizeRef.current = tempPlayer.getSize();

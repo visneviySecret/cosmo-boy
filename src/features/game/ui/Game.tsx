@@ -18,6 +18,7 @@ import {
 } from "../utils/gameSave";
 import { GameEndLogic } from "../utils/gameEndLogic";
 import { Credits } from "../../../shared/ui/Credits";
+import { useStore } from "../../../shared/store";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -38,6 +39,7 @@ const Game = React.memo(() => {
   const gameObjectsRef = useRef<GameObjects[]>([]);
   const gameEndLogicRef = useRef<GameEndLogic | null>(null);
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
+  const { setCameraPosition } = useStore();
 
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () =>
@@ -256,6 +258,8 @@ const Game = React.memo(() => {
       if (parallaxBackgroundRef.current) {
         parallaxBackgroundRef.current.update();
       }
+
+      setCameraPosition(this.cameras.main.scrollX, this.cameras.main.scrollY);
 
       if (
         player &&

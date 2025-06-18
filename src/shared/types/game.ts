@@ -11,6 +11,9 @@ export type GameModeType = (typeof GameMode)[keyof typeof GameMode];
 export interface GameState {
   mode: GameMode;
   setMode: (mode: GameMode) => void;
+  cameraX?: number;
+  cameraY?: number;
+  setCameraPosition: (x: number, y: number) => void;
 }
 
 export interface GameSave {
