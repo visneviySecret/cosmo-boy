@@ -4,11 +4,11 @@ import { levelWhiteGlow } from "../animations/level";
 
 export class GameEndLogic {
   private gameEndTriggered: boolean = false;
-  private gameObjectsRef: React.MutableRefObject<GameObjects[]>;
+  private gameObjectsRef: React.RefObject<GameObjects[]>;
   private onShowCredits: () => void;
 
   constructor(
-    gameObjectsRef: React.MutableRefObject<GameObjects[]>,
+    gameObjectsRef: React.RefObject<GameObjects[]>,
     onShowCredits: () => void
   ) {
     this.gameObjectsRef = gameObjectsRef;

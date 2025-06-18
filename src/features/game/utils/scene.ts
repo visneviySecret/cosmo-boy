@@ -12,6 +12,17 @@ function preloadTextures(scene: Phaser.Scene) {
   scene.load.image("asteroid_1", "assets/asteroids/asteroid_1.png");
   scene.load.image("asteroid_2", "assets/asteroids/asteroid_2.png");
   scene.load.image("asteroid_3", "assets/asteroids/asteroid_3.png");
+
+  // Загружаем фоновые изображения
+  scene.load.image("bg_level_1", "assets/backgrounds/level 1.png");
+  scene.load.image("bg_level_2", "assets/backgrounds/level 2.png");
+  scene.load.image("bg_level_3", "assets/backgrounds/level 3.png");
+  scene.load.image("bg_level_4", "assets/backgrounds/level 4.png");
+  scene.load.image("bg_level_5", "assets/backgrounds/level 5.png");
+  scene.load.image("bg_level_6", "assets/backgrounds/level 6.png");
+  scene.load.image("bg_level_7", "assets/backgrounds/level 7.png");
+  scene.load.image("bg_level_8", "assets/backgrounds/level 8.png");
+
   preloadPlayerTextures(scene);
 }
 

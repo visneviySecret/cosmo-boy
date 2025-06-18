@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import styled from "styled-components";
 import { Player } from "../entities/Player";
 import { AimLine } from "../entities/AimLine";
+import { ParallaxBackground } from "../entities/ParallaxBackground";
 import { generatePlatforms } from "../utils/platformsGenerator";
 import { createFoodCollision } from "../utils/foodCollisionHandler";
 import { loadLevel, generateGameObjectsFromLevel } from "../utils/customLevel";
@@ -36,6 +37,7 @@ const Game = React.memo(() => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const gameObjectsRef = useRef<GameObjects[]>([]);
   const gameEndLogicRef = useRef<GameEndLogic | null>(null);
+  const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
 
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () =>
@@ -87,6 +89,12 @@ const Game = React.memo(() => {
     gameObjectsRef.current = []; // Очищаем массив объектов
     gameEndLogicRef.current?.reset(); // Сбрасываем состояние завершения игры
 
+    // Очищаем предыдущий параллакс фон
+    if (parallaxBackgroundRef.current) {
+      parallaxBackgroundRef.current.destroy();
+      parallaxBackgroundRef.current = null;
+    }
+
     if (gameRef.current) {
       gameRef.current.destroy(true);
       gameRef.current = null;
@@ -119,9 +127,14 @@ const Game = React.memo(() => {
     let gameObjects: GameObjects[] = [];
     let player: Player;
     let aimLine: AimLine;
+    let parallaxBackground: ParallaxBackground;
 
     function create(this: Phaser.Scene) {
       sceneRef.current = this;
+
+      // Создаем параллакс фон первым, чтобы он был за всеми остальными объектами
+      parallaxBackground = new ParallaxBackground(this);
+      parallaxBackgroundRef.current = parallaxBackground;
 
       aimLine = new AimLine(this);
       (this as any).aimLine = aimLine;
@@ -240,6 +253,10 @@ const Game = React.memo(() => {
     }
 
     function update(this: Phaser.Scene) {
+      if (parallaxBackgroundRef.current) {
+        parallaxBackgroundRef.current.update();
+      }
+
       if (
         player &&
         gameObjectsRef.current.length > 0 &&
