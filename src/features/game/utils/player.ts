@@ -4,25 +4,43 @@ export const getCurrentTexture = (level: number): string => {
 };
 
 export const calculateTextureScale = (level: number): number => {
-  switch (level) {
-    case 1:
-      return 0.9;
-    default:
-      return 1;
-  }
+  return 1;
 };
 
 export const textureResize = (
   level: number
 ): { width: number; height: number } => {
   const frameSize = getFrameSize(level);
-  if (level === 6) {
-    return {
-      width: frameSize.frameWidth / 2,
-      height: frameSize.frameHeight + 10,
-    };
+  switch (level) {
+    case 1:
+    case 2:
+      return {
+        width: frameSize.frameWidth / 1.6,
+        height: frameSize.frameHeight / 1.3,
+      };
+    case 3:
+      return {
+        width: frameSize.frameWidth / 1.3,
+        height: frameSize.frameHeight / 1.2,
+      };
+    case 4:
+      return {
+        width: frameSize.frameWidth / 1.6,
+        height: frameSize.frameHeight / 1.1,
+      };
+    case 5:
+      return {
+        width: frameSize.frameWidth / 1.6,
+        height: frameSize.frameHeight / 1.1,
+      };
+    case 6:
+      return {
+        width: frameSize.frameWidth / 2,
+        height: frameSize.frameHeight + 10,
+      };
+    default:
+      return { width: frameSize.frameWidth, height: frameSize.frameHeight };
   }
-  return { width: frameSize.frameWidth, height: frameSize.frameHeight };
 };
 
 export const getExperienceToNextLevel = (): number => {
@@ -31,12 +49,16 @@ export const getExperienceToNextLevel = (): number => {
 
 export const getOffset = (level: number, size: number): [number, number] => {
   switch (level) {
-    case 2:
-      return [size / 2, size / 2];
     case 1:
+      return [size / 3, size / 5];
+    case 2:
+      return [size / 4, size / 10];
     case 3:
+      return [size / 6, size / 10];
     case 4:
-      return [size / 2, size];
+      return [size / 8, size / 10];
+    case 5:
+      return [size / 10, size / 10];
     case 6:
       return [-size / 100 + size / 2, -size / 100 + 10];
     default:
