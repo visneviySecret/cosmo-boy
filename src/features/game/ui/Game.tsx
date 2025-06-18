@@ -229,7 +229,7 @@ const Game = React.memo(() => {
       });
 
       this.events.on("restartLevel", () => {
-        initializeGame(false);
+        initializeGame(true);
         setTimeout(() => {
           setGameStarted(true);
         }, 2000);
