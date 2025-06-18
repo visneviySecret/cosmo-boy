@@ -13,6 +13,7 @@ import {
   textureResize,
 } from "../utils/player";
 import { growthAnimation, playShakeAnimation } from "../animations/player";
+import { saveGame } from "../utils/gameSave";
 
 export interface PlayerConfig {
   x: number;
@@ -254,6 +255,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.updateTexture();
     this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
     growthAnimation(this.scene, this);
+    this.scene.time.addEvent({
+      callback: () => {
+        if (this) {
+          saveGame(this);
+        }
+      },
+    });
   }
 
   private decreaseJumpSpeed(foodValue: number): void {
