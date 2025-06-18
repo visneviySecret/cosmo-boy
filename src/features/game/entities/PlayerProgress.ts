@@ -80,5 +80,6 @@ export class PlayerProgress {
     this.level = level;
     this.experience = experience;
     this.collectedItems = collectedItems;
+    if (this.aimLine) this.aimLine.increaseAimLineByLevel(level);
   }
 }

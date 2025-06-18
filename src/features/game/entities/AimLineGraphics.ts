@@ -85,4 +85,8 @@ export class AimLineGraphics {
   destroy(): void {
     this.graphics.destroy();
   }
+
+  hide(): void {
+    this.graphics.clear();
+  }
 }

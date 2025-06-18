@@ -7,7 +7,7 @@ import { Platform } from "./Platform";
 export class AimLine {
   private readonly BASE_LENGTH = 800;
   private readonly MAX_LENGTH = 2000;
-  private readonly POWERUP_LENGTH_INCREASE = 200; // Увеличение длины при получении паверапа
+  private readonly LEVEL_LENGTH_INCREASE = 200; // Увеличение длины при получении паверапа
   private currentLength: number;
   private targetPlatform: Platform | Phaser.Physics.Arcade.Sprite | null = null;
   private scene: Phaser.Scene;
@@ -84,7 +84,7 @@ export class AimLine {
 
   increaseAimLine(): void {
     this.currentLength = Math.min(
-      this.currentLength + this.POWERUP_LENGTH_INCREASE,
+      this.currentLength + this.LEVEL_LENGTH_INCREASE,
       this.MAX_LENGTH
     );
 
@@ -97,11 +97,31 @@ export class AimLine {
     }
   }
 
+  increaseAimLineByLevel(level: number): void {
+    this.currentLength = this.aimlineIncreaser(level);
+  }
+
+  aimlineIncreaser(level: number): number {
+    if (level === 1) {
+      return this.BASE_LENGTH;
+    } else {
+      return (
+        this.aimlineIncreaser(level - 1) + this.LEVEL_LENGTH_INCREASE * level
+      );
+    }
+  }
+
   reset(): void {
     this.currentLength = this.BASE_LENGTH;
   }
 
   update(player: Player): void {
+    // Не показываем AimLine в режиме полета
+    if (player.isInFlightMode()) {
+      this.graphics.hide();
+      return;
+    }
+
     const pointer = player.scene.input.activePointer;
 
     let endX: number;
