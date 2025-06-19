@@ -12,17 +12,18 @@ export const SelectWrapper = styled.div`
 
 export const IconWrapper = styled.span`
   position: absolute;
-  left: 1.5em;
+  left: 1em;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  height: 1.5rem;
   z-index: 2;
 `;
 
 export const Selector = styled.div`
-  font-size: 1.2rem;
+  font-size: 1rem;
   border-radius: 8px;
-  padding: 1em 2.5em 1em 3em;
+  padding: 0.5em 1.5em 0.5em 2em;
   background-color: #fff;
   cursor: pointer;
   position: relative;

@@ -12,12 +12,12 @@ export class ParallaxBackground {
 
   private createBackgrounds(): void {
     const camera = this.scene.cameras.main;
-    const screenHeight = camera.height;
+    const screenHeight = camera.height / 0.5;
 
     // Получаем размеры текстуры
     const texture = this.scene.textures.get(this.backgroundTexture);
     const imageWidth = texture.getSourceImage().width || 12057;
-    const imageHeight = texture.getSourceImage().height || 12057;
+    const imageHeight = texture.getSourceImage().height || 1536;
 
     // Вычисляем масштаб для заполнения экрана по высоте без деформации
     const scaleY = screenHeight / imageHeight;

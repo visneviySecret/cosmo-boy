@@ -54,9 +54,9 @@ const ButtonStyle = styled.button<ButtonProps>`
   background: ${({ $variant }) => getButtonColor($variant)};
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: background 0.2s;
-  padding: 1rem;
+  /* padding: 0.5rem; */
   border: none;
 
   &:hover {

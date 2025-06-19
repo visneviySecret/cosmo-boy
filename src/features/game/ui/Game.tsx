@@ -193,20 +193,24 @@ const Game = React.memo(() => {
         }
       }
       const scoreText = this.add.text(
-        16,
-        16,
+        -620,
+        -620,
         `Собрано: ${player.getCollectedItems()}`,
         {
-          fontSize: "32px",
+          fontSize: "48px",
           color: "#fff",
           stroke: "#000",
-          strokeThickness: 4,
+          strokeThickness: 6,
+          fontFamily: "Arial, sans-serif",
+          fontStyle: "bold",
         }
       );
       scoreText.setScrollFactor(0);
+      scoreText.setDepth(900); // Высокий z-index чтобы текст был поверх всего
 
       (this as any).scoreText = scoreText;
       // Настраиваем камеру для следования за игроком
+      this.cameras.main.setZoom(0.5);
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);
       this.cameras.main.setBounds(

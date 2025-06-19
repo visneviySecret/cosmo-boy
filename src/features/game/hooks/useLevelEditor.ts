@@ -41,9 +41,14 @@ export const useLevelEditor = () => {
       setEditorItem(type);
       const ctx = sceneRef.current;
       const camera = ctx.cameras.main;
+      const centerScreenX = camera.width / 2;
+      const centerScreenY = camera.height / 2;
+      const worldCenterX = camera.scrollX + centerScreenX / camera.zoom;
+      const worldCenterY = camera.scrollY + centerScreenY / camera.zoom;
+
       const cfg = {
-        x: camera.scrollX + camera.width / 2,
-        y: camera.scrollY + camera.height / 2,
+        x: worldCenterX,
+        y: worldCenterY,
         isEditor: true,
         type,
       };
@@ -134,9 +139,8 @@ export const useLevelEditor = () => {
 
   const updateDragPosition = (pointer: Phaser.Input.Pointer) => {
     if (draggedGameObjectRef.current && sceneRef.current) {
-      const camera = sceneRef.current.cameras.main;
-      const worldX = pointer.x + camera.scrollX;
-      const worldY = pointer.y + camera.scrollY;
+      const worldX = pointer.worldX;
+      const worldY = pointer.worldY;
 
       draggedGameObjectRef.current.setPosition(worldX, worldY);
 
@@ -152,11 +156,9 @@ export const useLevelEditor = () => {
 
   const updatePreviewPosition = (pointer: Phaser.Input.Pointer) => {
     if (previewRef.current && sceneRef.current) {
-      const camera = sceneRef.current.cameras.main;
-      previewRef.current.setPosition(
-        camera.scrollX + pointer.x,
-        camera.scrollY + pointer.y
-      );
+      const worldX = pointer.worldX;
+      const worldY = pointer.worldY;
+      previewRef.current.setPosition(worldX, worldY);
     }
   };
 
@@ -237,6 +239,8 @@ export const useLevelEditor = () => {
             this.cameras.main.scrollY = cameraY;
           }
 
+          this.cameras.main.setZoom(0.5);
+
           const tempPlayer = new Player(this);
           playerSizeRef.current = tempPlayer.getSize();
           tempPlayer.destroy();
@@ -263,12 +267,12 @@ export const useLevelEditor = () => {
             } else if (draggedGameObjectRef.current) {
               updateDragPosition(pointer);
             } else {
+              const worldX = pointer.worldX;
+              const worldY = pointer.worldY;
+
               const gameObject = gameObjectsRef.current.find((p) => {
-                const gameObject = p.getBounds();
-                return gameObject.contains(
-                  pointer.x + this.cameras.main.scrollX,
-                  pointer.y + this.cameras.main.scrollY
-                );
+                const gameObjectBounds = p.getBounds();
+                return gameObjectBounds.contains(worldX, worldY);
               });
 
               if (gameObject) {
@@ -293,13 +297,13 @@ export const useLevelEditor = () => {
                 updatePreviewSize(deltaY);
               } else {
                 const pointer = this.input.activePointer;
+                const worldX = pointer.worldX;
+                const worldY = pointer.worldY;
+
                 const platform = gameObjectsRef.current.find((p) => {
                   const bounds = p.getBounds();
                   if (p instanceof GameObject) {
-                    return bounds.contains(
-                      pointer.x + this.cameras.main.scrollX,
-                      pointer.y + this.cameras.main.scrollY
-                    );
+                    return bounds.contains(worldX, worldY);
                   }
                 }) as GameObject;
                 if (platform) {
@@ -319,12 +323,12 @@ export const useLevelEditor = () => {
               if (sceneRef.current) {
                 sceneRef.current.input.setDefaultCursor("grabbing");
               }
+              const worldX = pointer.worldX;
+              const worldY = pointer.worldY;
+
               const gameObject = gameObjectsRef.current.find((p) => {
                 const bounds = p.getBounds();
-                return bounds.contains(
-                  pointer.x + this.cameras.main.scrollX,
-                  pointer.y + this.cameras.main.scrollY
-                );
+                return bounds.contains(worldX, worldY);
               }) as GameObject;
 
               if (gameObject) {
@@ -335,10 +339,12 @@ export const useLevelEditor = () => {
 
             if (!previewRef.current || !editorItemRef.current) return;
 
-            const camera = this.cameras.main;
+            const worldX = pointer.worldX;
+            const worldY = pointer.worldY;
+
             const cfg = {
-              x: pointer.x + camera.scrollX,
-              y: pointer.y + camera.scrollY,
+              x: worldX,
+              y: worldY,
               size: previewSizeRef.current,
               type: editorItemRef.current,
             };

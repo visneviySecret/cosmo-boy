@@ -3,10 +3,6 @@ export const getCurrentTexture = (level: number): string => {
   return `player_phase_${phase}`;
 };
 
-export const calculateTextureScale = (level: number): number => {
-  return 1;
-};
-
 export const textureResize = (
   level: number
 ): { width: number; height: number } => {

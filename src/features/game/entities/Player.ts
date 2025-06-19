@@ -6,11 +6,11 @@ import { Food } from "./Food";
 import { PutinWebPlatform } from "./PutinWebPlatform";
 import type { Asteroid } from "./Asteroid";
 import {
-  calculateTextureScale,
   frameSizes,
   getCurrentTexture,
   getOffset,
   textureResize,
+  getFrameSize,
 } from "../utils/player";
 import { growthAnimation, playShakeAnimation } from "../animations/player";
 import { saveGame } from "../utils/gameSave";
@@ -94,8 +94,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private updateTexture(): void {
     this.setTexture(getCurrentTexture(this.progress.getLevel()));
     this.setFrame(this.progress.getTextureFrameByExperience());
-    const textureScale = calculateTextureScale(this.progress.getLevel());
-    this.setScale(textureScale);
+
+    // Используем setDisplaySize вместо setScale для лучшего качества
+    const frameSize = getFrameSize(this.progress.getLevel());
+    this.setDisplaySize(frameSize.frameWidth, frameSize.frameHeight);
+
     if (this.body) {
       const { width, height } = textureResize(this.progress.getLevel());
       this.body.setSize(width, height);
