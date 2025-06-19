@@ -48,8 +48,8 @@ const Game = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    if (hasSavedGame()) {
-      if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development") {
+      if (hasSavedGame()) {
         continueGame();
         setIsMenuOpen(false);
       }
