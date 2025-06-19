@@ -106,7 +106,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  private jumpToPlatform(): void {
+  private jumpToPlatform(skipSound: boolean = false): void {
     if (
       this.currentWeb &&
       this.currentWeb.isTrapped() &&
@@ -126,6 +126,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       const targetPlatform = aimLine.getTargetPlatform();
       if (!targetPlatform) return;
+
+      if (!skipSound && this.scene && this.scene.sound) {
+        this.scene.sound.play("jump_sound", { volume: 0.6 });
+      }
 
       this.isJumping = true;
       this.isOnPlatform = false;
@@ -160,8 +164,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.currentWeb && this.currentWeb.isTrapped()) {
       const escaped = this.currentWeb.handleEscapeAttempt();
       if (escaped) {
+        // Воспроизводим звук прыжка из паутины, если игрок был заперт
+        if (this.scene && this.scene.sound) {
+          this.scene.sound.play("jump_web_sound", { volume: 0.7 });
+        }
         this.hasEscaped = true;
-        this.jumpToPlatform();
+        // Передаем true, чтобы пропустить обычный звук прыжка
+        this.jumpToPlatform(true);
       } else {
         playShakeAnimation(this.scene, this);
       }
@@ -358,6 +367,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.updateTexture();
     this.jumpSpeed = this.calculateJumpSpeed(this.progress.getLevel());
     growthAnimation(this.scene, this);
+    if (this.scene && this.scene.sound) {
+      this.scene.sound.play("levelup_sound", { volume: 0.6 });
+    }
     this.scene.time.addEvent({
       callback: () => {
         if (this) {

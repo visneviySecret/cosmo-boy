@@ -62,6 +62,7 @@ export const spiderApperAnimation = (
     duration: SPIDER_SPEED,
     ease: "Power1",
     onComplete: () => {
+      scene.sound.play("Spider_attack", { volume: 0.5 });
       scene.tweens.add({
         targets: spider,
         y: web.y,

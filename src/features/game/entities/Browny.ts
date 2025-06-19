@@ -53,6 +53,9 @@ export class Browny extends Food {
   }
 
   public collect(): void {
+    if (this.scene && this.scene.sound) {
+      this.scene.sound.play("eat_sound", { volume: 0.5 });
+    }
     this.triggerDeath();
   }
 

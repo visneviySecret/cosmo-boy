@@ -12,6 +12,7 @@ import {
 import { getGameObjectByType } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
+import { ParallaxBackground } from "../entities/ParallaxBackground";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -26,6 +27,8 @@ export const useLevelEditor = () => {
   const playerSizeRef = useRef<number | undefined>(undefined);
   const draggedGameObjectRef = useRef<GameObject | null>(null);
   const hoveredPlatformRef = useRef<GameObject | null>(null);
+  const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
+  let parallaxBackground: ParallaxBackground;
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -232,6 +235,9 @@ export const useLevelEditor = () => {
         preload: preload,
         create: function () {
           sceneRef.current = this;
+
+          parallaxBackground = new ParallaxBackground(this);
+          parallaxBackgroundRef.current = parallaxBackground;
 
           // Устанавливаем позицию камеры из игры, если она есть
           if (cameraX !== undefined && cameraY !== undefined) {

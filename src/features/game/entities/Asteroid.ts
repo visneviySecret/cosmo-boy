@@ -18,7 +18,7 @@ export class Asteroid extends Platform {
     scene.add.existing(this); // Добавляем спрайт в сцену
     scene.physics.add.existing(this); // Добавляем физику
     if (this.body) {
-      // Используем setDisplaySize для лучшего ачества текстур при масштабировании
+      // Используем setDisplaySize для лучшего качества текстур при масштабировании
       const displaySize = this.getSize();
       this.setDisplaySize(displaySize, displaySize);
 

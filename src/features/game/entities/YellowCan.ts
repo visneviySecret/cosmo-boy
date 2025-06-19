@@ -13,6 +13,14 @@ export class YellowCan extends Food {
     return this.SPAWN_CHANCE;
   }
 
+  public collect(): void {
+    // Воспроизводим звук съедания
+    if (this.scene && this.scene.sound) {
+      this.scene.sound.play("eat_sound", { volume: 0.5 });
+    }
+    super.collect();
+  }
+
   protected createTemporaryGraphics(): void {
     const graphics = this.scene.add.graphics();
 

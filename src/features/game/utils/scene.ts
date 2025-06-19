@@ -4,6 +4,7 @@ export function preload(this: Phaser.Scene) {
   const scene = this;
   preloadTextures(scene);
   preloadVideos(this);
+  preloadSounds(scene);
 }
 
 function preloadTextures(scene: Phaser.Scene) {
@@ -27,6 +28,14 @@ function preloadPlayerTextures(scene: Phaser.Scene) {
       frameSize
     );
   });
+}
+
+function preloadSounds(scene: Phaser.Scene) {
+  scene.load.audio("eat_sound", "assets/sounds/Eat_1.wav");
+  scene.load.audio("jump_sound", "assets/sounds/Jump.wav");
+  scene.load.audio("jump_web_sound", "assets/sounds/Jump-web.wav");
+  scene.load.audio("levelup_sound", "assets/sounds/Levelup.wav");
+  scene.load.audio("Spider_attack", "assets/sounds/Spider-attack.mp3");
 }
 
 function preloadVideos(scene: Phaser.Scene) {
