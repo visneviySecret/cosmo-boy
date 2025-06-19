@@ -26,9 +26,12 @@ export class ParallaxBackground {
     // Определяем количество изображений нужных для покрытия области игры
     const gameWidth = 50000; // Достаточно большая область для игры
     const imagesNeeded = Math.ceil(gameWidth / scaledWidth) + 1;
+    const cameraXAfterLoad = this.scene.cameras.main.scrollX;
+    const initialIndent = 2000;
 
     for (let i = 0; i < imagesNeeded; i++) {
-      const xPosition = i * scaledWidth + scaledWidth / 2;
+      const xPosition =
+        i * scaledWidth + scaledWidth / 2 + initialIndent + cameraXAfterLoad;
 
       const background = this.scene.add.image(
         xPosition,
@@ -43,7 +46,7 @@ export class ParallaxBackground {
       background.setDepth(-100);
 
       // Очень медленный коэффициент параллакса
-      const parallaxFactor = 0.4;
+      const parallaxFactor = 0.1;
       background.setScrollFactor(parallaxFactor, 1);
 
       this.backgrounds.push(background);
