@@ -16,6 +16,8 @@ declare global {
 }
 
 export const showAd = (): void => {
+  if (process.env.NODE_ENV === "development") return;
+
   if (!window.yaContextCb) {
     window.yaContextCb = [];
   }
