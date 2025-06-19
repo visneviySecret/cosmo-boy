@@ -27,7 +27,7 @@ export function generatePlatforms(
 
   let currentX = startX || player.x + minDistance;
 
-  const WEB_SPAWN_CHANCE = 0.05;
+  const WEB_SPAWN_CHANCE = 0; // Отключаем появление паутин
 
   for (let i = 0; i < PLATFORMS_COUNT; i++) {
     let attempts = 0;
