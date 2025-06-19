@@ -34,8 +34,6 @@ export const GameRoot: React.FC = () => {
     e.preventDefault();
   };
 
-  console.log(window.location.pathname);
-
   return (
     <div onContextMenu={handleContextMenu}>
       {(process.env.NODE_ENV === "development" || isDemoRoute) && (
