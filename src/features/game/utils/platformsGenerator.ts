@@ -19,7 +19,7 @@ export function generatePlatforms(
   const foodGroup = scene.physics.add.group();
   const screenHeight = scene.cameras.main.height;
 
-  const maxDistance = aimLine.getCurrentLength() - player.getSize();
+  const maxDistance = (aimLine.getCurrentLength() - player.getSize()) / 5;
   const minDistance = maxDistance / 15; // Уменьшаем минимальное расстояние для более частой генерации
 
   const MIN_Y = screenHeight * 0.01;
