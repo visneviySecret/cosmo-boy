@@ -174,7 +174,7 @@ export class PutinWebPlatform extends Platform {
     this.spiderThread.clear();
 
     const camera = this.scene.cameras.main;
-    const threadStartY = camera.scrollY - 50;
+    const threadStartY = -camera.scrollY - 50;
     const threadEndX = this.spider.x;
     const threadEndY = this.spider.y;
 
@@ -199,7 +199,7 @@ export class PutinWebPlatform extends Platform {
 
     this.spider = this.scene.add.sprite(
       this.x,
-      this.y - window.innerHeight,
+      this.y - window.innerHeight * 2,
       "spider-from-mars"
     );
 
