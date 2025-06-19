@@ -3,16 +3,7 @@ import Phaser from "phaser";
 export class ParallaxBackground {
   private scene: Phaser.Scene;
   private backgrounds: Phaser.GameObjects.Image[] = [];
-  private backgroundTextures: string[] = [
-    "bg_level_1",
-    "bg_level_2",
-    "bg_level_3",
-    "bg_level_4",
-    "bg_level_5",
-    "bg_level_6",
-    "bg_level_7",
-    "bg_level_8",
-  ];
+  private backgroundTexture: string = "bg_space";
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -22,37 +13,41 @@ export class ParallaxBackground {
   private createBackgrounds(): void {
     const camera = this.scene.cameras.main;
     const screenHeight = camera.height;
-    const imageSize = screenHeight; // Ширина равна высоте
 
-    // Создаем фоновые изображения
-    this.backgroundTextures.forEach((texture, index) => {
-      // Первое изображение имеет отступ справа в 250 пикселей
-      // Остальные располагаются друг за другом
-      let xPosition: number;
-      if (index === 0) {
-        xPosition = 250 + imageSize / 2; // Отступ + половина ширины для центрирования
-      } else {
-        xPosition = 250 + index * imageSize + imageSize / 2; // Каждое следующее изображение располагается рядом
-      }
+    // Получаем размеры текстуры
+    const texture = this.scene.textures.get(this.backgroundTexture);
+    const imageWidth = texture.getSourceImage().width || 12057;
+    const imageHeight = texture.getSourceImage().height || 12057;
+
+    // Вычисляем масштаб для заполнения экрана по высоте без деформации
+    const scaleY = screenHeight / imageHeight;
+    const scaledWidth = imageWidth * scaleY;
+
+    // Определяем количество изображений нужных для покрытия области игры
+    const gameWidth = 50000; // Достаточно большая область для игры
+    const imagesNeeded = Math.ceil(gameWidth / scaledWidth) + 1;
+
+    for (let i = 0; i < imagesNeeded; i++) {
+      const xPosition = i * scaledWidth + scaledWidth / 2;
 
       const background = this.scene.add.image(
         xPosition,
         screenHeight / 2, // Центрируем по вертикали
-        texture
+        this.backgroundTexture
       );
 
-      // Растягиваем изображение по всей высоте экрана, ширина = высота
-      background.setDisplaySize(imageSize, screenHeight);
+      // Устанавливаем размер с сохранением пропорций
+      background.setDisplaySize(scaledWidth, screenHeight);
 
       // Устанавливаем глубину фона (за всеми остальными объектами)
       background.setDepth(-100);
 
       // Очень медленный коэффициент параллакса
-      const parallaxFactor = 0.1 + index * 0.01; // Очень медленное движение
+      const parallaxFactor = 0.4;
       background.setScrollFactor(parallaxFactor, 1);
 
       this.backgrounds.push(background);
-    });
+    }
   }
 
   public update(): void {
