@@ -24,6 +24,8 @@ const FAQButton = styled(Button)`
   padding: 0.5rem 1rem;
 `;
 
+const isDemoRoute = window.location.pathname.includes("demo");
+
 export const GameRoot: React.FC = () => {
   const { mode, setMode } = useStore();
   const [isFAQOpen, setIsFAQOpen] = useState(false);
@@ -32,15 +34,19 @@ export const GameRoot: React.FC = () => {
     e.preventDefault();
   };
 
+  console.log(window.location.pathname);
+
   return (
     <div onContextMenu={handleContextMenu}>
-      <GameRootWrapper>
-        <Button onClick={() => setMode(GameMode.PLAY)}>Играть</Button>
-        <Button onClick={() => setMode(GameMode.EDITOR)}>Редактор</Button>
-        <FAQButton onClick={() => setIsFAQOpen(true)}>
-          <FAQIcon />
-        </FAQButton>
-      </GameRootWrapper>
+      {(process.env.NODE_ENV === "development" || isDemoRoute) && (
+        <GameRootWrapper>
+          <Button onClick={() => setMode(GameMode.PLAY)}>Играть</Button>
+          <Button onClick={() => setMode(GameMode.EDITOR)}>Редактор</Button>
+          <FAQButton onClick={() => setIsFAQOpen(true)}>
+            <FAQIcon />
+          </FAQButton>
+        </GameRootWrapper>
+      )}
       {mode === GameMode.PLAY ? <Game /> : <LevelEditor />}
       <EditorFAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} />
     </div>
