@@ -1,3 +1,4 @@
+import { showAd } from "../../../app/advertisment";
 import { playVideo } from "../../../shared/utils/playVideo";
 import type { Player } from "../entities/Player";
 
@@ -21,7 +22,10 @@ export const growthAnimation = (scene: Phaser.Scene, player: Player) => {
     player.alpha = 1;
     setTimeout(() => {
       scene.input.enabled = true;
-      if (player.getLevel() === 4) playVideo(scene, "growth");
+      if (player.getLevel() === 4)
+        playVideo(scene, "growth", () => {
+          showAd();
+        });
     }, 500);
   });
 
