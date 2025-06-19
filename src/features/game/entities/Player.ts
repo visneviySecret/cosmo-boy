@@ -243,7 +243,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const deltaY = this.targetY - this.y;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    if (distance > 5) {
+    // Уменьшаем зону остановки и добавляем плавное торможение
+    const stopDistance = 10;
+
+    if (distance > stopDistance) {
       const dirX = deltaX / distance;
       const dirY = deltaY / distance;
 
@@ -259,10 +262,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.velocityY =
           (this.velocityY / currentSpeed) * this.MAX_FLIGHT_SPEED;
       }
+    } else {
+      // Если близко к цели, применяем сильное торможение
+      this.velocityX *= 0.8;
+      this.velocityY *= 0.8;
+      this.setFlipX(true);
+
+      // Если очень близко и скорость мала, останавливаемся полностью
+      if (
+        distance < 3 &&
+        Math.abs(this.velocityX) < 0.5 &&
+        Math.abs(this.velocityY) < 0.5
+      ) {
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.setPosition(this.targetX, this.targetY);
+        return;
+      }
     }
 
-    this.velocityX *= this.FLIGHT_FRICTION;
-    this.velocityY *= this.FLIGHT_FRICTION;
+    // Применяем трение только если не тормозим активно
+    if (distance > stopDistance) {
+      this.velocityX *= this.FLIGHT_FRICTION;
+      this.velocityY *= this.FLIGHT_FRICTION;
+    }
 
     this.setPosition(this.x + this.velocityX, this.y + this.velocityY);
 
