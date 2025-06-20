@@ -62,10 +62,6 @@ const Game = React.memo(() => {
 
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
-      // Запускаем музыку титров при показе титров
-      if (musicManagerRef.current) {
-        musicManagerRef.current.playCreditsMusic();
-      }
       setShowCredits(true);
     });
   }, []);
@@ -180,6 +176,7 @@ const Game = React.memo(() => {
         default: "arcade",
         arcade: {
           gravity: { x: 0, y: 0 },
+          debug: true,
         },
       },
       scene: {

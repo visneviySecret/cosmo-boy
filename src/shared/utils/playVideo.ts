@@ -21,6 +21,8 @@ export function playVideo(
   video.play();
 
   if (videoName === "cosmonaut-end") {
+    scene.sound.stopAll();
+
     const musicManager = new MusicManager(scene);
     musicManager.initialize();
     musicManager.playCreditsMusic();

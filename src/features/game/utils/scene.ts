@@ -43,8 +43,8 @@ function preloadMusic(scene: Phaser.Scene) {
   scene.load.audio("level1-2", "assets/music/Cosmic Clarity (level 1-2).mp3");
   scene.load.audio("level3-4", "assets/music/Cosmic Cycles (Level 3-4).mp3");
   scene.load.audio("level5", "assets/music/Whispers in the Web (level 5).mp3");
-  scene.load.audio("level6", "assets/music/Cosmic Flight (level 6).mp3");
-  scene.load.audio("credits", "assets/music/Cosmic Wings (credits).mp3");
+  scene.load.audio("level6", "assets/music/Cosmic Wings (level 6).mp3");
+  scene.load.audio("credits", "assets/music/Cosmic Flight (credits).mp3");
 }
 
 function preloadVideos(scene: Phaser.Scene) {

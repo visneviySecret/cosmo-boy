@@ -12,7 +12,6 @@ export const levelWhiteGlow = (scene: Phaser.Scene, onComplete: () => void) => {
       glowIntensity += 0.02;
       whiteGlow.clear();
 
-      // Создаем градиентное свечение
       const camera = scene.cameras.main;
       const glowWidth = Math.min(camera.width * glowIntensity, camera.width);
       const glowX = camera.scrollX + camera.width - glowWidth;
@@ -27,13 +26,11 @@ export const levelWhiteGlow = (scene: Phaser.Scene, onComplete: () => void) => {
         glowIntensity,
         0
       );
-      whiteGlow.fillRect(glowX, camera.scrollY, glowWidth, camera.height);
+      whiteGlow.fillRect(glowX, -camera.scrollY, glowWidth, camera.height * 4);
 
-      // Когда свечение достигает максимума, запускаем видео
       if (glowIntensity >= 1) {
         glowTimer.destroy();
         playVideo(scene, "cosmonaut-end", () => {
-          // После видео показываем титры
           whiteGlow.destroy();
           onComplete();
         });

@@ -30,12 +30,12 @@ export class MusicManager {
     },
     {
       key: "level6",
-      path: "assets/music/Cosmic Flight (level 6).mp3",
+      path: "assets/music/Cosmic Wings (level 6).mp3",
       level: 6,
     },
     {
       key: "credits",
-      path: "assets/music/Cosmic Wings (credits).mp3",
+      path: "assets/music/Cosmic Flight (credits).mp3",
       isCredits: true,
     },
   ];
