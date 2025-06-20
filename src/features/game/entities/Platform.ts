@@ -56,6 +56,12 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
 
     // Добавляем обработчики событий наведения
     this.on("pointerover", () => {
+      // Проверяем режим полета игрока - во время полета интерактивность отключена
+      const player = (this.scene as any).player;
+      if (player && player.isInFlightMode && player.isInFlightMode()) {
+        return;
+      }
+
       this.showOutline();
       // Получаем ссылку на AimLine из сцены
       const aimLine = (this.scene as any).aimLine;
@@ -64,6 +70,12 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
       }
     });
     this.on("pointerout", () => {
+      // Проверяем режим полета игрока - во время полета интерактивность отключена
+      const player = (this.scene as any).player;
+      if (player && player.isInFlightMode && player.isInFlightMode()) {
+        return;
+      }
+
       this.hideOutline();
       // Получаем ссылку на AimLine из сцены
       const aimLine = (this.scene as any).aimLine;

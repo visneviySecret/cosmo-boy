@@ -76,6 +76,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     scene.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
+        if (this.isFlightMode) {
+          return;
+        }
         this.jumpToPlatform();
       }
     });
