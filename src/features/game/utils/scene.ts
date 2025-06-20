@@ -5,6 +5,7 @@ export function preload(this: Phaser.Scene) {
   preloadTextures(scene);
   preloadVideos(this);
   preloadSounds(scene);
+  preloadMusic(scene);
 }
 
 function preloadTextures(scene: Phaser.Scene) {
@@ -36,6 +37,14 @@ function preloadSounds(scene: Phaser.Scene) {
   scene.load.audio("jump_web_sound", "assets/sounds/Jump-web.wav");
   scene.load.audio("levelup_sound", "assets/sounds/Levelup.wav");
   scene.load.audio("Spider_attack", "assets/sounds/Spider-attack.mp3");
+}
+
+function preloadMusic(scene: Phaser.Scene) {
+  scene.load.audio("level1-2", "assets/music/Cosmic Clarity (level 1-2).mp3");
+  scene.load.audio("level3-4", "assets/music/Cosmic Cycles (Level 3-4).mp3");
+  scene.load.audio("level5", "assets/music/Whispers in the Web (level 5).mp3");
+  scene.load.audio("level6", "assets/music/Cosmic Flight (level 6).mp3");
+  scene.load.audio("credits", "assets/music/Cosmic Wings (credits).mp3");
 }
 
 function preloadVideos(scene: Phaser.Scene) {

@@ -84,11 +84,13 @@ const ButtonContainer = styled.div`
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  scene?: Phaser.Scene;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
+  scene,
 }) => {
   const [volume, setVolume] = useState(50);
 
@@ -106,6 +108,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
     const settings: GameSettings = { volume: newVolume };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+    // Обновляем громкость в реальном времени для всех звуков и музыки
+    if (scene && scene.sound) {
+      // Обновляем мастер-громкость для всех звуков
+      scene.sound.volume = Math.max(0, Math.min(1, newVolume / 100));
+
+      // Обновляем громкость для всех активных звуков
+      (scene.sound as any).sounds?.forEach((sound: any) => {
+        if (sound.volume !== undefined) {
+          sound.volume = scene.sound.volume;
+        }
+      });
+    }
   };
 
   const handleClose = () => {

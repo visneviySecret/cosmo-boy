@@ -1,3 +1,5 @@
+import { MusicManager } from "./MusicManager";
+
 export function playVideo(
   scene: Phaser.Scene,
   videoName: string,
@@ -17,6 +19,12 @@ export function playVideo(
   video.setMute(true);
   video.setDepth(1000);
   video.play();
+
+  if (videoName === "cosmonaut-end") {
+    const musicManager = new MusicManager(scene);
+    musicManager.initialize();
+    musicManager.playCreditsMusic();
+  }
 
   video.on("complete", () => {
     scene.input.enabled = true;

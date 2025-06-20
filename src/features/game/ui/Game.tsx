@@ -19,6 +19,7 @@ import {
 import { GameEndLogic } from "../utils/gameEndLogic";
 import { Credits } from "../../../shared/ui/Credits";
 import { useStore } from "../../../shared/store";
+import { MusicManager } from "../../../shared/utils/MusicManager";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -29,22 +30,44 @@ const GameContainer = styled.div`
   background-color: #000;
 `;
 
+const AudioPrompt = styled.div<{ $show: boolean }>`
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  opacity: ${(props) => (props.$show ? 1 : 0)};
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+`;
+
 const Game = React.memo(() => {
   const gameRef = useRef<Phaser.Game | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [showAudioPrompt, setShowAudioPrompt] = useState(false);
   const playerRef = useRef<Player | null>(null);
   const sceneRef = useRef<Phaser.Scene | null>(null);
   const gameObjectsRef = useRef<GameObjects[]>([]);
   const gameEndLogicRef = useRef<GameEndLogic | null>(null);
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
+  const musicManagerRef = useRef<MusicManager | null>(null);
   const { setCameraPosition } = useStore();
 
   useEffect(() => {
-    gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () =>
-      setShowCredits(true)
-    );
+    gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
+      // Запускаем музыку титров при показе титров
+      if (musicManagerRef.current) {
+        musicManagerRef.current.playCreditsMusic();
+      }
+      setShowCredits(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -56,11 +79,49 @@ const Game = React.memo(() => {
     }
   }, []);
 
+  useEffect(() => {
+    if (gameStarted && !isMenuOpen) {
+      setShowAudioPrompt(true);
+
+      const hidePrompt = () => {
+        setShowAudioPrompt(false);
+        if (musicManagerRef.current) {
+          musicManagerRef.current.forcePlayLevelMusic();
+        }
+        document.removeEventListener("click", hidePrompt);
+        document.removeEventListener("keydown", hidePrompt);
+        document.removeEventListener("touchstart", hidePrompt);
+      };
+
+      document.addEventListener("click", hidePrompt, { once: true });
+      document.addEventListener("keydown", hidePrompt, { once: true });
+      document.addEventListener("touchstart", hidePrompt, { once: true });
+
+      const timer = setTimeout(() => {
+        hidePrompt();
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+        hidePrompt();
+      };
+    }
+  }, [gameStarted, isMenuOpen]);
+
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         if (gameStarted) {
-          setIsMenuOpen(!isMenuOpen);
+          const newMenuState = !isMenuOpen;
+          setIsMenuOpen(newMenuState);
+
+          if (newMenuState && musicManagerRef.current) {
+            // При открытии меню приостанавливаем игровую музыку
+            musicManagerRef.current.pauseCurrentTrack();
+          } else if (!newMenuState && musicManagerRef.current) {
+            // При закрытии меню возобновляем игровую музыку
+            musicManagerRef.current.resumeCurrentTrack();
+          }
         } else {
           setIsMenuOpen(true);
         }
@@ -88,13 +149,17 @@ const Game = React.memo(() => {
   }, []);
 
   const initializeGame = useCallback((loadFromSave: boolean) => {
-    gameObjectsRef.current = []; // Очищаем массив объектов
-    gameEndLogicRef.current?.reset(); // Сбрасываем состояние завершения игры
+    gameObjectsRef.current = [];
+    gameEndLogicRef.current?.reset();
 
-    // Очищаем предыдущий параллакс фон
     if (parallaxBackgroundRef.current) {
       parallaxBackgroundRef.current.destroy();
       parallaxBackgroundRef.current = null;
+    }
+
+    if (musicManagerRef.current) {
+      musicManagerRef.current.destroy();
+      musicManagerRef.current = null;
     }
 
     if (gameRef.current) {
@@ -134,7 +199,6 @@ const Game = React.memo(() => {
     function create(this: Phaser.Scene) {
       sceneRef.current = this;
 
-      // Создаем параллакс фон первым, чтобы он был за всеми остальными объектами
       parallaxBackground = new ParallaxBackground(this);
       parallaxBackgroundRef.current = parallaxBackground;
 
@@ -165,6 +229,7 @@ const Game = React.memo(() => {
       } else {
         level = loadLevel(1);
       }
+
       if (player.getLevel() !== 6 && level) {
         const { platforms } = generateGameObjectsFromLevel(this, player, level);
         gameObjects = [...platforms];
@@ -176,7 +241,6 @@ const Game = React.memo(() => {
           player.y = first.y - first.getSize() / 2 - player.getSize() / 2;
         }
       } else {
-        // --- Генерация стандартных астероидов ---
         const { asteroids: initialAsteroids, foodGroup } = generatePlatforms(
           this,
           aimLine,
@@ -192,6 +256,20 @@ const Game = React.memo(() => {
             leftAsteroid.y - leftAsteroid.getSize() / 2 - player.getSize() / 2;
         }
       }
+
+      if (this.cache && this.sound) {
+        musicManagerRef.current = new MusicManager(this);
+        musicManagerRef.current.initialize();
+        musicManagerRef.current.setCurrentPlayerLevel(player.getLevel());
+      }
+
+      this.events.on("level-up", (newLevel: number) => {
+        if (musicManagerRef.current) {
+          musicManagerRef.current.setCurrentPlayerLevel(newLevel);
+          musicManagerRef.current.playLevelMusic(newLevel);
+        }
+      });
+
       const scoreText = this.add.text(
         -620,
         -620,
@@ -206,10 +284,9 @@ const Game = React.memo(() => {
         }
       );
       scoreText.setScrollFactor(0);
-      scoreText.setDepth(900); // Высокий z-index чтобы текст был поверх всего
+      scoreText.setDepth(900);
 
       (this as any).scoreText = scoreText;
-      // Настраиваем камеру для следования за игроком
       this.cameras.main.setZoom(0.5);
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);
@@ -241,12 +318,10 @@ const Game = React.memo(() => {
         }, 2000);
       });
 
-      // Добавляем обработчик изменения размера окна
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
       });
 
-      // Автосохранение каждые 10 секунд
       this.time.addEvent({
         delay: 10000,
         callback: () => {
@@ -273,7 +348,6 @@ const Game = React.memo(() => {
       ) {
         aimLine.update(player);
 
-        // Проверяем условия завершения игры
         gameEndLogicRef.current.checkGameEnd(player);
 
         if (player.getLevel() >= 6 && player.isInFlightMode()) {
@@ -350,11 +424,15 @@ const Game = React.memo(() => {
   return (
     <>
       <GameContainer id="game-root" />
+      <AudioPrompt $show={showAudioPrompt}>
+        🎵 Кликните в любом месте для включения музыки
+      </AudioPrompt>
       <GameMenu
         isOpen={isMenuOpen}
         onStartNewGame={startNewGame}
         onContinueGame={continueGame}
         onClose={closeMenu}
+        scene={sceneRef.current || undefined}
       />
       <Credits isOpen={showCredits} onClose={handleCreditsClose} />
     </>

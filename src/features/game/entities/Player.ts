@@ -370,6 +370,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.scene && this.scene.sound) {
       this.scene.sound.play("levelup_sound", { volume: 0.6 });
     }
+
+    this.scene.events.emit("level-up", this.progress.getLevel());
+
     this.scene.time.addEvent({
       callback: () => {
         if (this) {

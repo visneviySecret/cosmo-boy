@@ -84,6 +84,7 @@ interface GameMenuProps {
   onStartNewGame: () => void;
   onContinueGame: () => void;
   onClose: () => void;
+  scene?: Phaser.Scene;
 }
 
 const GameMenu: React.FC<GameMenuProps> = ({
@@ -91,6 +92,7 @@ const GameMenu: React.FC<GameMenuProps> = ({
   onStartNewGame,
   onContinueGame,
   onClose,
+  scene,
 }) => {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -153,7 +155,11 @@ const GameMenu: React.FC<GameMenuProps> = ({
         </MenuContent>
       </MenuOverlay>
 
-      <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={handleCloseSettings}
+        scene={scene}
+      />
     </>
   );
 };
