@@ -211,6 +211,7 @@ const Game = React.memo(() => {
       });
 
       playerRef.current = player;
+      (this as any).player = player;
       player.setIsOnPlatform(true);
       let level;
 

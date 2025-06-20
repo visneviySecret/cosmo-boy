@@ -109,6 +109,12 @@ export class Platform extends Phaser.Physics.Arcade.Sprite {
 
   // Показать обводку
   protected showOutline() {
+    // Проверяем уровень игрока - на 6 уровне обводка не показывается
+    const player = (this.scene as any).player;
+    if (player && player.getLevel && player.getLevel() >= 6) {
+      return;
+    }
+
     if (this.isEditor) {
       if (!this.graphics) {
         this.graphics = this.scene.add.graphics();
