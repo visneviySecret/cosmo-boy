@@ -76,7 +76,7 @@ const Game = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    if (gameStarted && !isMenuOpen) {
+    if (gameStarted) {
       setShowAudioPrompt(true);
 
       const hidePrompt = () => {
@@ -102,7 +102,7 @@ const Game = React.memo(() => {
         hidePrompt();
       };
     }
-  }, [gameStarted, isMenuOpen]);
+  }, [gameStarted]);
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
@@ -176,7 +176,6 @@ const Game = React.memo(() => {
         default: "arcade",
         arcade: {
           gravity: { x: 0, y: 0 },
-          debug: true,
         },
       },
       scene: {
