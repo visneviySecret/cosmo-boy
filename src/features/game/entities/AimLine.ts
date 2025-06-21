@@ -83,15 +83,10 @@ export class AimLine {
   }
 
   increaseAimLine(): void {
-    this.currentLength = Math.min(
-      this.currentLength + this.LEVEL_LENGTH_INCREASE,
-      this.MAX_LENGTH
-    );
-
     const player = this.scene.children.list.find(
       (child) => child instanceof Player
     ) as Player;
-
+    this.increaseAimLineByLevel(player.getLevel());
     if (player) {
       this.update(player);
     }
@@ -106,13 +101,10 @@ export class AimLine {
       return this.BASE_LENGTH;
     } else {
       return (
-        this.aimlineIncreaser(level - 1) + this.LEVEL_LENGTH_INCREASE * level
+        this.aimlineIncreaser(level - 1) +
+        this.LEVEL_LENGTH_INCREASE * (level - 1)
       );
     }
-  }
-
-  reset(): void {
-    this.currentLength = this.BASE_LENGTH;
   }
 
   update(player: Player): void {
