@@ -4,6 +4,8 @@ export class ParallaxBackground {
   private scene: Phaser.Scene;
   private backgrounds: Phaser.GameObjects.Image[] = [];
   private backgroundTexture: string = "bg_space";
+  private finalBackground: Phaser.GameObjects.Image | null = null;
+  private currentParallaxFactor: number = 0.1;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -16,8 +18,8 @@ export class ParallaxBackground {
 
     // Получаем размеры текстуры
     const texture = this.scene.textures.get(this.backgroundTexture);
-    const imageWidth = texture.getSourceImage().width || 12057;
-    const imageHeight = texture.getSourceImage().height || 1536;
+    const imageWidth = texture.getSourceImage().width;
+    const imageHeight = texture.getSourceImage().height;
 
     // Вычисляем масштаб для заполнения экрана по высоте без деформации
     const scaleY = screenHeight / imageHeight;
@@ -45,12 +47,49 @@ export class ParallaxBackground {
       // Устанавливаем глубину фона (за всеми остальными объектами)
       background.setDepth(-100);
 
-      // Очень медленный коэффициент параллакса
-      const parallaxFactor = 0.1;
-      background.setScrollFactor(parallaxFactor, 1);
+      // Устанавливаем начальный коэффициент параллакса
+      background.setScrollFactor(this.currentParallaxFactor, 1);
 
       this.backgrounds.push(background);
     }
+  }
+
+  // Метод для показа финального фона
+  public showFinalBackground(): void {
+    if (this.finalBackground) return; // Уже показан
+
+    const camera = this.scene.cameras.main;
+    const screenHeight = camera.height / 0.5;
+
+    // Получаем размеры финальной текстуры
+    const texture = this.scene.textures.get("bg_final");
+    const imageWidth = texture.getSourceImage().width;
+    const imageHeight = texture.getSourceImage().height;
+
+    // Вычисляем масштаб для заполнения экрана по высоте
+    const scaleY = screenHeight / imageHeight;
+    const scaledWidth = imageWidth * scaleY;
+
+    // Позиционируем финальный фон справа от экрана
+    const startX = camera.scrollX + camera.width + scaledWidth / 2;
+
+    this.finalBackground = this.scene.add.image(
+      startX,
+      screenHeight / 2,
+      "bg_final"
+    );
+
+    this.finalBackground.setDisplaySize(scaledWidth, screenHeight);
+    this.finalBackground.setDepth(-99); // Чуть выше обычного фона
+    this.finalBackground.setScrollFactor(this.currentParallaxFactor, 1);
+
+    // Анимация появления слева
+    this.scene.tweens.add({
+      targets: this.finalBackground,
+      x: camera.scrollX + camera.width / 2,
+      duration: 3000,
+      ease: "Power2",
+    });
   }
 
   public update(): void {
@@ -65,5 +104,10 @@ export class ParallaxBackground {
       }
     });
     this.backgrounds = [];
+
+    if (this.finalBackground && this.finalBackground.scene) {
+      this.finalBackground.destroy();
+      this.finalBackground = null;
+    }
   }
 }

@@ -1,6 +1,7 @@
 import type { GameObjects } from "../../../shared/types/game";
 import type { Player } from "../entities/Player";
 import { levelWhiteGlow } from "../animations/level";
+import { ParallaxBackground } from "../entities/ParallaxBackground";
 
 export class GameEndLogic {
   private gameEndTriggered: boolean = false;
@@ -54,7 +55,10 @@ export class GameEndLogic {
     );
   }
 
-  public handleEndGameSequence(scene: Phaser.Scene): void {
+  public handleEndGameSequence(
+    scene: Phaser.Scene,
+    parallaxBackground: ParallaxBackground | null
+  ): void {
     if (!this.gameEndTriggered) return;
 
     const camera = scene.cameras.main;
@@ -63,9 +67,13 @@ export class GameEndLogic {
       // Проверяем, находится ли объект в поле зрения камеры
       return (
         object.x > camera.scrollX - object.getSize() &&
-        object.x < camera.scrollX + camera.width + object.getSize()
+        object.x < camera.scrollX + camera.width * 2 + object.getSize()
       );
     });
+
+    if (parallaxBackground) {
+      parallaxBackground.showFinalBackground();
+    }
 
     // Если все астероиды исчезли из поля зрения, запускаем анимацию свечения
     if (visibleAsteroids.length === 0) {
