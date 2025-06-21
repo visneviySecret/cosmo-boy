@@ -243,7 +243,7 @@ function tryAddFood(
 ): void {
   const random = Math.random();
   const totalChance =
-    (YellowCan.getSpawnChance() + PurpleTube.getSpawnChance()) * 0.7; // Уменьшаем шанс появления еды
+    (YellowCan.getSpawnChance() + PurpleTube.getSpawnChance()) * 0.4; // Уменьшаем шанс появления еды
 
   if (random < totalChance) {
     const config = {
