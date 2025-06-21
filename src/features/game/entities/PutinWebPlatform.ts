@@ -84,8 +84,21 @@ export class PutinWebPlatform extends Platform {
         this.MAX_ESCAPE_ATTEMPTS
       );
 
-      // Останавливаем игрока
+      // Полностью останавливаем игрока
       player.setVelocity(0, 0);
+
+      // Если у игрока есть физическое тело, также останавливаем его
+      if (player.body) {
+        (player.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
+      }
+
+      // Устанавливаем игрока ближе к центру паутины
+      // const centerOffsetX = this.x - player.x;
+      // const centerOffsetY = this.y - player.y;
+      const centerOffsetX = (this.x - player.x) * 0.1;
+      const centerOffsetY = (this.y - player.y) * 0.1;
+      player.x += centerOffsetX;
+      player.y += centerOffsetY;
 
       if (this.isPlayerTrapped) {
         this.spawnSpider(player);
@@ -117,6 +130,15 @@ export class PutinWebPlatform extends Platform {
   private releasePlayer() {
     this.isPlayerTrapped = false;
     this.escapeAttempts = 0;
+
+    // Останавливаем игрока перед освобождением
+    const player = (this.scene as any).player;
+    if (player) {
+      player.setVelocity(0, 0);
+      if (player.body) {
+        (player.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
+      }
+    }
 
     // Визуальный эффект разрыва паутины
     webBreakAnimation(this.scene, this);
@@ -157,11 +179,23 @@ export class PutinWebPlatform extends Platform {
         this.getSize() * deformationScale
       );
 
-      // Добавляем тряску игрока
+      // Притягиваем игрока к центру паутины
       const player = (this.scene as any).player;
       if (player) {
-        player.x += Math.sin(this.webDeformation * 2) * 2;
-        player.y += Math.cos(this.webDeformation * 2) * 2;
+        const attractionSpeed = 0.5; // Уменьшенная в 4 раза скорость притяжения (было 2.0)
+
+        // Вычисляем направление к центру паутины
+        const deltaX = this.x - player.x;
+        const deltaY = this.y - player.y;
+
+        // Применяем притяжение к центру
+        player.x += deltaX * attractionSpeed * 0.02;
+        player.y += deltaY * attractionSpeed * 0.02;
+
+        // Добавляем небольшую тряску для эффекта
+        const shakeIntensity = 1;
+        player.x += Math.sin(this.webDeformation * 3) * shakeIntensity;
+        player.y += Math.cos(this.webDeformation * 3) * shakeIntensity;
       }
     }
 
