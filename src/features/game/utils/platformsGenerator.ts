@@ -20,7 +20,7 @@ export function generatePlatforms(
   const screenHeight = scene.cameras.main.height;
 
   const maxDistance = (aimLine.getCurrentLength() - player.getSize()) / 5;
-  const minDistance = maxDistance / 15; // Уменьшаем минимальное расстояние для более частой генерации
+  const minDistance = maxDistance; // Уменьшаем минимальное расстояние для более частой генерации
 
   const MIN_Y = screenHeight * 0.01;
   const MAX_Y = screenHeight * 0.9;
@@ -243,14 +243,14 @@ function tryAddFood(
 ): void {
   const random = Math.random();
   const totalChance =
-    (YellowCan.getSpawnChance() + PurpleTube.getSpawnChance()) * 1.5; // Увеличиваем шанс появления еды
+    (YellowCan.getSpawnChance() + PurpleTube.getSpawnChance()) * 0.7; // Уменьшаем шанс появления еды
 
   if (random < totalChance) {
     const config = {
       x,
       y: y - asteroidSize / 2 - 40,
     };
-    if (random < PurpleTube.getSpawnChance() * 1.5) {
+    if (random < PurpleTube.getSpawnChance()) {
       const purpleTube = new PurpleTube(scene, config);
       foodGroup.add(purpleTube);
     } else {
