@@ -1,7 +1,4 @@
-import {
-  GAME_LEVELS_STORAGE_KEY,
-  LEVEL_STORAGE_KEY,
-} from "../utils/editorUtils";
+import { LEVEL_STORAGE_KEY } from "../utils/editorUtils";
 import type { PlatformConfig } from "./Platform";
 import type { FoodConfig } from "./Food";
 import type { GameObjects } from "../../../shared/types/game";
@@ -75,25 +72,19 @@ export class Level {
 
   saveLevel(props: LevelData | null) {
     if (!props?.id) return;
+
+    // Сохраняем только текущий уровень для редактора
+    // Основные уровни игры загружаются из game_levels.json
     const currentLevel = {
       id: props.id,
       name: props.name,
       gameObjects: props.gameObjects,
     };
-    let levels = JSON.parse(
-      localStorage.getItem(GAME_LEVELS_STORAGE_KEY) || "[]"
-    );
-    const levelIndex = levels.findIndex(
-      (level: LevelData) => level.id === props.id
-    );
-    if (levelIndex !== -1) {
-      levels[levelIndex] = currentLevel;
-    } else {
-      levels.push(currentLevel);
-    }
-    const updatedLevels = JSON.stringify(levels);
-    localStorage.setItem(GAME_LEVELS_STORAGE_KEY, updatedLevels);
+
+    // Сохраняем только в LEVEL_STORAGE_KEY для редактора
     localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(currentLevel));
+
+    console.log("Уровень сохранен для редактора:", currentLevel.name);
   }
 
   static fromJSON(json: string): Level {

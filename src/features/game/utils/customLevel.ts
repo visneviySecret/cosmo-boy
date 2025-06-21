@@ -2,7 +2,6 @@ import { Level, type LevelData } from "../entities/Level";
 import { Asteroid } from "../entities/Asteroid";
 import { Platform, type PlatformConfig } from "../entities/Platform";
 import type Phaser from "phaser";
-import { GAME_LEVELS_STORAGE_KEY } from "./editorUtils";
 import { EditorItem } from "../../../shared/types/editor";
 import { PutinWebPlatform } from "../entities/PutinWebPlatform";
 import type { PlatformsType } from "../../../shared/types/platforms";
@@ -15,10 +14,15 @@ import type { GameObjects } from "../../../shared/types/game";
 import { PurpleTube } from "../entities/PurpleTube";
 import { Browny } from "../entities/Browny";
 import { handleFoodCollision } from "./foodCollisionHandler";
+import gameLevelsData from "../../../../public/game_levels.json";
+import { GAME_LEVELS_STORAGE_KEY } from "./editorUtils";
+import { isDemoRoute } from "../ui/GameRoot";
+
+const publicGameLevels = gameLevelsData as unknown as LevelData[];
 
 export function loadLevel(savedPlayerLevel: number): Level | null {
   const json = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
-  const levels = JSON.parse(json || "[]");
+  const levels = isDemoRoute ? JSON.parse(json || "[]") : publicGameLevels;
   const level = levels.find(
     (level: LevelData) => level.id === savedPlayerLevel.toString()
   );
@@ -26,6 +30,10 @@ export function loadLevel(savedPlayerLevel: number): Level | null {
     return Level.fromJSON(JSON.stringify(level));
   }
   return null;
+}
+
+export function getAllLevels(): LevelData[] {
+  return publicGameLevels;
 }
 
 export function generateGameObjectsFromLevel(

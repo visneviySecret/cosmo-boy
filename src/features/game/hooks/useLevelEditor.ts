@@ -5,11 +5,8 @@ import { Platform as GameObject } from "../entities/Platform";
 import { Player } from "../entities/Player";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
-import {
-  GAME_LEVELS_STORAGE_KEY,
-  LEVEL_STORAGE_KEY,
-} from "../utils/editorUtils";
-import { getGameObjectByType } from "../utils/customLevel";
+import { LEVEL_STORAGE_KEY } from "../utils/editorUtils";
+import { getGameObjectByType, getAllLevels } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 import { ParallaxBackground } from "../entities/ParallaxBackground";
@@ -171,17 +168,12 @@ export const useLevelEditor = () => {
       return;
     }
 
-    const json = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
-    if (!json) {
-      alert("Нет сохраненных уровней");
-      return;
-    }
-
-    const levels = JSON.parse(json);
+    // Загружаем уровни из JSON файла
+    const levels = getAllLevels();
     const data = levels.find((level: LevelData) => level.id === id);
 
     if (!data) {
-      alert(`Уровень с id ${id} не найден`);
+      alert(`Уровень с id ${id} не найден в game_levels.json`);
       return;
     }
 
@@ -201,6 +193,8 @@ export const useLevelEditor = () => {
         const gameObject = getGameObjectByType(sceneRef.current!, editModeCfg);
         gameObjectsRef.current.push(gameObject);
       });
+
+      console.log(`Уровень "${data.name}" загружен из JSON файла`);
     } catch (error) {
       alert("Ошибка при загрузке уровня: " + error);
     }

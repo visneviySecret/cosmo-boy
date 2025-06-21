@@ -24,7 +24,7 @@ const FAQButton = styled(Button)`
   padding: 0.5rem 1rem;
 `;
 
-const isDemoRoute = window.location.pathname.includes("demo");
+export const isDemoRoute = window.location.pathname.includes("demo");
 
 export const GameRoot: React.FC = () => {
   const { mode, setMode } = useStore();
