@@ -40,10 +40,16 @@ export class GameEndLogic {
           return false;
         }
 
-        // Проверяем, находится ли объект в поле зрения камеры
+        // Учитываем zoom камеры при проверке видимости
+        const actualCameraWidth = camera.width / camera.zoom;
+        const actualCameraHeight = camera.height / camera.zoom;
+
+        // Проверяем, находится ли объект в поле зрения камеры с учетом zoom
         const isInView =
           object.x > camera.scrollX - object.getSize() &&
-          object.x < camera.scrollX + camera.width + object.getSize();
+          object.x < camera.scrollX + actualCameraWidth + object.getSize() &&
+          object.y > camera.scrollY - object.getSize() &&
+          object.y < camera.scrollY + actualCameraHeight + object.getSize();
 
         if (!isInView) {
           object.destroy();
@@ -59,12 +65,16 @@ export class GameEndLogic {
     if (!this.gameEndTriggered) return;
 
     const camera = scene.cameras.main;
+
+    // Учитываем zoom камеры при определении видимых астероидов
+    const actualCameraWidth = camera.width / camera.zoom;
+
     const visibleAsteroids = this.gameObjectsRef.current.filter((object) => {
       if (!object.scene) return false;
-      // Проверяем, находится ли объект в поле зрения камеры
+      // Проверяем, находится ли объект в поле зрения камеры с учетом zoom
       return (
         object.x > camera.scrollX - object.getSize() &&
-        object.x < camera.scrollX + camera.width * 2 + object.getSize()
+        object.x < camera.scrollX + actualCameraWidth * 2 + object.getSize()
       );
     });
 
