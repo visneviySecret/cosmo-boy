@@ -214,7 +214,7 @@ const Game = React.memo(() => {
       if (loadFromSave) {
         const savedGame = loadGame();
         if (savedGame) {
-          level = loadLevel(savedGame.playerLevel)!;
+          level = loadLevel(1)!;
           player.loadFromSave(
             savedGame.playerLevel,
             savedGame.playerExperience,
