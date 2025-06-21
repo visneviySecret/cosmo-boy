@@ -5,7 +5,7 @@ export class ParallaxBackground {
   private backgrounds: Phaser.GameObjects.Image[] = [];
   private backgroundTexture: string = "bg_space";
   private finalBackground: Phaser.GameObjects.Image | null = null;
-  private currentParallaxFactor: number = 0.1;
+  private currentParallaxFactor: number = 0.08;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -25,71 +25,26 @@ export class ParallaxBackground {
     const scaleY = screenHeight / imageHeight;
     const scaledWidth = imageWidth * scaleY;
 
-    // Определяем количество изображений нужных для покрытия области игры
-    const gameWidth = 50000; // Достаточно большая область для игры
-    const imagesNeeded = Math.ceil(gameWidth / scaledWidth) + 1;
+    // Создаем только один фон без повторений
     const cameraXAfterLoad = this.scene.cameras.main.scrollX;
-    const initialIndent = 2000;
+    const xPosition = cameraXAfterLoad + scaledWidth / 2;
 
-    for (let i = 0; i < imagesNeeded; i++) {
-      const xPosition =
-        i * scaledWidth + scaledWidth / 2 + initialIndent + cameraXAfterLoad;
-
-      const background = this.scene.add.image(
-        xPosition,
-        screenHeight / 2, // Центрируем по вертикали
-        this.backgroundTexture
-      );
-
-      // Устанавливаем размер с сохранением пропорций
-      background.setDisplaySize(scaledWidth, screenHeight);
-
-      // Устанавливаем глубину фона (за всеми остальными объектами)
-      background.setDepth(-100);
-
-      // Устанавливаем начальный коэффициент параллакса
-      background.setScrollFactor(this.currentParallaxFactor, 1);
-
-      this.backgrounds.push(background);
-    }
-  }
-
-  // Метод для показа финального фона
-  public showFinalBackground(): void {
-    if (this.finalBackground) return; // Уже показан
-
-    const camera = this.scene.cameras.main;
-    const screenHeight = camera.height / 0.5;
-
-    // Получаем размеры финальной текстуры
-    const texture = this.scene.textures.get("bg_final");
-    const imageWidth = texture.getSourceImage().width;
-    const imageHeight = texture.getSourceImage().height;
-
-    // Вычисляем масштаб для заполнения экрана по высоте
-    const scaleY = screenHeight / imageHeight;
-    const scaledWidth = imageWidth * scaleY;
-
-    // Позиционируем финальный фон справа от экрана
-    const startX = camera.scrollX + camera.width + scaledWidth / 2;
-
-    this.finalBackground = this.scene.add.image(
-      startX,
-      screenHeight / 2,
-      "bg_final"
+    const background = this.scene.add.image(
+      xPosition,
+      screenHeight / 2, // Центрируем по вертикали
+      this.backgroundTexture
     );
 
-    this.finalBackground.setDisplaySize(scaledWidth, screenHeight);
-    this.finalBackground.setDepth(-99); // Чуть выше обычного фона
-    this.finalBackground.setScrollFactor(this.currentParallaxFactor, 1);
+    // Устанавливаем размер с сохранением пропорций
+    background.setDisplaySize(scaledWidth, screenHeight);
 
-    // Анимация появления слева
-    this.scene.tweens.add({
-      targets: this.finalBackground,
-      x: camera.scrollX + camera.width / 2,
-      duration: 3000,
-      ease: "Power2",
-    });
+    // Устанавливаем глубину фона (за всеми остальными объектами)
+    background.setDepth(-100);
+
+    // Устанавливаем начальный коэффициент параллакса
+    background.setScrollFactor(this.currentParallaxFactor, 1);
+
+    this.backgrounds.push(background);
   }
 
   public update(): void {

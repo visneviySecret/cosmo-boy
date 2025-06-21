@@ -55,10 +55,7 @@ export class GameEndLogic {
     );
   }
 
-  public handleEndGameSequence(
-    scene: Phaser.Scene,
-    parallaxBackground: ParallaxBackground | null
-  ): void {
+  public handleEndGameSequence(scene: Phaser.Scene): void {
     if (!this.gameEndTriggered) return;
 
     const camera = scene.cameras.main;
@@ -70,10 +67,6 @@ export class GameEndLogic {
         object.x < camera.scrollX + camera.width * 2 + object.getSize()
       );
     });
-
-    if (parallaxBackground) {
-      parallaxBackground.showFinalBackground();
-    }
 
     // Если все астероиды исчезли из поля зрения, запускаем анимацию свечения
     if (visibleAsteroids.length === 0) {

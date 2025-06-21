@@ -395,10 +395,7 @@ const Game = React.memo(() => {
           return true;
         });
 
-        gameEndLogicRef.current.handleEndGameSequence(
-          this,
-          parallaxBackgroundRef.current
-        );
+        gameEndLogicRef.current.handleEndGameSequence(this);
       }
     }
   }, []);

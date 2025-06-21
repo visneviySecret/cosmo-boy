@@ -17,7 +17,6 @@ function preloadTextures(scene: Phaser.Scene) {
 
   // Загружаем фоновые изображения
   scene.load.image("bg_space", "assets/backgrounds/space-background.png");
-  scene.load.image("bg_final", "assets/backgrounds/final-background.png");
 
   preloadPlayerTextures(scene);
 }
