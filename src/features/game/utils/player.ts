@@ -40,7 +40,7 @@ export const textureResize = (
 };
 
 export const getExperienceToNextLevel = (): number => {
-  return 9;
+  return 10;
 };
 
 export const getOffset = (level: number, size: number): [number, number] => {

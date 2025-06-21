@@ -7,7 +7,7 @@ import { Platform } from "./Platform";
 export class AimLine {
   private readonly BASE_LENGTH = 800;
   private readonly MAX_LENGTH = 2000;
-  private readonly LEVEL_LENGTH_INCREASE = 200; // Увеличение длины при получении паверапа
+  private readonly LEVEL_LENGTH_INCREASE = 100; // Увеличение длины при получении паверапа
   private currentLength: number;
   private targetPlatform: Platform | Phaser.Physics.Arcade.Sprite | null = null;
   private scene: Phaser.Scene;
