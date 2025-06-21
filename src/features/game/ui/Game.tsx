@@ -348,7 +348,7 @@ const Game = React.memo(() => {
         gameEndLogicRef.current.checkGameEnd(player);
 
         if (player.getLevel() >= 6 && player.isInFlightMode()) {
-          const CAMERA_SPEED = 2;
+          const CAMERA_SPEED = 6;
           this.cameras.main.scrollX += CAMERA_SPEED;
 
           const leftBound =
