@@ -35,7 +35,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpProgress: number = 0;
   private readonly INITIAL_JUMP_SPEED = 0.02; // Скорость движения по дуге
   private jumpSpeed: number = this.INITIAL_JUMP_SPEED;
-  private readonly JUMP_SPEED_DECREASE = 0.0004;
+  private readonly JUMP_SPEED_DECREASE = 0.0003;
   private readonly JUMP_SPEED_INCREASE = 0.0005;
   private arcCalculator: ArcCalculator;
   private rotationManager: RotationManager;
