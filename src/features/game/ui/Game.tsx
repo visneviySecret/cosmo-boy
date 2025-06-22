@@ -220,15 +220,28 @@ const Game = React.memo(() => {
             savedGame.playerExperience,
             savedGame.collectedItems,
             savedGame.playerX,
-            savedGame.playerY
+            savedGame.playerY,
+            savedGame.collectedFoodPositions
           );
+
+          // Сохраняем информацию о собранной еде для использования ниже
+          (this as any).collectedFoodPositions =
+            savedGame.collectedFoodPositions;
         }
       } else {
         level = loadLevel(1);
       }
 
       if (player.getLevel() !== 6 && level) {
-        const { platforms } = generateGameObjectsFromLevel(this, player, level);
+        const collectedPositions = loadFromSave
+          ? (this as any).collectedFoodPositions || []
+          : [];
+        const { platforms } = generateGameObjectsFromLevel(
+          this,
+          player,
+          level,
+          collectedPositions
+        );
         gameObjects = [...platforms];
         gameObjectsRef.current = gameObjects;
 

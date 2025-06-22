@@ -23,6 +23,7 @@ export interface GameSave {
   playerX: number;
   playerY: number;
   timestamp: number;
+  collectedFoodPositions: Array<{ x: number; y: number }>;
 }
 
 export interface GameSettings {

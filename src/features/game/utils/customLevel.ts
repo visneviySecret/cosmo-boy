@@ -14,15 +14,14 @@ import type { GameObjects } from "../../../shared/types/game";
 import { PurpleTube } from "../entities/PurpleTube";
 import { Browny } from "../entities/Browny";
 import { handleFoodCollision } from "./foodCollisionHandler";
-import gameLevelsData from "../../../../public/game_levels.json";
-import { GAME_LEVELS_STORAGE_KEY } from "./editorUtils";
+import gameLevelsData from "../../../app/game_levels.json";
+import { LEVEL_STORAGE_KEY } from "./editorUtils";
 import { isDemoRoute } from "../ui/GameRoot";
 
 const publicGameLevels = gameLevelsData as unknown as LevelData[];
 
 export function loadLevel(savedPlayerLevel: number): Level | null {
-  const json = localStorage.getItem(GAME_LEVELS_STORAGE_KEY);
-  const levels = isDemoRoute ? JSON.parse(json || "[]") : publicGameLevels;
+  const levels = getLevels();
   const level = levels.find(
     (level: LevelData) => level.id === savedPlayerLevel.toString()
   );
@@ -32,14 +31,24 @@ export function loadLevel(savedPlayerLevel: number): Level | null {
   return null;
 }
 
-export function getAllLevels(): LevelData[] {
-  return publicGameLevels;
+export function getLevels(): LevelData[] {
+  // В demo режиме загружаем уровни из localStorage (для редактора)
+  // В обычном режиме используем статические уровни из JSON файла
+  if (isDemoRoute) {
+    const json = localStorage.getItem(LEVEL_STORAGE_KEY);
+    const customLevels = JSON.parse(json || "[]");
+
+    return customLevels.length > 0 ? customLevels : publicGameLevels;
+  } else {
+    return publicGameLevels;
+  }
 }
 
 export function generateGameObjectsFromLevel(
   scene: Phaser.Scene,
   player: Player,
-  level: Level
+  level: Level,
+  collectedFoodPositions: Array<{ x: number; y: number }> = []
 ): {
   platforms: PlatformsType[];
   foods: FoodsType[];
@@ -50,6 +59,20 @@ export function generateGameObjectsFromLevel(
   const foodGroup = scene.physics.add.group();
 
   level.getGameObjects().forEach((cfg) => {
+    // Проверяем, была ли эта еда уже собрана
+    if (isFood(cfg.type)) {
+      const isAlreadyCollected = collectedFoodPositions.some(
+        (pos) => Math.abs(pos.x - cfg.x) < 10 && Math.abs(pos.y - cfg.y) < 10
+      );
+
+      if (isAlreadyCollected) {
+        console.log(
+          `Пропускаем уже собранную еду на позиции x:${cfg.x}, y:${cfg.y}`
+        );
+        return; // Не создаем этот объект еды
+      }
+    }
+
     const gameObject = getGameObjectByType(scene, cfg);
 
     if (isFood(cfg.type)) {

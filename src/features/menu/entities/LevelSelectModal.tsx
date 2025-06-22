@@ -10,7 +10,8 @@ import {
 } from "./LevelSelectModal.style";
 import type { LevelData } from "../../game/entities/Level";
 import { LEVEL_STORAGE_KEY } from "../../game/utils/editorUtils";
-import { getAllLevels } from "../../game/utils/customLevel";
+import { getLevels } from "../../game/utils/customLevel";
+import { isDemoRoute } from "../../game/ui/GameRoot";
 
 type LevelSelectModalProps = {
   isOpen: boolean;
@@ -36,13 +37,31 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     };
     setSelectedLevel(level);
     isLoad && onLoad(value.id);
-    localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(level));
+
+    // Сохраняем текущий редактируемый уровень отдельно
+    localStorage.setItem("current_level", JSON.stringify(level));
   };
 
   const handleCreateNewLevel = () => {
-    alert(
-      "Создание новых уровней недоступно. Уровни загружаются из game_levels.json"
-    );
+    if (!isDemoRoute) {
+      alert("Создание новых уровней доступно только в demo режиме");
+      return;
+    }
+
+    const isExistLevelsInStorage = levels.length !== 0;
+    const id = isExistLevelsInStorage
+      ? String(Number(levels[levels.length - 1].id) + 1)
+      : "1";
+    const name = `Уровень ${id}`;
+    const newLevel: LevelData = { id, name, gameObjects: [] };
+
+    const updatedLevels = [...levels, newLevel];
+
+    localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(updatedLevels));
+
+    setLevels(updatedLevels);
+    handleSelectChange(newLevel, false);
+    onSave(newLevel);
   };
 
   const handleDeleteLevel = (
@@ -50,13 +69,31 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     levelId: string
   ) => {
     e.stopPropagation();
-    alert(
-      "Удаление уровней недоступно. Уровни загружаются из game_levels.json"
-    );
+
+    if (!isDemoRoute) {
+      alert("Удаление уровней доступно только в demo режиме");
+      return;
+    }
+
+    const deletedLevel = levels.find((level) => level.id === levelId);
+    const hasObjects = deletedLevel?.gameObjects?.length;
+
+    if (hasObjects) {
+      const response = confirm(
+        "Уровень содержит объекты, действительно удалить?"
+      );
+      if (!response) return;
+    }
+
+    const updatedLevels = levels.filter((level) => level.id !== levelId);
+
+    localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(updatedLevels));
+
+    setLevels(updatedLevels);
   };
 
   useEffect(() => {
-    const jsonLevels = getAllLevels();
+    const jsonLevels = getLevels();
     setLevels(jsonLevels);
   }, []);
 
@@ -83,8 +120,12 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
               <Button
                 $variant="danger"
                 onClick={(e) => handleDeleteLevel(e, level.id)}
-                disabled={true}
-                title="Удаление недоступно для уровней из JSON"
+                disabled={!isDemoRoute}
+                title={
+                  !isDemoRoute
+                    ? "Удаление доступно только в demo режиме"
+                    : "Удалить уровень"
+                }
               >
                 ✕
               </Button>
@@ -95,8 +136,12 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
       <Button
         $variant="primary"
         onClick={handleCreateNewLevel}
-        disabled={true}
-        title="Создание недоступно для уровней из JSON"
+        disabled={!isDemoRoute}
+        title={
+          !isDemoRoute
+            ? "Создание доступно только в demo режиме"
+            : "Создать новый уровень"
+        }
       >
         Создать новый уровень
       </Button>

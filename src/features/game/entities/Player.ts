@@ -43,6 +43,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private progress: PlayerProgress;
   private currentWeb: PutinWebPlatform | null = null;
   public hasEscaped: boolean = false;
+  private collectedFoodPositions: Array<{ x: number; y: number }> = []; // Позиции собранной еды
 
   // Новые свойства для режима полета на 6 уровне
   private isFlightMode: boolean = false;
@@ -361,6 +362,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public collectFood(food: Food): void {
     if (food.getValue() === -1) return;
 
+    // Сохраняем позицию собранной еды
+    this.collectedFoodPositions.push({ x: food.x, y: food.y });
+
     this.progress.addExperience(food.getValue());
     const isLevelUp = this.progress.handleLevelUp(
       this.playerLvlUpper.bind(this)
@@ -421,6 +425,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.progress.getCollectedItems();
   }
 
+  public getCollectedFoodPositions(): Array<{ x: number; y: number }> {
+    return this.collectedFoodPositions;
+  }
+
   setCurrentWeb(web: PutinWebPlatform | null): void {
     if (this.isCurrentlyJumping()) {
       return;
@@ -446,9 +454,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     experience: number,
     collectedItems: number,
     x: number,
-    y: number
+    y: number,
+    collectedFoodPositions: Array<{ x: number; y: number }> = []
   ): void {
     this.progress.loadFromSave(level, experience, collectedItems);
+    this.collectedFoodPositions = collectedFoodPositions;
     this.setPosition(x, y);
     this.size = this.DEFAULT_SIZE * this.progress.getSizeMultiplier();
     this.mass = this.size * this.MASS_MULTIPLIER;

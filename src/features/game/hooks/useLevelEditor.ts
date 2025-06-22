@@ -6,7 +6,7 @@ import { Player } from "../entities/Player";
 import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
 import { LEVEL_STORAGE_KEY } from "../utils/editorUtils";
-import { getGameObjectByType, getAllLevels } from "../utils/customLevel";
+import { getGameObjectByType, getLevels } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 import { ParallaxBackground } from "../entities/ParallaxBackground";
@@ -168,14 +168,8 @@ export const useLevelEditor = () => {
       return;
     }
 
-    // Загружаем уровни из JSON файла
-    const levels = getAllLevels();
+    const levels = getLevels();
     const data = levels.find((level: LevelData) => level.id === id);
-
-    if (!data) {
-      alert(`Уровень с id ${id} не найден в game_levels.json`);
-      return;
-    }
 
     try {
       const storedLevel = new Level(data);
@@ -193,8 +187,6 @@ export const useLevelEditor = () => {
         const gameObject = getGameObjectByType(sceneRef.current!, editModeCfg);
         gameObjectsRef.current.push(gameObject);
       });
-
-      console.log(`Уровень "${data.name}" загружен из JSON файла`);
     } catch (error) {
       alert("Ошибка при загрузке уровня: " + error);
     }
@@ -250,6 +242,7 @@ export const useLevelEditor = () => {
           previewRef.current.setVisible(false);
 
           // Загружаем сохраненный уровень после инициализации сцены
+          // В demo режиме пытаемся загрузить последний редактируемый уровень
           const customLevel = localStorage.getItem(LEVEL_STORAGE_KEY);
           if (customLevel) {
             const levelData = JSON.parse(customLevel);

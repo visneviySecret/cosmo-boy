@@ -73,8 +73,7 @@ export class Level {
   saveLevel(props: LevelData | null) {
     if (!props?.id) return;
 
-    // Сохраняем только текущий уровень для редактора
-    // Основные уровни игры загружаются из game_levels.json
+    // Сохраняем уровень в список уровней
     const currentLevel = {
       id: props.id,
       name: props.name,
@@ -83,8 +82,6 @@ export class Level {
 
     // Сохраняем только в LEVEL_STORAGE_KEY для редактора
     localStorage.setItem(LEVEL_STORAGE_KEY, JSON.stringify(currentLevel));
-
-    console.log("Уровень сохранен для редактора:", currentLevel.name);
   }
 
   static fromJSON(json: string): Level {

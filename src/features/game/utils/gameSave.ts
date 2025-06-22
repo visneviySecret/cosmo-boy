@@ -12,6 +12,7 @@ export function saveGame(player: Player): void {
     playerX: player.x,
     playerY: player.y,
     timestamp: Date.now(),
+    collectedFoodPositions: player.getCollectedFoodPositions(),
   };
 
   localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(gameSave));
@@ -21,7 +22,12 @@ export function loadGame(): GameSave | null {
   const savedGame = localStorage.getItem(GAME_SAVE_KEY);
   if (savedGame) {
     try {
-      return JSON.parse(savedGame);
+      const parsedGame = JSON.parse(savedGame);
+      // Обеспечиваем обратную совместимость со старыми сохранениями
+      if (!parsedGame.collectedFoodPositions) {
+        parsedGame.collectedFoodPositions = [];
+      }
+      return parsedGame as GameSave;
     } catch (error) {
       console.error("Ошибка при загрузке сохранения:", error);
       return null;
