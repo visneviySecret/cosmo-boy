@@ -22,6 +22,7 @@ import { useStore } from "../../../shared/store";
 import { MusicManager } from "../../../shared/utils/MusicManager";
 import { ProgressBar } from "./ProgressBar";
 import { usePlayerProgress } from "../hooks/usePlayerProgress";
+import { getCameraZoom } from "../utils/cameraUtils";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -68,20 +69,6 @@ const Game = React.memo(() => {
   // Добавляем состояние для управления автосохранением
   const autoSaveEnabledRef = useRef<boolean>(true);
   const autoSaveTimerRef = useRef<Phaser.Time.TimerEvent | null>(null);
-
-  // Функция для определения оптимального зума камеры
-  const getCameraZoom = useCallback(() => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    // Для Full HD (1920x1080) и близких разрешений используем меньший зум
-    if (width >= 1920 && height >= 1080) {
-      return 0.25;
-    }
-
-    // Для остальных разрешений используем стандартный зум
-    return 0.5;
-  }, []);
 
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
@@ -311,8 +298,13 @@ const Game = React.memo(() => {
           musicManagerRef.current.playLevelMusic(newLevel);
         }
       });
-
       this.cameras.main.setZoom(getCameraZoom());
+
+      // Обновляем масштаб фона после установки зума
+      if (parallaxBackgroundRef.current) {
+        parallaxBackgroundRef.current.updateBackgroundScale();
+      }
+
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);
       this.cameras.main.setBounds(
@@ -359,6 +351,11 @@ const Game = React.memo(() => {
         this.scale.resize(window.innerWidth, window.innerHeight);
         // Пересчитываем зум при изменении размера окна
         this.cameras.main.setZoom(getCameraZoom());
+
+        // Обновляем масштаб фона после изменения зума
+        if (parallaxBackgroundRef.current) {
+          parallaxBackgroundRef.current.updateBackgroundScale();
+        }
       });
 
       // Создаем управляемый таймер автосохранения

@@ -14,7 +14,8 @@ export class ParallaxBackground {
 
   private createBackgrounds(): void {
     const camera = this.scene.cameras.main;
-    const screenHeight = camera.height / 0.5;
+    const zoom = camera.zoom;
+    const screenHeight = camera.height / zoom;
 
     // Получаем размеры текстуры
     const texture = this.scene.textures.get(this.backgroundTexture);
@@ -45,6 +46,34 @@ export class ParallaxBackground {
     background.setScrollFactor(this.currentParallaxFactor, 1);
 
     this.backgrounds.push(background);
+  }
+
+  public updateBackgroundScale(): void {
+    const camera = this.scene.cameras.main;
+    const zoom = camera.zoom;
+    const screenHeight = camera.height / zoom;
+
+    // Получаем размеры текстуры
+    const texture = this.scene.textures.get(this.backgroundTexture);
+    const imageWidth = texture.getSourceImage().width;
+    const imageHeight = texture.getSourceImage().height;
+
+    // Вычисляем масштаб для заполнения экрана по высоте без деформации
+    const scaleY = screenHeight / imageHeight;
+    const scaledWidth = imageWidth * scaleY;
+
+    // Пересчитываем позицию X с учетом текущей позиции камеры
+    const cameraX = this.scene.cameras.main.scrollX;
+    const xPosition = cameraX + scaledWidth / 2;
+
+    // Обновляем размеры и позицию всех фоновых изображений
+    this.backgrounds.forEach((background) => {
+      if (background && background.scene) {
+        background.setDisplaySize(scaledWidth, screenHeight);
+        background.x = xPosition; // Обновляем позицию по X
+        background.y = screenHeight / 2; // Обновляем позицию по Y
+      }
+    });
   }
 
   public update(): void {

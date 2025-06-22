@@ -10,6 +10,7 @@ import { getGameObjectByType, getLevels } from "../utils/customLevel";
 import { preload } from "../utils/scene";
 import type { GameObjects } from "../../../shared/types/game";
 import { ParallaxBackground } from "../entities/ParallaxBackground";
+import { getCameraZoom } from "../utils/cameraUtils";
 
 export const useLevelEditor = () => {
   const sceneRef = useRef<Phaser.Scene | null>(null);
@@ -26,20 +27,6 @@ export const useLevelEditor = () => {
   const hoveredPlatformRef = useRef<GameObject | null>(null);
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
   let parallaxBackground: ParallaxBackground;
-
-  // Функция для определения оптимального зума камеры
-  const getCameraZoom = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    // Для Full HD (1920x1080) и близких разрешений используем меньший зум
-    if (width >= 1920 && height >= 1080) {
-      return 0.25;
-    }
-
-    // Для остальных разрешений используем стандартный зум
-    return 0.5;
-  };
 
   const resetPreview = () => {
     if (previewRef.current) {
@@ -247,6 +234,11 @@ export const useLevelEditor = () => {
 
           this.cameras.main.setZoom(getCameraZoom());
 
+          // Обновляем масштаб фона после установки зума
+          if (parallaxBackgroundRef.current) {
+            parallaxBackgroundRef.current.updateBackgroundScale();
+          }
+
           const tempPlayer = new Player(this);
           playerSizeRef.current = tempPlayer.getSize();
           tempPlayer.destroy();
@@ -385,6 +377,11 @@ export const useLevelEditor = () => {
       // Пересчитываем зум при изменении размера окна
       if (sceneRef.current) {
         sceneRef.current.cameras.main.setZoom(getCameraZoom());
+
+        // Обновляем масштаб фона после изменения зума
+        if (parallaxBackgroundRef.current) {
+          parallaxBackgroundRef.current.updateBackgroundScale();
+        }
       }
     };
 
