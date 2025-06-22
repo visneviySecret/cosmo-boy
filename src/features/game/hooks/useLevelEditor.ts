@@ -27,6 +27,20 @@ export const useLevelEditor = () => {
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
   let parallaxBackground: ParallaxBackground;
 
+  // Функция для определения оптимального зума камеры
+  const getCameraZoom = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Для Full HD (1920x1080) и близких разрешений используем меньший зум
+    if (width >= 1920 && height >= 1080) {
+      return 0.25;
+    }
+
+    // Для остальных разрешений используем стандартный зум
+    return 0.5;
+  };
+
   const resetPreview = () => {
     if (previewRef.current) {
       previewRef.current.destroy();
@@ -231,7 +245,7 @@ export const useLevelEditor = () => {
             this.cameras.main.scrollY = cameraY;
           }
 
-          this.cameras.main.setZoom(0.5);
+          this.cameras.main.setZoom(getCameraZoom());
 
           const tempPlayer = new Player(this);
           playerSizeRef.current = tempPlayer.getSize();
@@ -368,6 +382,10 @@ export const useLevelEditor = () => {
 
     const handleResize = () => {
       game.scale.resize(window.innerWidth, window.innerHeight);
+      // Пересчитываем зум при изменении размера окна
+      if (sceneRef.current) {
+        sceneRef.current.cameras.main.setZoom(getCameraZoom());
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {

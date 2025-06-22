@@ -69,6 +69,20 @@ const Game = React.memo(() => {
   const autoSaveEnabledRef = useRef<boolean>(true);
   const autoSaveTimerRef = useRef<Phaser.Time.TimerEvent | null>(null);
 
+  // Функция для определения оптимального зума камеры
+  const getCameraZoom = useCallback(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Для Full HD (1920x1080) и близких разрешений используем меньший зум
+    if (width >= 1920 && height >= 1080) {
+      return 0.25;
+    }
+
+    // Для остальных разрешений используем стандартный зум
+    return 0.5;
+  }, []);
+
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
       setShowCredits(true);
@@ -298,7 +312,7 @@ const Game = React.memo(() => {
         }
       });
 
-      this.cameras.main.setZoom(0.5);
+      this.cameras.main.setZoom(getCameraZoom());
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);
       this.cameras.main.setBounds(
@@ -343,6 +357,8 @@ const Game = React.memo(() => {
 
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
+        // Пересчитываем зум при изменении размера окна
+        this.cameras.main.setZoom(getCameraZoom());
       });
 
       // Создаем управляемый таймер автосохранения
