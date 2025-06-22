@@ -65,6 +65,10 @@ const Game = React.memo(() => {
   // Добавляем хук для отслеживания прогресса игрока
   const playerProgress = usePlayerProgress(playerRef.current);
 
+  // Добавляем состояние для управления автосохранением
+  const autoSaveEnabledRef = useRef<boolean>(true);
+  const autoSaveTimerRef = useRef<Phaser.Time.TimerEvent | null>(null);
+
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
       setShowCredits(true);
@@ -152,6 +156,15 @@ const Game = React.memo(() => {
   const initializeGame = useCallback((loadFromSave: boolean) => {
     gameObjectsRef.current = [];
     gameEndLogicRef.current?.reset();
+
+    // Очищаем предыдущий таймер автосохранения
+    if (autoSaveTimerRef.current) {
+      autoSaveTimerRef.current.destroy();
+      autoSaveTimerRef.current = null;
+    }
+
+    // Сбрасываем флаг автосохранения
+    autoSaveEnabledRef.current = true;
 
     if (parallaxBackgroundRef.current) {
       parallaxBackgroundRef.current.destroy();
@@ -310,20 +323,33 @@ const Game = React.memo(() => {
       });
 
       this.events.on("restartLevel", () => {
+        // При перезапуске уровня снова включаем автосохранение
+        autoSaveEnabledRef.current = true;
         initializeGame(true);
         setTimeout(() => {
           setGameStarted(true);
         }, 2000);
       });
 
+      // Обработчик смерти от брауни - отключаем автосохранение
+      this.events.on("browny-death", () => {
+        autoSaveEnabledRef.current = false;
+        // Останавливаем текущий таймер автосохранения, если он есть
+        if (autoSaveTimerRef.current) {
+          autoSaveTimerRef.current.destroy();
+          autoSaveTimerRef.current = null;
+        }
+      });
+
       window.addEventListener("resize", () => {
         this.scale.resize(window.innerWidth, window.innerHeight);
       });
 
-      this.time.addEvent({
+      // Создаем управляемый таймер автосохранения
+      autoSaveTimerRef.current = this.time.addEvent({
         delay: 10000,
         callback: () => {
-          if (playerRef.current) {
+          if (playerRef.current && autoSaveEnabledRef.current) {
             saveGame(playerRef.current);
           }
         },
@@ -412,6 +438,12 @@ const Game = React.memo(() => {
 
   useEffect(() => {
     return () => {
+      // Очищаем таймер автосохранения
+      if (autoSaveTimerRef.current) {
+        autoSaveTimerRef.current.destroy();
+        autoSaveTimerRef.current = null;
+      }
+
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;

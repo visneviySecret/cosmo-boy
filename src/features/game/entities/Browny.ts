@@ -63,6 +63,9 @@ export class Browny extends Food {
     const scene = this.scene; // Сохраняем ссылку на сцену
     scene.input.enabled = false;
 
+    // Сигнализируем о смерти от брауни перед запуском видео
+    scene.events.emit("browny-death");
+
     playVideo(scene, "death", () => {
       scene.events.emit("restartLevel");
     });
