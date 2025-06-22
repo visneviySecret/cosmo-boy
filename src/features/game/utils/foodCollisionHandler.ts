@@ -2,14 +2,9 @@ import { Player } from "../entities/Player";
 import { Food } from "../entities/Food";
 import Phaser from "phaser";
 
-export function handleFoodCollision(
-  player: Player,
-  food: Food,
-  scoreText: Phaser.GameObjects.Text
-) {
+export function handleFoodCollision(player: Player, food: Food) {
   player.collectFood(food);
   food.collect();
-  scoreText.setText(`Собрано: ${player.getCollectedItems()}`);
 }
 
 export function createFoodCollision(
@@ -23,7 +18,7 @@ export function createFoodCollision(
     (obj1: unknown, obj2: unknown) => {
       const playerObj = obj1 as Player;
       const foodObj = obj2 as Food;
-      handleFoodCollision(playerObj, foodObj, (scene as any).scoreText);
+      handleFoodCollision(playerObj, foodObj);
     },
     undefined,
     scene

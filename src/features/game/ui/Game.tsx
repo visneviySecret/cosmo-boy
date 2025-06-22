@@ -20,6 +20,8 @@ import { GameEndLogic } from "../utils/gameEndLogic";
 import { Credits } from "../../../shared/ui/Credits";
 import { useStore } from "../../../shared/store";
 import { MusicManager } from "../../../shared/utils/MusicManager";
+import { ProgressBar } from "./ProgressBar";
+import { usePlayerProgress } from "../hooks/usePlayerProgress";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -59,6 +61,9 @@ const Game = React.memo(() => {
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
   const musicManagerRef = useRef<MusicManager | null>(null);
   const { setCameraPosition } = useStore();
+
+  // Добавляем хук для отслеживания прогресса игрока
+  const playerProgress = usePlayerProgress(playerRef.current);
 
   useEffect(() => {
     gameEndLogicRef.current = new GameEndLogic(gameObjectsRef, () => {
@@ -280,23 +285,6 @@ const Game = React.memo(() => {
         }
       });
 
-      const scoreText = this.add.text(
-        -620,
-        -620,
-        `Собрано: ${player.getCollectedItems()}`,
-        {
-          fontSize: "48px",
-          color: "#fff",
-          stroke: "#000",
-          strokeThickness: 6,
-          fontFamily: "Arial, sans-serif",
-          fontStyle: "bold",
-        }
-      );
-      scoreText.setScrollFactor(0);
-      scoreText.setDepth(900);
-
-      (this as any).scoreText = scoreText;
       this.cameras.main.setZoom(0.5);
       this.cameras.main.startFollow(player, true);
       this.cameras.main.setFollowOffset(0, 0);
@@ -437,6 +425,13 @@ const Game = React.memo(() => {
       <AudioPrompt $show={showAudioPrompt}>
         🎵 Кликните в любом месте для включения музыки
       </AudioPrompt>
+      {gameStarted && !isMenuOpen && (
+        <ProgressBar
+          currentExperience={playerProgress.experience}
+          maxExperience={playerProgress.maxExperience}
+          level={playerProgress.level}
+        />
+      )}
       <GameMenu
         isOpen={isMenuOpen}
         onStartNewGame={startNewGame}

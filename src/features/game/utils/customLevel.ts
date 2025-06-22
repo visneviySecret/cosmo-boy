@@ -94,8 +94,7 @@ export function generateGameObjectsFromLevel(
       (obj1: unknown, obj2: unknown) => {
         const playerObj = obj1 as Player;
         const foodObj = obj2 as FoodsType;
-        const scoreText = (scene as any).scoreText;
-        handleFoodCollision(playerObj, foodObj, scoreText);
+        handleFoodCollision(playerObj, foodObj);
       }
     );
   }
