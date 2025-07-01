@@ -2,6 +2,9 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
+// Ключ для сохранения языка в localStorage
+const LANGUAGE_STORAGE_KEY = "cosmo-boy-language";
+
 // Определяем регионы для русского языка
 const russianRegions = [
   "RU",
@@ -20,7 +23,13 @@ const russianRegions = [
 
 // Функция для определения языка по умолчанию
 const getDefaultLanguage = (): string => {
-  // Пытаемся получить информацию о регионе пользователя
+  // Сначала проверяем сохраненный язык в localStorage
+  const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  if (savedLanguage && (savedLanguage === "ru" || savedLanguage === "en")) {
+    return savedLanguage;
+  }
+
+  // Если нет сохраненного языка, определяем по региону пользователя
   const userLocale = navigator.language || navigator.languages?.[0];
 
   if (userLocale) {
@@ -275,7 +284,13 @@ i18n
     detection: {
       order: ["localStorage", "navigator"],
       caches: ["localStorage"],
+      lookupLocalStorage: LANGUAGE_STORAGE_KEY,
     },
   });
+
+// Сохраняем язык в localStorage при его изменении
+i18n.on("languageChanged", (lng) => {
+  localStorage.setItem(LANGUAGE_STORAGE_KEY, lng);
+});
 
 export default i18n;

@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useLanguage } from "../hooks/useLanguage";
 
 const LanguageSwitcherContainer = styled.div`
   display: flex;
@@ -34,29 +35,20 @@ const LanguageLabel = styled.span`
   color: #fff;
   font-size: 14px;
   font-weight: 500;
-  min-width: 100px;
 `;
 
 export const LanguageSwitcher: React.FC = () => {
-  const { i18n, t } = useTranslation();
-
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-  };
+  const { t } = useTranslation();
+  const { currentLanguage, changeLanguage, isRussian, isEnglish } =
+    useLanguage();
 
   return (
     <LanguageSwitcherContainer>
       <LanguageLabel>{t("settings.language")}:</LanguageLabel>
-      <LanguageButton
-        $active={i18n.language === "ru"}
-        onClick={() => changeLanguage("ru")}
-      >
+      <LanguageButton $active={isRussian} onClick={() => changeLanguage("ru")}>
         RU
       </LanguageButton>
-      <LanguageButton
-        $active={i18n.language === "en"}
-        onClick={() => changeLanguage("en")}
-      >
+      <LanguageButton $active={isEnglish} onClick={() => changeLanguage("en")}>
         EN
       </LanguageButton>
     </LanguageSwitcherContainer>
