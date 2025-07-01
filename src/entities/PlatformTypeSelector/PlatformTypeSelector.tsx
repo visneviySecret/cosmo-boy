@@ -3,7 +3,7 @@ import { GroundIcon } from "./GroundIcon";
 import { useStore } from "../../shared/store";
 import { EditorItem } from "../../shared/types/editor";
 import { BaseSelector } from "../../shared/ui/BaseSelector/BaseSelector";
-import { optionsFromConstObject } from "../utils";
+import { useTranslation } from "react-i18next";
 
 export const PlatformType = {
   Asteroid: EditorItem.ASTEROID,
@@ -11,8 +11,8 @@ export const PlatformType = {
 } as const;
 
 export const PlatformTypeLabel = {
-  Asteroid: "Астероид",
-  PutinWeb: "Паутина Путина",
+  Asteroid: "editor.platforms.asteroid",
+  PutinWeb: "editor.platforms.putinWeb",
 } as const;
 
 type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
@@ -25,7 +25,14 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
   onChange,
 }) => {
   const { editorItem, setEditorItem } = useStore();
-  const options = optionsFromConstObject(PlatformType, PlatformTypeLabel);
+  const { t } = useTranslation();
+
+  // Создаем опции с переводами
+  const options = Object.entries(PlatformType).map(([key, value]) => ({
+    value,
+    label: t(PlatformTypeLabel[key as keyof typeof PlatformTypeLabel]),
+  }));
+
   const handleChange = (type: string) => {
     setEditorItem(type as EditorItem);
     onChange(type);
@@ -36,7 +43,7 @@ const PlatformTypeSelector: React.FC<PlatformTypeSelectorProps> = ({
       options={options}
       value={editorItem || undefined}
       onChange={handleChange}
-      placeholder="Выберите платформу"
+      placeholder={t("editor.platforms.selectPlatform")}
       icon={<GroundIcon />}
     />
   );

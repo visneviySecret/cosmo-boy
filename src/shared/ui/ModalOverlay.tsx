@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 
 const ModalOverlayStyle = styled.div`
   position: fixed;
@@ -32,12 +33,14 @@ export const ModalOverlay = ({
   onClose: () => void;
   children: React.ReactNode;
 }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
     <ModalOverlayStyle onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <Title>Выбор уровня</Title>
+        <Title>{t("levelSelect.title")}</Title>
 
         {children}
       </ModalContent>

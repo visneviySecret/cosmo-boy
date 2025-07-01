@@ -1,5 +1,6 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
+import { useTranslation } from "react-i18next";
 
 const fadeIn = keyframes`
   from {
@@ -105,64 +106,56 @@ interface CreditsProps {
 }
 
 export const Credits: React.FC<CreditsProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
     <CreditsOverlay $isOpen={isOpen}>
-      <CloseButton onClick={onClose}>Закрыть</CloseButton>
+      <CloseButton onClick={onClose}>{t("credits.close")}</CloseButton>
       <CreditsContainer>
-        <GameTitle>Cosmo Boy</GameTitle>
+        <GameTitle>{t("game.title")}</GameTitle>
 
         <Section>
-          <SectionTitle>Разработка</SectionTitle>
-          <CreditText>Игровая механика и программирование</CreditText>
-          <CreditText>Графический дизайн и анимация</CreditText>
-          <CreditText>Звуковое оформление</CreditText>
+          <SectionTitle>{t("credits.development")}</SectionTitle>
+          <CreditText>{t("credits.gameDesign")}</CreditText>
+          <CreditText>{t("credits.graphicDesign")}</CreditText>
+          <CreditText>{t("credits.soundDesign")}</CreditText>
         </Section>
 
         <Section>
-          <SectionTitle>Технологии</SectionTitle>
-          <CreditText>Phaser.js - игровой движок</CreditText>
-          <CreditText>React - пользовательский интерфейс</CreditText>
-          <CreditText>TypeScript - разработка</CreditText>
-          <CreditText>Styled Components - стилизация</CreditText>
+          <SectionTitle>{t("credits.technologies")}</SectionTitle>
+          <CreditText>{t("credits.phaser")}</CreditText>
+          <CreditText>{t("credits.react")}</CreditText>
+          <CreditText>{t("credits.typescript")}</CreditText>
+          <CreditText>{t("credits.styledComponents")}</CreditText>
         </Section>
 
         <Section>
-          <SectionTitle>Особая благодарность</SectionTitle>
+          <SectionTitle>{t("credits.specialThanks")}</SectionTitle>
           <SpecialThanks>
-            <CreditText>
-              Всем игрокам, которые отправились в это космическое путешествие
-            </CreditText>
-            <CreditText>
-              Сообществу разработчиков за поддержку и вдохновение
-            </CreditText>
+            <CreditText>{t("credits.playersMessage")}</CreditText>
+            <CreditText>{t("credits.communityMessage")}</CreditText>
           </SpecialThanks>
         </Section>
 
         <Section>
-          <SectionTitle>История космонавта</SectionTitle>
-          <CreditText>
-            Маленький космонавт начал свой путь как крошечный исследователь
-          </CreditText>
-          <CreditText>
-            Питаясь космической едой, он рос и становился сильнее
-          </CreditText>
-          <CreditText>Преодолевая препятствия и избегая опасностей</CreditText>
-          <CreditText>
-            Он достиг своей цели и стал настоящим толстячком космоса
-          </CreditText>
+          <SectionTitle>{t("credits.story")}</SectionTitle>
+          <CreditText>{t("credits.storyLine1")}</CreditText>
+          <CreditText>{t("credits.storyLine2")}</CreditText>
+          <CreditText>{t("credits.storyLine3")}</CreditText>
+          <CreditText>{t("credits.storyLine4")}</CreditText>
         </Section>
 
         <Section>
-          <SectionTitle>Финал</SectionTitle>
-          <CreditText>Спасибо за игру!</CreditText>
-          <CreditText>Космос ждет новых героев...</CreditText>
+          <SectionTitle>{t("credits.final")}</SectionTitle>
+          <CreditText>{t("credits.thankYou")}</CreditText>
+          <CreditText>{t("credits.cosmosWaits")}</CreditText>
         </Section>
 
         <Section style={{ marginTop: "5rem" }}>
           <CreditText style={{ fontSize: "1.2rem", opacity: 0.7 }}>
-            © 2025 Cosmo Boy Game
+            {t("credits.copyright")}
           </CreditText>
         </Section>
       </CreditsContainer>

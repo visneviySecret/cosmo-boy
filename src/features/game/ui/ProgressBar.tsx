@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { frameSizes } from "../utils/player";
+import { useTranslation } from "react-i18next";
 
 interface ProgressBarProps {
   currentExperience: number;
@@ -89,12 +90,13 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   const isMaxLevel = level >= frameSizes.length;
   const percentage = Math.min((currentExperience / maxExperience) * 100, 100);
   const remainingExperience = maxExperience - currentExperience;
+  const { t } = useTranslation();
 
   return (
     <ProgressBarContainer>
       <ProgressBarTitle>
-        Шкала толстоты - Уровень {level}
-        {isMaxLevel && " (МАКС)"}
+        {t("game.progressBar.title", { level })}
+        {isMaxLevel && ` ${t("game.progressBar.max")}`}
       </ProgressBarTitle>
       <ProgressBarWrapper>
         <ProgressBarFill $percentage={percentage} $isMaxLevel={isMaxLevel} />
@@ -103,8 +105,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         {currentExperience} / {maxExperience}
         {!isMaxLevel &&
           remainingExperience > 0 &&
-          ` (осталось: ${remainingExperience})`}
-        {isMaxLevel && " (максимальный уровень)"}
+          ` ${t("game.progressBar.remaining", {
+            remaining: remainingExperience,
+          })}`}
+        {isMaxLevel && ` ${t("game.progressBar.maxLevel")}`}
       </ProgressText>
     </ProgressBarContainer>
   );

@@ -3,7 +3,7 @@ import { BaseSelector } from "../../shared/ui/BaseSelector/BaseSelector";
 import { CollectablesIcon } from "./CollectablesIcon";
 import { useStore } from "../../shared/store";
 import { EditorItem } from "../../shared/types/editor";
-import { optionsFromConstObject } from "../utils";
+import { useTranslation } from "react-i18next";
 
 export const CollectablesType = {
   Food_1: EditorItem.FOOD_1,
@@ -12,9 +12,9 @@ export const CollectablesType = {
 } as const;
 
 export const CollectablesTypeLabel = {
-  Food_1: "Еда +1",
-  Food_5: "Еда +5",
-  Browny: "Брауни",
+  Food_1: "editor.collectables.food1",
+  Food_5: "editor.collectables.food5",
+  Browny: "editor.collectables.browny",
 } as const;
 
 type CollectablesType =
@@ -28,10 +28,13 @@ export const CollectablesSelector: React.FC<CollectablesSelectorProps> = ({
   onChange,
 }) => {
   const { editorItem } = useStore();
-  const options = optionsFromConstObject(
-    CollectablesType,
-    CollectablesTypeLabel
-  );
+  const { t } = useTranslation();
+
+  // Создаем опции с переводами
+  const options = Object.entries(CollectablesType).map(([key, value]) => ({
+    value,
+    label: t(CollectablesTypeLabel[key as keyof typeof CollectablesTypeLabel]),
+  }));
 
   const handleChange = (value: string) => {
     onChange(value);
@@ -42,7 +45,7 @@ export const CollectablesSelector: React.FC<CollectablesSelectorProps> = ({
       options={options}
       value={editorItem || undefined}
       onChange={handleChange}
-      placeholder="Выберите предмет"
+      placeholder={t("editor.collectables.selectItem")}
       icon={<CollectablesIcon />}
     />
   );

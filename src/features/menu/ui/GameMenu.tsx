@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../../shared/ui/Button";
 import { GAME_SAVE_KEY } from "../../game/utils/gameSave";
 import { SettingsModal } from "./SettingsModal";
+import { LanguageSwitcher } from "../../../shared/ui/LanguageSwitcher";
 
 const MenuOverlay = styled.div`
   position: fixed;
@@ -34,7 +36,7 @@ const MenuContent = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 0 10%;
+  padding: 0 10% 25%;
   gap: 2rem;
   width: 100%;
   position: relative;
@@ -79,6 +81,11 @@ const ImgWrapper = styled.div`
   top: 1rem;
 `;
 
+const LanguageSwitcherWrapper = styled.div`
+  padding-top: 2rem;
+  margin-bottom: auto;
+`;
+
 interface GameMenuProps {
   isOpen: boolean;
   onStartNewGame: () => void;
@@ -96,6 +103,7 @@ const GameMenu: React.FC<GameMenuProps> = ({
 }) => {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const savedGame = localStorage.getItem(GAME_SAVE_KEY);
@@ -132,15 +140,21 @@ const GameMenu: React.FC<GameMenuProps> = ({
     <>
       <MenuOverlay>
         <MenuContent>
-          <GameTitle>Cosmo Boy</GameTitle>
+          <LanguageSwitcherWrapper>
+            <LanguageSwitcher />
+          </LanguageSwitcherWrapper>
 
-          <MenuButton onClick={handleStartNewGame}>Новая игра</MenuButton>
+          <GameTitle>{t("game.title")}</GameTitle>
 
-          <MenuButton onClick={handleContinueGame} disabled={!hasSavedGame}>
-            Продолжить
+          <MenuButton onClick={handleStartNewGame}>
+            {t("menu.newGame")}
           </MenuButton>
 
-          <MenuButton onClick={handleSettings}>Настройки</MenuButton>
+          <MenuButton onClick={handleContinueGame} disabled={!hasSavedGame}>
+            {t("menu.continue")}
+          </MenuButton>
+
+          <MenuButton onClick={handleSettings}>{t("menu.settings")}</MenuButton>
           <MenuButton onClick={() => goToDeveloperPage()}>
             <ImgWrapper>
               <img
@@ -150,7 +164,7 @@ const GameMenu: React.FC<GameMenuProps> = ({
                 height={50}
               />
             </ImgWrapper>
-            <span>Разработчик</span>
+            <span>{t("menu.developer")}</span>
           </MenuButton>
         </MenuContent>
       </MenuOverlay>

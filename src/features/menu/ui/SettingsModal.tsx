@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../../shared/ui/Button";
 import type { GameSettings } from "../../../shared/types/game";
 import { SETTINGS_KEY } from "../../game/utils/gameSave";
+import { LanguageSwitcher } from "../../../shared/ui/LanguageSwitcher";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -81,6 +83,12 @@ const ButtonContainer = styled.div`
   margin-top: 2rem;
 `;
 
+const LanguageSwitcherContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+`;
+
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -93,6 +101,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   scene,
 }) => {
   const [volume, setVolume] = useState(50);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const savedSettings = localStorage.getItem(SETTINGS_KEY);
@@ -132,11 +141,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <ModalOverlay onClick={handleClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <Title>Настройки</Title>
+        <Title>{t("settings.title")}</Title>
+
+        <LanguageSwitcherContainer>
+          <LanguageSwitcher />
+        </LanguageSwitcherContainer>
 
         <SettingItem>
           <SettingLabel htmlFor="volume">
-            Громкость звука
+            {t("settings.volume")}
             <VolumeValue>{volume}%</VolumeValue>
           </SettingLabel>
           <VolumeSlider
@@ -150,7 +163,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </SettingItem>
 
         <ButtonContainer>
-          <Button onClick={handleClose}>Закрыть</Button>
+          <Button onClick={handleClose}>{t("menu.close")}</Button>
         </ButtonContainer>
       </ModalContent>
     </ModalOverlay>

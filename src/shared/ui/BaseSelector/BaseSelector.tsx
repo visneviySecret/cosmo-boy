@@ -7,6 +7,7 @@ import {
   OptionsList,
   Option,
 } from "./BaseSelector.style";
+import { useTranslation } from "react-i18next";
 
 export interface Option {
   label: string;
@@ -25,11 +26,14 @@ export const BaseSelector: React.FC<BaseSelectorProps> = ({
   options,
   value,
   onChange,
-  placeholder = "Выберите значение",
+  placeholder,
   icon,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
+
+  const defaultPlaceholder = placeholder || t("common.selectValue");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,7 +65,8 @@ export const BaseSelector: React.FC<BaseSelectorProps> = ({
       <SelectWrapper ref={wrapperRef}>
         {icon && <IconWrapper>{icon}</IconWrapper>}
         <Selector onClick={toggleDropdown}>
-          {options.find((opt) => opt.value === value)?.label || placeholder}
+          {options.find((opt) => opt.value === value)?.label ||
+            defaultPlaceholder}
         </Selector>
         {isOpen && (
           <OptionsList>

@@ -29,7 +29,7 @@ export function loadGame(): GameSave | null {
       }
       return parsedGame as GameSave;
     } catch (error) {
-      console.error("Ошибка при загрузке сохранения:", error);
+      console.error("Error loading save:", error);
       return null;
     }
   }

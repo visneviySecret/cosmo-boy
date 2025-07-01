@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { Button } from "../../../shared";
+import styled from "styled-components";
+import { useTranslation } from "react-i18next";
+import { Button } from "../../../shared/ui/Button";
 import { EditorPanel, EditorToolsWrapper } from "./LevelEditor.styled";
 // import { useStore } from "../../../shared/store";
 import { EditorItem } from "../../../shared/types/editor";
-import { PlatformTypeSelector } from "../../../entities";
+import PlatformTypeSelector from "../../../entities/PlatformTypeSelector/PlatformTypeSelector";
+import { CollectablesSelector } from "../../../entities/CollectablesSelector/CollectablesSelector";
 import { LevelSelectModal } from "../../menu/entities/LevelSelectModal";
 import type { LevelData } from "../entities/Level";
-import { CollectablesSelector } from "../../../entities/CollectablesSelector/CollectablesSelector";
 
 type LevelEditorToolsProps = {
   onSave: (data: LevelData | null) => void;
@@ -20,6 +22,7 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
   onCreatePreview,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleTypeChange = (type: string) => {
     const newType = type as EditorItem;
@@ -34,7 +37,7 @@ export const LevelEditorTools: React.FC<LevelEditorToolsProps> = ({
       </EditorToolsWrapper>
       <EditorPanel>
         <Button onClick={() => setIsModalOpen(true)} $variant="secondary">
-          Меню
+          {t("editor.menu")}
         </Button>
       </EditorPanel>
       <LevelSelectModal

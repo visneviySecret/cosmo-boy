@@ -23,6 +23,7 @@ import { MusicManager } from "../../../shared/utils/MusicManager";
 import { ProgressBar } from "./ProgressBar";
 import { usePlayerProgress } from "../hooks/usePlayerProgress";
 import { getCameraZoom } from "../utils/cameraUtils";
+import { useTranslation } from "react-i18next";
 
 const GameContainer = styled.div`
   width: 100%;
@@ -62,6 +63,7 @@ const Game = React.memo(() => {
   const parallaxBackgroundRef = useRef<ParallaxBackground | null>(null);
   const musicManagerRef = useRef<MusicManager | null>(null);
   const { setCameraPosition } = useStore();
+  const { t } = useTranslation();
 
   // Добавляем хук для отслеживания прогресса игрока
   const playerProgress = usePlayerProgress(playerRef.current);
@@ -467,9 +469,7 @@ const Game = React.memo(() => {
   return (
     <>
       <GameContainer id="game-root" />
-      <AudioPrompt $show={showAudioPrompt}>
-        🎵 Кликните в любом месте для включения музыки
-      </AudioPrompt>
+      <AudioPrompt $show={showAudioPrompt}>{t("game.audioPrompt")}</AudioPrompt>
       {gameStarted && !isMenuOpen && (
         <ProgressBar
           currentExperience={playerProgress.experience}

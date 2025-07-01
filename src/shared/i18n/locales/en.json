@@ -1,0 +1,103 @@
+{
+  "game": {
+    "title": "Cosmo Boy",
+    "audioPrompt": "🎵 Click anywhere to enable music",
+    "progressBar": {
+      "title": "Fatness Scale - Level {{level}}",
+      "max": "(MAX)",
+      "remaining": "(remaining: {{remaining}})",
+      "maxLevel": "(maximum level)"
+    }
+  },
+  "menu": {
+    "newGame": "New Game",
+    "continue": "Continue",
+    "settings": "Settings",
+    "developer": "Developer",
+    "close": "Close",
+    "save": "Save",
+    "languageSwitch": "Language"
+  },
+  "settings": {
+    "title": "Settings",
+    "volume": "Sound Volume",
+    "language": "Language"
+  },
+  "credits": {
+    "close": "Close",
+    "development": "Development",
+    "gameDesign": "Game mechanics and programming",
+    "graphicDesign": "Graphic design and animation",
+    "soundDesign": "Sound design",
+    "technologies": "Technologies",
+    "phaser": "Phaser.js - game engine",
+    "react": "React - user interface",
+    "typescript": "TypeScript - development",
+    "styledComponents": "Styled Components - styling",
+    "specialThanks": "Special Thanks",
+    "playersMessage": "To all players who embarked on this cosmic journey",
+    "communityMessage": "To the developer community for support and inspiration",
+    "story": "Astronaut's Story",
+    "storyLine1": "The little astronaut began his journey as a tiny explorer",
+    "storyLine2": "Feeding on cosmic food, he grew and became stronger",
+    "storyLine3": "Overcoming obstacles and avoiding dangers",
+    "storyLine4": "He reached his goal and became a true space fatso",
+    "final": "Final",
+    "thankYou": "Thanks for playing!",
+    "cosmosWaits": "Space awaits new heroes...",
+    "copyright": "© 2025 Cosmo Boy Game"
+  },
+  "editor": {
+    "play": "Play",
+    "editor": "Editor",
+    "menu": "Menu",
+    "platforms": {
+      "asteroid": "Asteroid",
+      "putinWeb": "Putin's Web",
+      "selectPlatform": "Select platform"
+    },
+    "collectables": {
+      "food1": "Food +1",
+      "food5": "Food +5",
+      "browny": "Browny",
+      "selectItem": "Select item"
+    },
+    "faq": {
+      "title": "Basic editor functions:",
+      "selectPlatform": "• Select platform type on the left (Asteroid)",
+      "placeObject": "• Left click to place object",
+      "resizeObject": "• Use mouse wheel to resize object",
+      "dragObject": "• Drag objects while holding left mouse button",
+      "resetObject": "• Right click to reset object",
+      "deleteObject": "• Press Delete to remove selected object",
+      "cameraTitle": "Camera control:",
+      "cameraLeft": "• A key - move camera left",
+      "cameraRight": "• D key - move camera right",
+      "saveLoadTitle": "Save and load:",
+      "saveLoadDesc": "• Click \"Menu\" button to access level saving and loading",
+      "createLevels": "• Create new levels, load existing ones or delete them"
+    }
+  },
+  "levelSelect": {
+    "title": "Level Selection",
+    "createNew": "Create new level",
+    "level": "Level {{id}}",
+    "deleteConfirm": "Level contains objects, really delete?",
+    "createOnlyDemo": "Creating new levels is only available in demo mode",
+    "deleteOnlyDemo": "Deleting levels is only available in demo mode",
+    "createTooltip": "Creation is only available in demo mode",
+    "deleteTooltip": "Deletion is only available in demo mode"
+  },
+  "common": {
+    "selectValue": "Select value",
+    "save": "Save",
+    "close": "Close",
+    "delete": "Delete",
+    "create": "Create"
+  },
+  "errors": {
+    "sceneNotInitialized": "Scene is not initialized",
+    "levelLoadError": "Error loading level: {{error}}",
+    "saveError": "Error loading save:"
+  }
+}

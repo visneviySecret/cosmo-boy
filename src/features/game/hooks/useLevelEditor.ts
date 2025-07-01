@@ -165,7 +165,7 @@ export const useLevelEditor = () => {
 
   const loadLevel = (id: string) => {
     if (!sceneRef.current) {
-      alert("Сцена не инициализирована");
+      alert("Scene is not initialized");
       return;
     }
 
@@ -189,7 +189,7 @@ export const useLevelEditor = () => {
         gameObjectsRef.current.push(gameObject);
       });
     } catch (error) {
-      alert("Ошибка при загрузке уровня: " + error);
+      alert("Error loading level: " + error);
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../../shared/ui/Button";
 import { ModalOverlay } from "../../../shared/ui/ModalOverlay";
 import {
@@ -28,6 +29,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
 }) => {
   const [levels, setLevels] = useState<LevelData[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<LevelData | null>(null);
+  const { t } = useTranslation();
 
   const handleSelectChange = (value: LevelData, isLoad = true) => {
     const level = {
@@ -44,7 +46,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
 
   const handleCreateNewLevel = () => {
     if (!isDemoRoute) {
-      alert("Создание новых уровней доступно только в demo режиме");
+      alert(t("levelSelect.createOnlyDemo"));
       return;
     }
 
@@ -52,7 +54,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     const id = isExistLevelsInStorage
       ? String(Number(levels[levels.length - 1].id) + 1)
       : "1";
-    const name = `Уровень ${id}`;
+    const name = t("levelSelect.level", { id });
     const newLevel: LevelData = { id, name, gameObjects: [] };
 
     const updatedLevels = [...levels, newLevel];
@@ -71,7 +73,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     e.stopPropagation();
 
     if (!isDemoRoute) {
-      alert("Удаление уровней доступно только в demo режиме");
+      alert(t("levelSelect.deleteOnlyDemo"));
       return;
     }
 
@@ -79,9 +81,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
     const hasObjects = deletedLevel?.gameObjects?.length;
 
     if (hasObjects) {
-      const response = confirm(
-        "Уровень содержит объекты, действительно удалить?"
-      );
+      const response = confirm(t("levelSelect.deleteConfirm"));
       if (!response) return;
     }
 
@@ -123,8 +123,8 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
                 disabled={!isDemoRoute}
                 title={
                   !isDemoRoute
-                    ? "Удаление доступно только в demo режиме"
-                    : "Удалить уровень"
+                    ? t("levelSelect.deleteTooltip")
+                    : t("common.delete")
                 }
               >
                 ✕
@@ -139,18 +139,18 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
         disabled={!isDemoRoute}
         title={
           !isDemoRoute
-            ? "Создание доступно только в demo режиме"
-            : "Создать новый уровень"
+            ? t("levelSelect.createTooltip")
+            : t("levelSelect.createNew")
         }
       >
-        Создать новый уровень
+        {t("levelSelect.createNew")}
       </Button>
       <ButtonGroup>
         <Button onClick={() => onSave(selectedLevel)} $variant="primary">
-          Сохранить
+          {t("common.save")}
         </Button>
         <Button onClick={onClose} $variant="secondary">
-          Закрыть
+          {t("common.close")}
         </Button>
       </ButtonGroup>
     </ModalOverlay>
